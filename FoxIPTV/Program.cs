@@ -1,0 +1,82 @@
+﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+
+namespace FoxIPTV
+{
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Windows.Forms;
+    using Classes;
+    using Forms;
+    using Properties;
+    using Newtonsoft.Json.Linq;
+
+    public static class Program
+    {
+        /// <summary>The main entry point for the application.</summary>
+        [STAThread]
+        private static async Task Main()
+        {
+            TvCore.LogInfo("[.NET] Main(): Starting Windows Application...");
+
+            Application.ApplicationExit += (sender, args) => TvCore.LogInfo("[.NET] Main(): Quitting Windows Application...");
+
+            if (Settings.Default.UpgradeRequired)
+            {
+                TvCore.LogInfo("[.NET] Main(): Upgrading user settings!");
+
+                Settings.Default.Upgrade();
+                Settings.Default.UpgradeRequired = false;
+                Settings.Default.Save();
+            }
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            TvCore.LogDebug("[.NET] Main(): Begin Auth Check");
+
+            if (!await TvCore.CurrentService.IsAuthenticated())
+            {
+                TvCore.LogDebug("[.NET] Main(): Not Already Authenticated");
+
+                retry:
+
+                var loginForm = new LoginForm();
+
+                var dResult = loginForm.ShowDialog();
+
+                if (dResult != DialogResult.OK)
+                {
+                    return;
+                }
+
+                TvCore.ServiceSelected = loginForm.servicesComboBox.SelectedIndex;
+
+                TvCore.CurrentService.Data = new JObject();
+
+                foreach (var field in TvCore.CurrentService.Fields)
+                {
+                    var fieldControl = loginForm.Controls.Find(field.Key, false).FirstOrDefault();
+
+                    if (fieldControl is null)
+                    {
+                        continue;
+                    }
+
+                    TvCore.CurrentService.Data.Add(field.Key, fieldControl.Text);
+                }
+
+                TvCore.CurrentService.SaveAuthentication = loginForm.rememberMeCheckBox.Checked;
+
+                if (!await TvCore.CurrentService.IsAuthenticated())
+                {
+                    TvCore.LogDebug("[.NET] Main(): Authentication details incorrect, service rejected them, retrying.");
+
+                    goto retry;
+                }
+            }
+
+            Application.Run(new TvForm());
+        }
+    }
+}
