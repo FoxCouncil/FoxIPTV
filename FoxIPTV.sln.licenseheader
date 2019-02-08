@@ -1,0 +1,12 @@
+extensions: designer.cs generated.cs
+extensions: .cs .cpp .h
+// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+
+extensions: .aspx .ascx
+<%-- Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV --%>
+
+extensions: .vb
+'Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+
+extensions:  .xml .config .xsd
+<!-- Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV -->
