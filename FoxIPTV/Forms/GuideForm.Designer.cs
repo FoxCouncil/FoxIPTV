@@ -80,6 +80,7 @@
             this.textBoxSearch.Name = "textBoxSearch";
             this.textBoxSearch.Size = new System.Drawing.Size(234, 20);
             this.textBoxSearch.TabIndex = 1;
+            this.textBoxSearch.Visible = false;
             // 
             // buttonResetView
             // 

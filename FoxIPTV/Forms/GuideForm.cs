@@ -20,9 +20,9 @@ namespace FoxIPTV.Forms
             tableLayoutPanel.Controls.Add(guideControl, 0, 1);
             tableLayoutPanel.SetColumnSpan(guideControl, 3);
 
-            buttonResetView.Click += async (s, a) => await guideControl.ResetView();
+            buttonResetView.Click += (s, a) => guideControl.ResetView();
 
-            ResizeEnd += async (s, a) => await guideControl.Draw(); 
+            ResizeEnd += (s, a) => guideControl.DrawGuide(); 
         }
 
         private void GuideForm_FormClosing(object sender, FormClosingEventArgs e)

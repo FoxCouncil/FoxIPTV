@@ -1,8 +1,0 @@
-[
-  {
-    "Name": "Beams TV", 
-    "Endpoint": "http://www.beams-tv.stream:80/",
-    "ChannelData": "get.php?username={0}&password={1}&type=m3u_plus&output=ts",
-    "GuideData": "xmltv.php?username={0}&password={1}"
-  }
-]

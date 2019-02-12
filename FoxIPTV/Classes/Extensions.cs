@@ -2,15 +2,18 @@
 
 using System;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FoxIPTV.Classes
 {
     public static class Extensions
     {
+        public static DateTime RoundUp(this DateTime dt, TimeSpan d)
+        {
+            return new DateTime((dt.Ticks + d.Ticks - 1) / d.Ticks * d.Ticks, dt.Kind);
+        }
+
         public static void InvokeIfRequired(this Control control, MethodInvoker action)
         {
             if (control.Disposing)
