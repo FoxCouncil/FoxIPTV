@@ -5,6 +5,7 @@ namespace FoxIPTV.Controls
     using System;
     using System.Drawing;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows.Forms;
     using Classes;
@@ -29,6 +30,9 @@ namespace FoxIPTV.Controls
 
         private readonly ToolTip _toolTip = new ToolTip { IsBalloon = true, ToolTipIcon = ToolTipIcon.Info, ToolTipTitle = "Guide Info" };
 
+        private readonly object _guideModelLock = new object();
+        private GuideStateModel _guideModel;
+
         public GuideLayoutPanel()
         {
             BackColor = Color.Black;
@@ -48,41 +52,173 @@ namespace FoxIPTV.Controls
             timer.Enabled = true;
 
             TvCore.StateChanged += state => _dataLoaded = state == TvCoreState.Running;
-            TvCore.ChannelChanged += async channel => await Draw(true);
+            TvCore.ChannelChanged += channel => DrawGuide(true);
         }
 
-        public async Task Draw(bool drawAnyway = false)
+        public void DrawGuide(bool drawAnyway = false)
         {
-            await Task.Run(() =>
+            ThreadPool.QueueUserWorkItem(state => { GenerateGuide(drawAnyway); });
+        }
+
+        private void GenerateGuide(bool drawAnyway = false)
+        {
+            if (!_dataLoaded)
             {
-                if (!_dataLoaded)
+                return;
+            }
+
+            var newGuideModel = new GuideStateModel
+            {
+                TotalRows = (int) Math.Floor(Size.Height / defaultRowHeight),
+                TotalColumns = (int) Math.Floor(Size.Width / defaultColWidth),
+                HeaderTitle = _timeCursorOn ? (DateTime.Now.RoundUp(TimeSpan.FromMinutes(10)) - _timeCursor).ToString("g") : "Today"
+            };
+
+            // Time Columns
+            lastHeaderTime = DateTime.Now;
+            var now = _timeCursorOn ? _timeCursor : lastHeaderTime;
+            var minutes = now.Minute;
+            var initialSize = 3 - (minutes >= 30 ? minutes - 30 : minutes) / 10;
+
+            newGuideModel.Headers.Add(new GuideTextModel { Text = $"{now:hh:mm tt}", Column = 4, ColSpan = initialSize });
+
+            var delta = minutes >= 30 ? 60 - minutes : 30 - minutes;
+
+            now = now.AddMinutes(delta);
+
+            var idx = 4 + initialSize;
+            var headerSpaceLeft = newGuideModel.TotalColumns - idx;
+
+            while (headerSpaceLeft > 0)
+            {
+                var column = idx;
+
+                var size = headerSpaceLeft >= 3 ? 3 : headerSpaceLeft;
+
+                newGuideModel.Headers.Add(new GuideTextModel { Text = $"{now:hh:mm tt}", Tag = now, Column = column, ColSpan = size });
+
+                headerSpaceLeft -= size;
+                idx += size;
+
+                now = now.AddMinutes(30);
+            }
+
+            // Rows
+            for (var rowIdx = 1; rowIdx < newGuideModel.TotalRows; rowIdx++)
+            {
+                var channelIndex = TvCore.CurrentChannelIndex;
+
+                channelIndex += (uint)rowIdx - 1;
+
+                var columnTime = _timeCursorOn ? _timeCursor.ToUniversalTime() : DateTime.UtcNow;
+
+                var channel = TvCore.Channels[(int)channelIndex];
+
+                var newRow = new GuideRowModel
+                {
+                    Number = TvCore.ChannelIndexList[(int)channelIndex].ToString(),
+                    Text = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2).Skip(1).FirstOrDefault() : channel.Name,
+                    Tag = channel,
+                    Image = channel.LogoImage ?? Resources.iptv.ToBitmap(),
+                    BackgroundColor = rowIdx == 1 ? Color.FromArgb(0, 20, 0) : Color.Black
+                };
+
+                var channelProgrammes = TvCore.Guide.FindAll(x => x.Channel == channel.Id);
+
+                const int dergValue = 20;
+
+                if (channelProgrammes.Count == 0)
+                {
+                    newRow.Programmes.Add(new GuideTextModel
+                    {
+                        Text = "Not Available",
+                        BackgroundColor = Color.FromArgb(dergValue, dergValue, dergValue),
+                        Column = 4,
+                        ColSpan = newGuideModel.TotalColumns - 4
+                    });
+
+                    newGuideModel.Rows.Add(newRow);
+
+                    continue;
+                }
+
+                var columnsLeft = newGuideModel.TotalColumns - 4;
+                var colIdx = 4;
+
+                while (columnsLeft > 0)
+                {
+                    var channelCurrentProgramme = channelProgrammes.Find(x => x.Start <= columnTime && x.Stop >= columnTime);
+
+                    if (channelCurrentProgramme == null)
+                    {
+                        var left = columnsLeft;
+
+                        newRow.Programmes.Add(new GuideTextModel
+                        {
+                            Text = "Not Available",
+                            BackgroundColor = Color.FromArgb(dergValue, dergValue, dergValue),
+                            Column = colIdx,
+                            ColSpan = left
+                        });
+
+                        columnsLeft = 0;
+
+                        newGuideModel.Rows.Add(newRow);
+
+                        continue;
+                    }
+
+                    var timeLeft = (int)Math.Ceiling((channelCurrentProgramme.Stop - columnTime).TotalMinutes / 10d);
+                    var columnsUsed = timeLeft > columnsLeft ? columnsLeft : timeLeft;
+
+                    var isCurrentProgramme = channelCurrentProgramme.Start <= DateTime.UtcNow && channelCurrentProgramme.Stop >= DateTime.UtcNow;
+
+                    newRow.Programmes.Add(new GuideTextModel
+                    {
+                        Text = channelCurrentProgramme.Title,
+                        Tag = channelCurrentProgramme,
+                        BackgroundColor = isCurrentProgramme ? Color.DarkSlateGray : Color.DimGray,
+                        Column = colIdx,
+                        ColSpan = columnsUsed
+                    });
+                    
+                    columnsLeft -= columnsUsed;
+                    colIdx += columnsUsed;
+                    columnTime = channelCurrentProgramme.Stop.AddMinutes(1);
+                }
+
+                newGuideModel.Rows.Add(newRow);
+            }
+
+            lock (_guideModelLock)
+            {
+                _guideModel = newGuideModel;
+            }
+
+            this.InvokeIfRequired(() => Draw(drawAnyway));
+        }
+
+        private void Draw(bool drawAnyway = false)
+        {
+            lock (_guideModelLock)
+            {
+                if (!drawAnyway && RowCount == _guideModel.TotalRows && ColumnCount == _guideModel.TotalColumns)
                 {
                     return;
                 }
 
-                var rowCount = (int)Math.Floor(Size.Height / defaultRowHeight);
+                SuspendLayout();
 
-                var columnCount = (int)Math.Floor(Size.Width / defaultColWidth);
+                Controls.Clear();
 
-                if (!drawAnyway && RowCount == rowCount && ColumnCount == columnCount)
-                {
-                    return;
-                }
-
-                this.InvokeIfRequired(() =>
-                {
-                    SuspendLayout();
-                    Controls.Clear();
-                });
-
-                RowCount = rowCount;
+                RowCount = _guideModel.TotalRows;
 
                 for (var i = 1; i <= RowCount; i++)
                 {
                     RowStyles.Add(new RowStyle(SizeType.Percent, defaultStylePercentage));
                 }
 
-                ColumnCount = columnCount;
+                ColumnCount = _guideModel.TotalColumns;
 
                 for (var i = 1; i <= ColumnCount; i++)
                 {
@@ -99,54 +235,15 @@ namespace FoxIPTV.Controls
                     UseMnemonic = false,
                     Font = new Font(Font.Name, 12F),
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Text = "Today"
+                    Text = _guideModel.HeaderTitle
                 };
 
-                this.InvokeIfRequired(() =>
+                Controls.Add(todayLabel, 0, 0);
+                SetColumnSpan(todayLabel, 4);
+
+                // Headers
+                foreach (var header in _guideModel.Headers)
                 {
-                    Controls.Add(todayLabel, 0, 0);
-                    SetColumnSpan(todayLabel, 4);
-                });
-
-                // Time Columns
-                lastHeaderTime = DateTime.Now;
-                var now = _timeCursorOn ? _timeCursor : lastHeaderTime;
-                var minutes = now.Minute;
-                var initialSize = 3 - (minutes >= 30 ? minutes - 30 : minutes) / 10;
-
-                var firstTimeHeaderLabel = new BorderedLabel()
-                {
-                    Dock = DockStyle.Fill,
-                    BackColor = Color.Black,
-                    ForeColor = Color.White,
-                    Margin = Padding.Empty,
-                    Padding = new Padding(6, 0, 0, 0),
-                    Font = new Font(Font.Name, 12F),
-                    TextAlign = ContentAlignment.BottomLeft,
-                    LeftBorder = true,
-                    LeftBorderWidth = 4,
-                    LeftBorderColor = Color.White,
-                    LeftBorderStyle = ButtonBorderStyle.Solid,
-                    Text = $"{now:hh:mm tt}"
-                };
-
-                this.InvokeIfRequired(() =>
-                {
-                    Controls.Add(firstTimeHeaderLabel, 4, 0);
-                    SetColumnSpan(firstTimeHeaderLabel, initialSize);
-                });
-
-                var delta = minutes >= 30 ? 60 - minutes : 30 - minutes;
-
-                now = now.AddMinutes(delta);
-
-                var idx = 4 + initialSize;
-                var headerSpaceLeft = ColumnCount - idx;
-
-                while (headerSpaceLeft > 0)
-                {
-                    var column = idx;
-
                     var control = new BorderedLabel
                     {
                         Dock = DockStyle.Fill,
@@ -161,66 +258,36 @@ namespace FoxIPTV.Controls
                         LeftBorderColor = Color.White,
                         LeftBorderStyle = ButtonBorderStyle.Solid,
                         HoverEffect = true,
-                        Tag = now,
-                        Text = $"{now:hh:mm tt}"
+                        Tag = header.Tag,
+                        Text = header.Text
                     };
 
-                    control.Click += async (s, a) =>
+                    control.Click += (s, a) =>
                     {
-                        _timeCursorOn = true;
-                        _timeCursor = (DateTime)control.Tag;
-
-                        await Draw(true);
-                    };
-
-                    var size = headerSpaceLeft >= 3 ? 3 : headerSpaceLeft;
-
-                    this.InvokeIfRequired(() =>
-                    {
-                        Controls.Add(control, column, 0);
-                        SetColumnSpan(control, size);
-                    });
-
-                    headerSpaceLeft -= size;
-                    idx += size;
-
-                    now = now.AddMinutes(30);
-                }
-
-                // Rows
-                for (var rowIdx = 1; rowIdx < RowCount; rowIdx++)
-                {
-                    var channelIndex = TvCore.CurrentChannelIndex;
-
-                    channelIndex += (uint)rowIdx - 1;
-
-                    var columnTime = _timeCursorOn ? _timeCursor.ToUniversalTime() : DateTime.UtcNow;
-
-                    var channelNumber = TvCore.ChannelIndexList[(int)channelIndex].ToString();
-                    var channel = TvCore.Channels[(int)channelIndex];
-                    var channelName = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2).Skip(1).FirstOrDefault() : channel.Name;
-                    var channelImg = channel.LogoImage ?? Resources.iptv.ToBitmap();
-
-                    var controlRow = rowIdx;
-
-                    void ChangeChanel(object sender, EventArgs args)
-                    {
-                        var control = sender as Control;
-
-                        if (!(control?.Tag is Channel clickedChannel))
+                        if (control.Tag == null)
                         {
                             return;
                         }
 
-                        TvCore.SetChannel((uint)TvCore.ChannelIndexList.IndexOf(clickedChannel.Index));
-                    }
+                        _timeCursorOn = true;
+                        _timeCursor = (DateTime) control.Tag;
 
-                    var backColor = rowIdx == 1 ? Color.FromArgb(0, 20, 0) : Color.Black;
+                        DrawGuide(true);
+                    };
 
+                    Controls.Add(control, header.Column, 0);
+                    SetColumnSpan(control, header.ColSpan);
+                }
+
+                // Rows
+                var rowIdx = 1;
+
+                foreach (var row in _guideModel.Rows)
+                {
                     var channelNumberLabel = new BorderedLabel
                     {
                         Dock = DockStyle.Fill,
-                        BackColor = backColor,
+                        BackColor = row.BackgroundColor,
                         ForeColor = Color.White,
                         Margin = Padding.Empty,
                         Font = new Font(Font.Name, 12F),
@@ -231,27 +298,27 @@ namespace FoxIPTV.Controls
                         RightBorderStyle = ButtonBorderStyle.Dotted,
                         TopBorder = true,
                         TopBorderColor = Color.White,
-                        Tag = channel,
+                        Tag = row.Tag,
                         HoverEffect = true,
-                        Text = channelNumber
+                        Text = row.Number
                     };
 
                     channelNumberLabel.Click += ChangeChanel;
 
-                    this.InvokeIfRequired(() => Controls.Add(channelNumberLabel, 0, controlRow));
+                    Controls.Add(channelNumberLabel, 0, rowIdx);
 
                     var channelNameControl = new BorderedLabel
                     {
                         Dock = DockStyle.Fill,
-                        BackColor = backColor,
+                        BackColor = row.BackgroundColor,
                         ForeColor = Color.White,
                         Margin = Padding.Empty,
                         TextAlign = ContentAlignment.MiddleLeft,
                         TopBorder = true,
                         TopBorderColor = Color.White,
-                        Tag = channel,
+                        Tag = row.Tag,
                         HoverEffect = true,
-                        Text = channelName
+                        Text = row.Text
                     };
 
                     channelNameControl.Controls.Add(new PictureBox
@@ -259,7 +326,7 @@ namespace FoxIPTV.Controls
                         AutoSize = false,
                         BackColor = Color.White,
                         Dock = DockStyle.Right,
-                        Image = channelImg,
+                        Image = row.Image,
                         MaximumSize = new Size(60, 0),
                         Margin = Padding.Empty,
                         MinimumSize = new Size(60, 0),
@@ -269,22 +336,15 @@ namespace FoxIPTV.Controls
 
                     channelNameControl.Click += ChangeChanel;
 
-                    this.InvokeIfRequired(() =>
-                    {
-                        Controls.Add(channelNameControl, 1, controlRow);
-                        SetColumnSpan(channelNameControl, 3);
-                    });
+                    Controls.Add(channelNameControl, 1, rowIdx);
+                    SetColumnSpan(channelNameControl, 3);
 
-                    var channelProgrammes = TvCore.Guide.FindAll(x => x.Channel == channel.Id);
-
-                    var dergValue = 20;
-
-                    if (channelProgrammes.Count == 0)
+                    foreach (var programme in row.Programmes)
                     {
                         var borderedLabel = new BorderedLabel
                         {
                             Dock = DockStyle.Fill,
-                            BackColor = Color.FromArgb(dergValue, dergValue, dergValue),
+                            BackColor = programme.BackgroundColor,
                             ForeColor = Color.LightGray,
                             Margin = Padding.Empty,
                             Padding = new Padding(6, 0, 0, 0),
@@ -297,85 +357,13 @@ namespace FoxIPTV.Controls
                             LeftBorderWidth = 4,
                             LeftBorderColor = Color.White,
                             LeftBorderStyle = ButtonBorderStyle.Solid,
-                            Text = "Not Available"
+                            HoverEffect = true,
+                            Tag = programme.Tag,
+                            Text = programme.Text
                         };
 
-                        this.InvokeIfRequired(() => 
+                        if (programme.Tag is Programme channelCurrentProgramme)
                         {
-                            Controls.Add(borderedLabel, 4, controlRow);
-                            SetColumnSpan(borderedLabel, ColumnCount - 4);
-                        });
-
-                        continue;
-                    }
-
-                    var columnsLeft = ColumnCount - 4;
-                    var colIdx = 4;
-
-                    while (columnsLeft > 0)
-                    {
-                        var channelCurrentProgramme = channelProgrammes.Find(x => x.Start <= columnTime && x.Stop >= columnTime);
-
-                        if (channelCurrentProgramme == null)
-                        {
-                            var borderedLabel = new BorderedLabel
-                            {
-                                Dock = DockStyle.Fill,
-                                BackColor = Color.FromArgb(dergValue, dergValue, dergValue),
-                                ForeColor = Color.LightGray,
-                                Margin = Padding.Empty,
-                                Padding = new Padding(6, 0, 0, 0),
-                                Font = new Font(Font.Name, 10F),
-                                TextAlign = ContentAlignment.MiddleCenter,
-                                TopBorder = true,
-                                TopBorderColor = Color.White,
-                                TopBorderStyle = ButtonBorderStyle.Solid,
-                                LeftBorder = true,
-                                LeftBorderWidth = 4,
-                                LeftBorderColor = Color.White,
-                                LeftBorderStyle = ButtonBorderStyle.Solid,
-                                Text = "Not Available"
-                            };
-
-                            var left = columnsLeft;
-                            this.InvokeIfRequired(() =>
-                            {
-                                Controls.Add(borderedLabel, colIdx, controlRow);
-                                SetColumnSpan(borderedLabel, left);
-                            });
-
-                            columnsLeft = 0;
-                            continue;
-                        }
-
-                        var timeLeft = (int)Math.Ceiling((channelCurrentProgramme.Stop - columnTime).TotalMinutes / 10d);
-                        var columnsUsed = timeLeft > columnsLeft ? columnsLeft : timeLeft;
-
-                        var isCurrentProgramme = channelCurrentProgramme.Start <= DateTime.UtcNow && channelCurrentProgramme.Stop >= DateTime.UtcNow;
-
-                        this.InvokeIfRequired(() =>
-                        {
-                            var borderedLabel = new BorderedLabel
-                            {
-                                Dock = DockStyle.Fill,
-                                BackColor = isCurrentProgramme ? Color.DarkSlateGray : Color.DimGray,
-                                ForeColor = Color.White,
-                                Margin = Padding.Empty,
-                                Padding = new Padding(6, 0, 0, 0),
-                                Font = new Font(Font.Name, 10F),
-                                TextAlign = ContentAlignment.MiddleLeft,
-                                TopBorder = true,
-                                TopBorderColor = Color.White,
-                                TopBorderStyle = ButtonBorderStyle.Solid,
-                                LeftBorder = true,
-                                LeftBorderWidth = 4,
-                                LeftBorderColor = Color.White,
-                                LeftBorderStyle = ButtonBorderStyle.Solid,
-                                HoverEffect = true,
-                                Tag = channelCurrentProgramme,
-                                Text = channelCurrentProgramme.Title
-                            };
-
                             borderedLabel.MouseEnter += (s, a) =>
                             {
                                 var window = s as IWin32Window;
@@ -393,40 +381,44 @@ namespace FoxIPTV.Controls
                                 _toolTip.Show($"{channelCurrentProgramme.Title}\n{channelCurrentProgramme.Description}", window, newPoint);
                             };
 
-                            borderedLabel.MouseLeave += (s, a) =>
-                            {
-                                _toolTip.Hide(this);
-                            };
+                            borderedLabel.MouseLeave += (s, a) => { _toolTip.Hide(this); };
+                        }
 
-                            this.InvokeIfRequired(() =>
-                            {
-                                Controls.Add(borderedLabel, colIdx, controlRow);
-                                SetColumnSpan(borderedLabel, columnsUsed);
-                            });
-                        });
-
-                        columnsLeft -= columnsUsed;
-                        colIdx += columnsUsed;
-                        columnTime = channelCurrentProgramme.Stop.AddMinutes(1);
+                        Controls.Add(borderedLabel, programme.Column, rowIdx);
+                        SetColumnSpan(borderedLabel, programme.ColSpan);
                     }
-                }
 
-                this.InvokeIfRequired(() => ResumeLayout(true));
-            });
+                    rowIdx++;
+                }
+            }
+
+            ResumeLayout(true);
         }
 
-        public async Task ResetView()
+        private void ChangeChanel(object sender, EventArgs args)
+        {
+            var control = sender as Control;
+
+            if (!(control?.Tag is Channel clickedChannel))
+            {
+                return;
+            }
+
+            TvCore.SetChannel((uint) TvCore.ChannelIndexList.IndexOf(clickedChannel.Index));
+        }
+
+        public void ResetView()
         {
             _timeCursorOn = false;
 
-            await Draw(true);
+            DrawGuide(true);
         }
 
-        private async void timer_Tick(object sender, EventArgs e)
+        private void timer_Tick(object sender, EventArgs e)
         {
             if (lastHeaderTime.Minute != DateTime.Now.Minute)
             {
-                await Draw(true);
+                DrawGuide(true);
             }
         }
     }
