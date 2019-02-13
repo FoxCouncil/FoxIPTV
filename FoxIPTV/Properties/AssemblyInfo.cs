@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("FoxIPTV")]
-[assembly: AssemblyCopyright("Copyright Fox Council 2018")]
+[assembly: AssemblyCopyright("Copyright Fox Council 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

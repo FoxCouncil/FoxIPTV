@@ -21,15 +21,6 @@ namespace FoxIPTV
 
             Application.ApplicationExit += (sender, args) => TvCore.LogInfo("[.NET] Main(): Quitting Windows Application...");
 
-            if (Settings.Default.UpgradeRequired)
-            {
-                TvCore.LogInfo("[.NET] Main(): Upgrading user settings!");
-
-                Settings.Default.Upgrade();
-                Settings.Default.UpgradeRequired = false;
-                Settings.Default.Save();
-            }
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

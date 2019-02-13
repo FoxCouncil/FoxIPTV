@@ -239,8 +239,8 @@ namespace FoxIPTV.Forms
 
             e.Cancel = true;
 
-            Settings.Default.ChannelEditorOpen = false;
-            Settings.Default.Save();
+            TvCore.Settings.ChannelEditorOpen = false;
+            TvCore.Settings.Save();
 
             Hide();
         }

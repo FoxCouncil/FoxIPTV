@@ -8,12 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using FoxIPTV.Classes;
-using FoxIPTV.Properties;
 using Vlc.DotNet.Core;
 using Vlc.DotNet.Forms;
 
 namespace FoxIPTV.Forms
 {
+    using Properties;
+    using Settings = Classes.Settings;
+
     public partial class TvForm : Form
     {
         private const string TvIconErrorCaption = "Missing Icon Key";
@@ -82,8 +84,8 @@ namespace FoxIPTV.Forms
 
                 RemoveErrorState();
 
-                Settings.Default.Channel = channel;
-                Settings.Default.Save();
+                TvCore.Settings.Channel = channel;
+                TvCore.Settings.Save();
 
                 _ccDetected = false;
                 ccOptionsDropDownButton.Visible = false;
@@ -148,43 +150,45 @@ namespace FoxIPTV.Forms
         {
             vlcControl.VlcMediaPlayer.Manager.SetAppId("FoxIPTV", Application.ProductVersion, "");
             vlcControl.VlcMediaPlayer.Manager.SetUserAgent("Fox IPTV", "");
+#if DEBUG
             vlcControl.VlcMediaPlayer.AudioVolume += (sender, args) => { Console.WriteLine($"Volume: {vlcControl.Audio.Volume}"); };
+#endif
         }
 
         private void InitializeFormDefaults()
         {
-            if (Settings.Default.TvFormSize != Size.Empty)
+            if (TvCore.Settings.TvFormSize != Size.Empty)
             {
-                ClientSize = Settings.Default.TvFormSize;
+                ClientSize = TvCore.Settings.TvFormSize;
             }
 
-            if (Settings.Default.TvFormLocation != Point.Empty)
+            if (TvCore.Settings.TvFormLocation != Point.Empty)
             {
                 StartPosition = FormStartPosition.Manual;
-                Location = Settings.Default.TvFormLocation;
+                Location = TvCore.Settings.TvFormLocation;
             }
             else
             {
-                Settings.Default.TvFormLocation = Location;
-                Settings.Default.Save();
+                TvCore.Settings.TvFormLocation = Location;
+                TvCore.Settings.Save();
             }
 
-            statusStrip.Visible = Settings.Default.StatusBar;
+            statusStrip.Visible = TvCore.Settings.StatusBar;
 
-            FormBorderStyle = Settings.Default.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
+            FormBorderStyle = TvCore.Settings.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
 
-            if (Settings.Default.Fullscreen)
+            if (TvCore.Settings.Fullscreen)
             {
-                Size = Settings.Default.TvFormOldSize;
-                Location = Settings.Default.TvFormOldLocation;
-                WindowState = (FormWindowState)Enum.Parse(typeof(FormWindowState), Settings.Default.TvFormOldState);
+                Size = TvCore.Settings.TvFormOldSize;
+                Location = TvCore.Settings.TvFormOldLocation;
+                WindowState = (FormWindowState)Enum.Parse(typeof(FormWindowState), TvCore.Settings.TvFormOldState);
 
                 FullscreenSet(true);
             }
 
-            TopMost = Settings.Default.AlwaysOnTop;
+            TopMost = TvCore.Settings.AlwaysOnTop;
 
-            Visible = Settings.Default.Visibility;
+            Visible = TvCore.Settings.Visibility;
         }
 
         private void InitializeContextMenu()
@@ -198,7 +202,7 @@ namespace FoxIPTV.Forms
             toolStripMenuItemStatusBar.Click += (sender, args) => ToggleStatusStrip();
             toolStripMenuItemClosedCaptioning.Click += (sender, args) => ToggleClosedCaptioning();
             toolStripMenuItemBorders.Click += (sender, args) => ToggleBorders();
-            toolStripMenuItemFullscreen.Click += (sender, args) => FullscreenSet(!Settings.Default.Fullscreen);
+            toolStripMenuItemFullscreen.Click += (sender, args) => FullscreenSet(!TvCore.Settings.Fullscreen);
             toolStripMenuItemAlwaysOnTop.Click += (sender, args) => ToggleAlwaysOnTop();
 
             toolStripMenuItemGuide.Click += (sender, args) => ToggleGuideForm();
@@ -215,7 +219,7 @@ namespace FoxIPTV.Forms
 
             statusStrip.MouseClick += MouseClickHandler;
 
-            ccStatusLabel.ForeColor = Settings.Default.CCEnabled ? Color.Black : Color.Gainsboro;
+            ccStatusLabel.ForeColor = TvCore.Settings.CCEnabled ? Color.Black : Color.Gainsboro;
         }
 
         private void InitializeMouseCapturePanel()
@@ -268,17 +272,17 @@ namespace FoxIPTV.Forms
 
             _isInitialized = true;
 
-            if (Settings.Default.ChannelEditorOpen)
+            if (TvCore.Settings.ChannelEditorOpen)
             {
                 _channelsForm.Show(this);
             }
 
-            if (Settings.Default.GuideOpen)
+            if (TvCore.Settings.GuideOpen)
             {
                 _guideForm.Show(this);
             }
 
-            TvCore.SetChannel(Settings.Default.Channel);
+            TvCore.SetChannel(TvCore.Settings.Channel);
         }
 
         private void TvForm_KeyUp(object sender, KeyEventArgs e)
@@ -430,8 +434,8 @@ namespace FoxIPTV.Forms
 
         private void TvForm_Move(object sender, EventArgs e)
         {
-            Settings.Default.TvFormLocation = Location;
-            Settings.Default.Save();
+            TvCore.Settings.TvFormLocation = Location;
+            TvCore.Settings.Save();
         }
 
         private void toolStripMenuItemTransparency_Clicked(object sender, EventArgs e)
@@ -443,8 +447,8 @@ namespace FoxIPTV.Forms
 
             var opacityVal = double.Parse(item.Tag.ToString());
 
-            Settings.Default.Opacity = Opacity = opacityVal;
-            Settings.Default.Save();
+            TvCore.Settings.Opacity = Opacity = opacityVal;
+            TvCore.Settings.Save();
         }
 
         private void toolStripMenuItemStereoMode_Click(object sender, EventArgs e)
@@ -456,74 +460,74 @@ namespace FoxIPTV.Forms
 
             var stereoMode = ushort.Parse(item.Tag.ToString());
 
-            Settings.Default.StereoMode = stereoMode;
-            Settings.Default.Save();
+            TvCore.Settings.StereoMode = stereoMode;
+            TvCore.Settings.Save();
 
             ThreadPool.QueueUserWorkItem(state => { vlcControl.Audio.Channel = stereoMode; });
         }
 
         private void ToggleFullscreen()
         {
-            FullscreenSet(!Settings.Default.Fullscreen);
+            FullscreenSet(!TvCore.Settings.Fullscreen);
         }
 
         private void ToggleChannelsForm()
         {
             if (_channelsForm.Visible)
             {
-                Settings.Default.ChannelEditorOpen = false;
+                TvCore.Settings.ChannelEditorOpen = false;
                 _channelsForm.Hide();
             }
             else
             {
-                Settings.Default.ChannelEditorOpen = true;
+                TvCore.Settings.ChannelEditorOpen = true;
                 _channelsForm.Show(this);
             }
 
-            Settings.Default.Save();
+            TvCore.Settings.Save();
         }
 
         private void ToggleGuideForm()
         {
             if (_guideForm.Visible)
             {
-                Settings.Default.GuideOpen = false;
+                TvCore.Settings.GuideOpen = false;
                 _guideForm.Hide();
             }
             else
             {
-                Settings.Default.GuideOpen = true;
+                TvCore.Settings.GuideOpen = true;
                 _guideForm.Show(this);
             }
 
-            Settings.Default.Save();
+            TvCore.Settings.Save();
         }
 
         private void ToggleStatusStrip()
         {
             statusStrip.Visible = !statusStrip.Visible;
 
-            Settings.Default.StatusBar = statusStrip.Visible;
-            Settings.Default.Save();
+            TvCore.Settings.StatusBar = statusStrip.Visible;
+            TvCore.Settings.Save();
 
             AspectRatioResize();
         }
 
         private void ToggleBorders()
         {
-            Settings.Default.Borders = !Settings.Default.Borders;
+            TvCore.Settings.Borders = !TvCore.Settings.Borders;
 
-            FormBorderStyle = Settings.Default.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
+            FormBorderStyle = TvCore.Settings.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
 
-            Settings.Default.Save();
+            TvCore.Settings.Save();
         }
 
         private void ToggleAlwaysOnTop()
         {
             TopMost = !TopMost;
 
-            Settings.Default.AlwaysOnTop = TopMost;
-            Settings.Default.Save();
+            TvCore.Settings.AlwaysOnTop = TopMost;
+            TvCore.Settings.Save();
         }
 
         private void ToggleVisibility()
@@ -539,8 +543,8 @@ namespace FoxIPTV.Forms
                 Show();
             }
 
-            Settings.Default.Visibility = Visible;
-            Settings.Default.Save();
+            TvCore.Settings.Visibility = Visible;
+            TvCore.Settings.Save();
         }
 
         private void ToggleMute()
@@ -550,19 +554,19 @@ namespace FoxIPTV.Forms
 
         private void ToggleClosedCaptioning()
         {
-            Settings.Default.CCEnabled = !Settings.Default.CCEnabled;
-            Settings.Default.Save();
+            TvCore.Settings.CCEnabled = !TvCore.Settings.CCEnabled;
+            TvCore.Settings.Save();
 
             _ccDetected = false;
 
-            ccStatusLabel.ForeColor = Settings.Default.CCEnabled ? Color.Black : Color.Gainsboro;
+            ccStatusLabel.ForeColor = TvCore.Settings.CCEnabled ? Color.Black : Color.Gainsboro;
         }
 
         private void MouseDoubleClickHandler(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                FullscreenSet(!Settings.Default.Fullscreen);
+                FullscreenSet(!TvCore.Settings.Fullscreen);
             }
         }
 
@@ -594,10 +598,10 @@ namespace FoxIPTV.Forms
             toolStripMenuItemStatusBar.Checked = statusStrip.Visible;
 
             toolStripMenuItemClosedCaptioning.Enabled = _ccDetected;
-            toolStripMenuItemClosedCaptioning.Checked = Settings.Default.CCEnabled;
+            toolStripMenuItemClosedCaptioning.Checked = TvCore.Settings.CCEnabled;
 
             toolStripMenuItemBorders.Enabled = !IsFullscreen;
-            toolStripMenuItemBorders.Checked = Settings.Default.Borders;
+            toolStripMenuItemBorders.Checked = TvCore.Settings.Borders;
             toolStripMenuItemFullscreen.Checked = IsFullscreen;
             toolStripMenuItemAlwaysOnTop.Checked = TopMost;
 
@@ -630,7 +634,7 @@ namespace FoxIPTV.Forms
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 submenu.Checked = stereoMode == audioChannelsVal;
 
-                if (audioChannelsVal == 0 && Settings.Default.StereoMode == 0 && stereoMode != Settings.Default.StereoMode)
+                if (audioChannelsVal == 0 && TvCore.Settings.StereoMode == 0 && stereoMode != TvCore.Settings.StereoMode)
                 {
                     submenu.Enabled = false;
                     submenu.Checked = true;
@@ -705,7 +709,7 @@ namespace FoxIPTV.Forms
             {
                 _currentMedia = vlcControl.GetCurrentMedia();
 
-                 vlcControl.Audio.Channel = Settings.Default.StereoMode;
+                 vlcControl.Audio.Channel = TvCore.Settings.StereoMode;
             });
 
             this.InvokeIfRequired(() =>
@@ -790,7 +794,7 @@ namespace FoxIPTV.Forms
 
         private void ProcessClosedCaptioning()
         {
-            var idx = Convert.ToInt32(Settings.Default.CCEnabled);
+            var idx = Convert.ToInt32(TvCore.Settings.CCEnabled);
 
             if (vlcControl.SubTitles.Count == 0)
             {
@@ -799,7 +803,7 @@ namespace FoxIPTV.Forms
 
             vlcControl.SubTitles.Current = _ccIdx != 0 ? vlcControl.SubTitles.All.First(x => x.ID == _ccIdx) : vlcControl.SubTitles.All.ToArray()[idx];
 
-            if (Settings.Default.CCEnabled && vlcControl.SubTitles.Count > 2)
+            if (TvCore.Settings.CCEnabled && vlcControl.SubTitles.Count > 2)
             {
                 this.InvokeIfRequired(() =>
                 {
@@ -839,26 +843,26 @@ namespace FoxIPTV.Forms
 
         public void FullscreenSet(bool value)
         {
-            Settings.Default.Fullscreen = value;
-            Settings.Default.Save();
+            TvCore.Settings.Fullscreen = value;
+            TvCore.Settings.Save();
 
             if (value)
             {
-                Settings.Default.TvFormOldSize = Size;
-                Settings.Default.TvFormOldLocation = Location;
-                Settings.Default.TvFormOldState = WindowState.ToString();
-                Settings.Default.Save();
+                TvCore.Settings.TvFormOldSize = Size;
+                TvCore.Settings.TvFormOldLocation = Location;
+                TvCore.Settings.TvFormOldState = WindowState.ToString();
+                TvCore.Settings.Save();
 
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Maximized;
             }
             else
             {
-                WindowState = (FormWindowState)Enum.Parse(typeof(FormWindowState), Settings.Default.TvFormOldState);
-                FormBorderStyle = Settings.Default.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
+                WindowState = (FormWindowState)Enum.Parse(typeof(FormWindowState), TvCore.Settings.TvFormOldState);
+                FormBorderStyle = TvCore.Settings.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
 
-                Location = Settings.Default.TvFormOldLocation;
-                Size = Settings.Default.TvFormOldSize;
+                Location = TvCore.Settings.TvFormOldLocation;
+                Size = TvCore.Settings.TvFormOldSize;
             }
 
             IsFullscreen = value;
@@ -969,8 +973,8 @@ namespace FoxIPTV.Forms
                 ClientSize = new Size(ClientSize.Width, (int)(0.5625f * ClientSize.Width) + heightAdjust);
             }
 
-            Settings.Default.TvFormSize = ClientSize;
-            Settings.Default.Save();
+            TvCore.Settings.TvFormSize = ClientSize;
+            TvCore.Settings.Save();
 
             if (!string.IsNullOrWhiteSpace(channelNameLabel.Text))
             {
