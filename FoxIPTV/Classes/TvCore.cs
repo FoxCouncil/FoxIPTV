@@ -15,12 +15,11 @@ namespace FoxIPTV.Classes
     using System.Threading;
     using System.Threading.Tasks;
     using System.Timers;
+    using System.Windows.Forms;
     using Timer = System.Timers.Timer;
 
     public static class TvCore
     {
-        public const string ServiceUserAgentString = "Mozilla/5.0 AppleWebKit (KHTML, like Gecko) Chrome/69.0 Safari";
-
         private const string LogFilename = "FoxIPTV.log";
 
         private const string ChannelFavoritesFilename = "fcdata";
@@ -35,9 +34,11 @@ namespace FoxIPTV.Classes
 
         private static readonly FixedQueue<string> _logBuffer = new FixedQueue<string> { FixedSize = 1000 };
 
+        private static readonly List<string> _imageServerBlacklist = new List<string>();
+
         private static Queue<Tuple<uint, string>> _imageCacheQueue;
 
-        private static List<string> _imageServerBlacklist = new List<string>();
+        public const string ServiceUserAgentString = "Mozilla/5.0 AppleWebKit (KHTML, like Gecko) Chrome/69.0 Safari";
 
         public static event Action<string> Error;
 
@@ -75,6 +76,8 @@ namespace FoxIPTV.Classes
         public static TvCoreLogLevel CurrentLogLevel { get; set; } = TvCoreLogLevel.Error;
 #endif
 
+        public static Settings Settings { get; } = new Settings();
+
         public static TvCoreState State { get; private set; } = TvCoreState.None;
 
         public static List<uint> ChannelIndexList { get; private set; }
@@ -98,6 +101,11 @@ namespace FoxIPTV.Classes
             LogStart();
 
             LogInfo("[TVCore] Startup: Begining Fox IPTV Setup...");
+
+            LogInfo("[TVCore] Startup: Binding ThreadException & UnhandledException...");
+
+            Application.ThreadException += (s, a) => HandleAppException(a.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, a) => HandleAppException(a.ExceptionObject as Exception);
 
             try
             {
@@ -131,6 +139,8 @@ namespace FoxIPTV.Classes
 
                 Services.Add(instance);
             }
+
+            Settings.Load();
 
             FavoritesLoad();
 
@@ -366,7 +376,7 @@ namespace FoxIPTV.Classes
                 return;
             }
 
-            LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} channelIndex favorites");
+            LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} blacklist images");
         }
 
         private static void FavoritesSave()
@@ -495,6 +505,11 @@ namespace FoxIPTV.Classes
             CurrentProgramme = newProgramme;
 
             ProgrammeChanged?.Invoke(newProgramme);
+        }
+
+        private static void HandleAppException(Exception exception)
+        {
+
         }
     }
 

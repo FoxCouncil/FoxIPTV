@@ -87,6 +87,7 @@
     <Compile Include="Classes\Extensions.cs" />
     <Compile Include="Classes\FixedQueue.cs" />
     <Compile Include="Classes\GuideStateModel.cs" />
+    <Compile Include="Classes\Settings.cs" />
     <Compile Include="Controls\BorderedLabel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -155,19 +156,10 @@
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -297,7 +289,8 @@
     <Error Condition="!Exists('..\packages\ILMerge.3.0.21\build\ILMerge.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILMerge.3.0.21\build\ILMerge.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>del Newtonsoft.Json.pdb
+    <PostBuildEvent>if $(ConfigurationName) == Release (
+del Newtonsoft.Json.pdb
 del Newtonsoft.Json.xml
 del FoxIPTV.pdb
 $(SolutionDir)packages\ILMerge.3.0.21\tools\net452\ILMerge.exe /ndebug /out:FoxIPTVMerged.exe $(TargetFileName) AlphaGradientPanel.dll Vlc.DotNet.Core.dll Newtonsoft.Json.dll Vlc.DotNet.Core.Interops.dll Vlc.DotNet.Forms.dll
@@ -307,6 +300,7 @@ del Newtonsoft.Json.dll
 del Vlc.DotNet.Core.Interops.dll 
 del Vlc.DotNet.Forms.dll
 del FoxIPTV.exe
-move FoxIPTVMerged.exe FoxIPTV.exe</PostBuildEvent>
+move FoxIPTVMerged.exe FoxIPTV.exe
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>

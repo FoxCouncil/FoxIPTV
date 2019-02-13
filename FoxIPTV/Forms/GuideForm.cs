@@ -4,6 +4,7 @@ namespace FoxIPTV.Forms
 {
     using System;
     using System.Windows.Forms;
+    using Classes;
     using Controls;
     using Properties;
 
@@ -34,8 +35,8 @@ namespace FoxIPTV.Forms
 
             e.Cancel = true;
 
-            Settings.Default.GuideOpen = false;
-            Settings.Default.Save();
+            TvCore.Settings.GuideOpen = false;
+            TvCore.Settings.Save();
 
             Hide();
         }
