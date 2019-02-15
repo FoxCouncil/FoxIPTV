@@ -12,10 +12,12 @@ namespace FoxIPTV.Classes
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Timers;
     using System.Windows.Forms;
+    using Properties;
     using Timer = System.Timers.Timer;
 
     public static class TvCore
@@ -29,6 +31,8 @@ namespace FoxIPTV.Classes
         private static readonly Timer _coreTimer = new Timer(100);
 
         private static readonly ConcurrentDictionary<uint, byte[]> _imageCache = new ConcurrentDictionary<uint, byte[]>();
+
+        private static readonly object _logWriterLock = new object();
 
         private static readonly StreamWriter _logWriter;
 
@@ -104,8 +108,13 @@ namespace FoxIPTV.Classes
 
             LogInfo("[TVCore] Startup: Binding ThreadException & UnhandledException...");
 
-            Application.ThreadException += (s, a) => HandleAppException(a.Exception);
-            AppDomain.CurrentDomain.UnhandledException += (s, a) => HandleAppException(a.ExceptionObject as Exception);
+            void LogException(Exception ex)
+            {
+                LogError($"[Exception] Unhandled: {ex.Message}\n{ex.StackTrace}");
+            }
+
+            Application.ThreadException += (s, a) => LogException(a.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, a) => LogException(a.ExceptionObject as Exception);
 
             try
             {
@@ -126,6 +135,59 @@ namespace FoxIPTV.Classes
             }
 
             LogDebug("[TVCore] Startup: Application directories created");
+
+            const string namespaceValue = "FoxIPTV.LibVLC.";
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var resources = assembly.GetManifestResourceNames().Where(x => x.StartsWith(namespaceValue));
+
+            foreach (var rsc in resources)
+            {
+                var libName = rsc.Replace(namespaceValue, string.Empty);
+                var libNameSub = libName.Substring(0, libName.IndexOf(".dll", StringComparison.Ordinal));
+                var libNamePath = libNameSub.Replace('.', '\\');
+
+                libName = libName.Replace(libNameSub, libNamePath);
+
+                var pathSepIdx = libNamePath.LastIndexOf('\\');
+
+                string libFilename;
+                string dir;
+
+                if (pathSepIdx != -1)
+                {
+                    libNamePath = libNamePath.Substring(0, pathSepIdx);
+
+                    dir = Path.Combine(LibraryPath, libNamePath);
+
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    libFilename = libName.Substring(pathSepIdx + 1);
+                }
+                else
+                {
+                    dir = LibraryPath;
+                    libFilename = libName;
+                }
+
+                var libFullPath = Path.Combine(dir, libFilename);
+
+                if (File.Exists(libFullPath))
+                {
+                    continue;
+                }
+
+                using (var input = assembly.GetManifestResourceStream(rsc))
+                using (var output = File.Create(libFullPath))
+                {
+                    input?.CopyTo(output);
+                }
+
+                LogDebug($"[TVCore] Writing resrouce to disk: {libFilename}");
+            }
 
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes()).Where(p => typeof(IService).IsAssignableFrom(p) && p.IsClass);
 
@@ -198,7 +260,7 @@ namespace FoxIPTV.Classes
             {
                 if (CurrentChannelIndex == 0)
                 {
-                    SetChannel((uint)ChannelIndexList.Count);
+                    SetChannel((uint)ChannelIndexList.Count - 1);
                 }
                 else
                 {
@@ -249,6 +311,18 @@ namespace FoxIPTV.Classes
 
             ChannelFavorites.Clear();
             ChannelFavorites.AddRange(channelIds);
+
+            FavoritesSave();
+        }
+
+        public static void RemoveFavoriteChannel(string channelId)
+        {
+            LogDebug($"[TVCore] RemoveFavoriteChannel({channelId})");
+
+            if (ChannelFavorites.Contains(channelId))
+            {
+                ChannelFavorites.Remove(channelId);
+            }
 
             FavoritesSave();
         }
@@ -403,9 +477,12 @@ namespace FoxIPTV.Classes
 
         private static void LogStart()
         {
-            _logWriter.WriteLine(string.Empty);
-            _logWriter.WriteLine(string.Empty);
-            _logWriter.Flush();
+            lock (_logWriterLock)
+            {
+                _logWriter.WriteLine(string.Empty);
+                _logWriter.WriteLine(string.Empty);
+                _logWriter.Flush();
+            }
         }
 
         private static void Log(TvCoreLogLevel logLevel, string message)
@@ -415,12 +492,15 @@ namespace FoxIPTV.Classes
                 return;
             }
 
-            var logLine = $"[{DateTime.UtcNow:O}]-[{logLevel.ToString().ToUpper().PadLeft(7)}]: {message}";
+            lock (_logWriterLock)
+            {
+                var logLine = $"[{DateTime.UtcNow:O}]-[{logLevel.ToString().ToUpper().PadLeft(7)}]: {message}";
 
-            _logWriter.WriteLine(logLine);
-            _logWriter.Flush();
+                _logWriter.WriteLine(logLine);
+                _logWriter.Flush();
 
-            _logBuffer.Enqueue(logLine);
+                _logBuffer.Enqueue(logLine);
+            }
         }
 
         private static void ChangeState(TvCoreState newState)
@@ -505,11 +585,6 @@ namespace FoxIPTV.Classes
             CurrentProgramme = newProgramme;
 
             ProgrammeChanged?.Invoke(newProgramme);
-        }
-
-        private static void HandleAppException(Exception exception)
-        {
-
         }
     }
 

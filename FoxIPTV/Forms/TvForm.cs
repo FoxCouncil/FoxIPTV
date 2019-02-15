@@ -13,6 +13,7 @@ using Vlc.DotNet.Forms;
 
 namespace FoxIPTV.Forms
 {
+    using System.Runtime.InteropServices;
     using Properties;
     using Settings = Classes.Settings;
 
@@ -21,6 +22,9 @@ namespace FoxIPTV.Forms
         private const string TvIconErrorCaption = "Missing Icon Key";
 
         private const int DefaultVolume = 100;
+
+        private const int WM_NCLBUTTONDOWN = 0xA1;
+        private const int HT_CAPTION = 0x2;
 
         private int _ccIdx;
         private int _isErrorRetryTimeout = 100;
@@ -48,6 +52,12 @@ namespace FoxIPTV.Forms
         private readonly AboutForm _aboutForm = new AboutForm();
         private readonly GuideForm _guideForm = new GuideForm();
         private readonly ChannelsForm _channelsForm = new ChannelsForm();
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool ReleaseCapture();
 
         public TvForm()
         {
@@ -90,8 +100,6 @@ namespace FoxIPTV.Forms
                 _ccDetected = false;
                 ccOptionsDropDownButton.Visible = false;
 
-                Text = $"CH: {TvCore.CurrentChannel.Index} [ {TvCore.CurrentChannel.Name} ] Fox IPTV";
-
                 ThreadPool.QueueUserWorkItem(state => vlcControl.Stop());
 
                 _currentMedia = null;
@@ -99,6 +107,22 @@ namespace FoxIPTV.Forms
 
                 GuiShow();
             });
+        }
+
+        private void UpdateFormTitle()
+        {
+            var currentProgramme = string.Empty;
+
+            if (TvCore.CurrentProgramme != null)
+            {
+                currentProgramme = $" - [ {TvCore.CurrentProgramme.Title} ]";
+            }
+
+            var channelObj = TvCore.CurrentChannel;
+
+            var chanName = channelObj.Name.Contains(':') ? channelObj.Name.Split(new[] {':'}, 2).Skip(1).FirstOrDefault()?.TrimStart() : channelObj.Name;
+
+            Text = $"CH: {TvCore.CurrentChannel.Index} [ {chanName} ]{currentProgramme} Fox IPTV";
         }
 
         private static void InitializeTvIcons()
@@ -150,9 +174,8 @@ namespace FoxIPTV.Forms
         {
             vlcControl.VlcMediaPlayer.Manager.SetAppId("FoxIPTV", Application.ProductVersion, "");
             vlcControl.VlcMediaPlayer.Manager.SetUserAgent("Fox IPTV", "");
-#if DEBUG
-            vlcControl.VlcMediaPlayer.AudioVolume += (sender, args) => { Console.WriteLine($"Volume: {vlcControl.Audio.Volume}"); };
-#endif
+            vlcControl.VlcMediaPlayer.AudioVolume += (sender, args) => { TvCore.LogInfo($"[Audio] Volume: {vlcControl.Audio.Volume}"); };
+            vlcControl.VlcMediaPlayer.Log += (s, a) => { TvCore.LogInfo($"[Media] {a.Message}"); };
         }
 
         private void InitializeFormDefaults()
@@ -235,6 +258,16 @@ namespace FoxIPTV.Forms
 
             panelMouseCapture.MouseDoubleClick += MouseDoubleClickHandler;
             panelMouseCapture.MouseClick += MouseClickHandler;
+            panelMouseCapture.MouseDown += (s, a) =>
+            {
+                if (IsFullscreen || TvCore.Settings.Borders || a.Button != MouseButtons.Left)
+                {
+                    return;
+                }
+
+                ReleaseCapture();
+                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+            };
 
             Controls.Add(panelMouseCapture);
 
@@ -520,6 +553,8 @@ namespace FoxIPTV.Forms
             FormBorderStyle = TvCore.Settings.Borders ? FormBorderStyle.Sizable : FormBorderStyle.None;
 
             TvCore.Settings.Save();
+
+            AspectRatioResize();
         }
 
         private void ToggleAlwaysOnTop()
@@ -661,10 +696,9 @@ namespace FoxIPTV.Forms
 
         private void VlcControl_VlcLibDirectoryNeeded(object sender, VlcLibDirectoryNeededEventArgs e)
         {
-            TvCore.LogDebug($"[.NET] VlcControl_VlcLibDirectoryNeeded({e})");
+            TvCore.LogDebug("[.NET] VlcControl_VlcLibDirectoryNeeded()");
 
-            // TODO: Make this from from temp spot...
-            e.VlcLibDirectory = new DirectoryInfo("libvlc\\win-x64");
+            e.VlcLibDirectory = new DirectoryInfo(TvCore.LibraryPath);
         }
 
         private void VlcControl_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
@@ -686,9 +720,9 @@ namespace FoxIPTV.Forms
                 ThreadPool.QueueUserWorkItem(state => ProcessClosedCaptioning());
             }
 
-            lock (_isClosingLock) // TODO: Is this dangerous?
+            this.InvokeIfRequired(() =>
             {
-                this.InvokeIfRequired(() =>
+                lock (_isClosingLock) // TODO: Is this dangerous?
                 {
                     if (_isClosing || IsDisposed)
                     {
@@ -697,8 +731,8 @@ namespace FoxIPTV.Forms
 
                     var time = new TimeSpan(e.NewTime * 10000);
                     timeStatusLabel.Text = $"{time.Minutes.ToString().PadLeft(2, '0')}:{time.Seconds.ToString().PadLeft(2, '0')}";
-                });
-            }
+                }
+            });
         }
 
         private void VlcControl_Playing(object sender, VlcMediaPlayerPlayingEventArgs e)
@@ -708,8 +742,6 @@ namespace FoxIPTV.Forms
             ThreadPool.QueueUserWorkItem(state =>
             {
                 _currentMedia = vlcControl.GetCurrentMedia();
-
-                 vlcControl.Audio.Channel = TvCore.Settings.StereoMode;
             });
 
             this.InvokeIfRequired(() =>
@@ -885,6 +917,8 @@ namespace FoxIPTV.Forms
             }
             else
             {
+                UpdateFormTitle();
+
                 pictureBoxClosedCaptioning.Visible = _currentTvIconData?.ClosedCaptioning ?? false;
 
                 GetTvIcon(_currentTvIconData?.VideoCodec, pictureBoxVideoCodec);
@@ -928,11 +962,6 @@ namespace FoxIPTV.Forms
             pictureBoxAudioCodec.Visible = false;
             pictureBoxAudioType.Visible = false;
             pictureBoxAudioRate.Visible = false;
-
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                Console.WriteLine($"Channels: {vlcControl.Audio.Channel}");
-            });
         }
 
         private void GetTvIcon(string iconStringKey, PictureBox pictureBox)
@@ -1047,6 +1076,11 @@ namespace FoxIPTV.Forms
                 TimerKeyboardEntry();
 
                 muteLabel.Visible = vlcControl.Audio.Volume == 0;
+
+                if (vlcControl.Audio.Channel != TvCore.Settings.StereoMode)
+                {
+                    vlcControl.Audio.Channel = TvCore.Settings.StereoMode;
+                }
             });
         }
 

@@ -4,6 +4,7 @@ namespace FoxIPTV.Classes
 {
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using Newtonsoft.Json;
 
@@ -46,18 +47,33 @@ namespace FoxIPTV.Classes
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();
 
         private readonly string _filePath = Path.Combine(TvCore.UserStoragePath, "udata");
+        private Settings _loadedSettingsData;
 
         public void Save()
         {
-            TvCore.LogDebug($"[Settings] Writing settings file {_filePath}");
+            var differences = _loadedSettingsData.Difference(this);
+
+            if (differences.Count == 0)
+            {
+                return;
+            }
 
             _fileLock.EnterWriteLock();
+
+#if DEBUG
+            foreach (var diff in differences)
+            {
+                TvCore.LogDebug($"[Settings] {diff}");
+            }
+#endif
 
             try
             {
                 var settingsData = JsonConvert.SerializeObject(this);
 
                 File.WriteAllText(_filePath, settingsData);
+
+                _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(settingsData);
             }
             finally
             {
@@ -80,24 +96,19 @@ namespace FoxIPTV.Classes
 
                 var fileContents = File.ReadAllText(_filePath);
 
-                var settingsData = JsonConvert.DeserializeObject<Settings>(fileContents);
+                _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(fileContents);
 
-                MapProperties(settingsData);
+                var settingsType = _loadedSettingsData.GetType();
+
+                foreach (var setting in settingsType.GetProperties())
+                {
+                    var currentProperty = GetType().GetProperty(setting.Name);
+                    currentProperty?.SetValue(this, setting.GetValue(_loadedSettingsData));
+                }
             }
             finally
             {
                 _fileLock.ExitReadLock();
-            }
-        }
-
-        private void MapProperties(Settings newSettingsData)
-        {
-            var settingsType = newSettingsData.GetType();
-
-            foreach (var setting in settingsType.GetProperties())
-            {
-                var currentProperty = GetType().GetProperty(setting.Name);
-                currentProperty?.SetValue(this, setting.GetValue(newSettingsData));
             }
         }
     }

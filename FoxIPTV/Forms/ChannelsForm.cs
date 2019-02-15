@@ -34,33 +34,40 @@ namespace FoxIPTV.Forms
         {
             LoadAll();
 
-            treeViewAllChannels.AfterSelect += (sender, args) =>
+            treeViewAllChannels.AfterSelect += (s, a) =>
             {
-                if (_isChannelChanging)
+                if (_isChannelChanging || !_isInitialized)
                 {
                     return;
                 }
 
-                if (!_isInitialized)
+                if (a.Node.Name == "NodeRoot" || a.Node.Name.StartsWith("NodeCat"))
                 {
-                    return;
-                }
-
-                if (args.Node.Name == "NodeRoot" || args.Node.Name.StartsWith("NodeCat"))
-                {
-                    if (args.Node.Name.StartsWith("NodeCat"))
+                    if (a.Node.Name.StartsWith("NodeCat"))
                     {
-                        args.Node.Expand();
+                        a.Node.Expand();
 
-                        treeViewAllChannels.SelectedNode = treeViewAllChannels.Nodes[0].Nodes[args.Node.Name].Nodes[0];
+                        treeViewAllChannels.SelectedNode = treeViewAllChannels.Nodes[0].Nodes[a.Node.Name].Nodes[0];
                     }
 
                     UpdateGui();
                 }
                 else
                 {
-                    TvCore.SetChannel(uint.Parse(args.Node.Name));
+                    TvCore.SetChannel(uint.Parse(a.Node.Name));
                 }
+            };
+
+            treeViewFavoriteChannels.AfterSelect += (s, a) => buttonFavoriteRemove.Enabled = a.Node.Name != "NodeRoot";
+
+            treeViewFavoriteChannels.NodeMouseDoubleClick += (s, a) =>
+            {
+                if (_isChannelChanging || !_isInitialized)
+                {
+                    return;
+                }
+
+                TvCore.SetChannel(uint.Parse(a.Node.Name));
             };
 
             TvCore.ChannelChanged += newChannel =>
@@ -219,7 +226,7 @@ namespace FoxIPTV.Forms
             {
                 var channel = TvCore.Channels.Find(x => x.Id == channelId);
 
-                tmpTreeNode.Nodes.Add(channel.Index.ToString(), $"{channel.Index} {channel.Name}");
+                tmpTreeNode.Nodes.Add(TvCore.ChannelIndexList.IndexOf(channel.Index).ToString(), $"{channel.Index} {channel.Name}");
             }
 
             this.InvokeIfRequired(() =>
@@ -314,9 +321,9 @@ namespace FoxIPTV.Forms
 
         private void buttonFavoriteAdd_Click(object sender, EventArgs e)
         {
-            var channelId = uint.Parse(treeViewAllChannels.SelectedNode.Name);
+            var channelIdx = int.Parse(treeViewAllChannels.SelectedNode.Name);
 
-            var channel = TvCore.Channels.Find(x => x.Index == channelId);
+            var channel = TvCore.Channels.Find(x => x.Index == TvCore.ChannelIndexList[channelIdx]);
 
             if (channel == null)
             {
@@ -325,6 +332,24 @@ namespace FoxIPTV.Forms
             else
             {
                 TvCore.AddFavoriteChannel(channel.Id);
+
+                LoadAll();
+            }
+        }
+
+        private void buttonFavoriteRemove_Click(object sender, EventArgs e)
+        {
+            var channelIdx = int.Parse(treeViewFavoriteChannels.SelectedNode.Name);
+
+            var channel = TvCore.Channels.Find(x => x.Index == TvCore.ChannelIndexList[channelIdx]);
+
+            if (channel == null)
+            {
+                MessageBox.Show("Oops");
+            }
+            else
+            {
+                TvCore.RemoveFavoriteChannel(channel.Id);
 
                 LoadAll();
             }
