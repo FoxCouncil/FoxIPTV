@@ -110,6 +110,11 @@ namespace FoxIPTV.Controls
 
                 channelIndex += (uint)rowIdx - 1;
 
+                if (channelIndex >= TvCore.Channels.Count)
+                {
+                    channelIndex -= (uint)TvCore.Channels.Count;
+                }
+
                 var columnTime = _timeCursorOn ? _timeCursor.ToUniversalTime() : DateTime.UtcNow;
 
                 var channel = TvCore.Channels[(int)channelIndex];

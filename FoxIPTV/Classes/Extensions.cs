@@ -1,14 +1,53 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System;
-using System.Security.Cryptography;
-using System.Text;
-using System.Windows.Forms;
-
 namespace FoxIPTV.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using System.Security.Cryptography;
+    using System.Text;
+    using System.Windows.Forms;
+
+    // ReSharper disable once UnusedMember.Global
     public static class Extensions
     {
+        public static List<Difference> Difference<T>(this T valueA, T valueB)
+        {
+            var differences = new List<Difference>();
+
+            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var property in properties)
+            {
+                var v = new Difference
+                {
+                    PropertyName = property.Name,
+                    ValueA = property.GetValue(valueA),
+                    ValueB = property.GetValue(valueB)
+                };
+
+                if (v.ValueA == null && v.ValueB == null)
+                {
+                    continue;
+                }
+
+                if (v.ValueA == null && v.ValueB != null || v.ValueA != null && v.ValueB == null)
+                {
+                    differences.Add(v);
+
+                    continue;
+                }
+
+                if (v.ValueA != null && !v.ValueA.Equals(v.ValueB))
+                {
+                    differences.Add(v);
+                }
+            }
+
+            return differences;
+        }
+
         public static DateTime RoundUp(this DateTime dt, TimeSpan d)
         {
             return new DateTime((dt.Ticks + d.Ticks - 1) / d.Ticks * d.Ticks, dt.Kind);
@@ -76,7 +115,7 @@ namespace FoxIPTV.Classes
         {
             if (clearText == null)
             {
-                throw new ArgumentNullException("clearText");
+                throw new ArgumentNullException(nameof(clearText));
             }
 
             var clearBytes = Encoding.UTF8.GetBytes(clearText);
@@ -90,7 +129,7 @@ namespace FoxIPTV.Classes
         {
             if (encryptedText == null)
             {
-                throw new ArgumentNullException("encryptedText");
+                throw new ArgumentNullException(nameof(encryptedText));
             }
 
             var encryptedBytes = Convert.FromBase64String(encryptedText);
