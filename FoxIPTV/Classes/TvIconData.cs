@@ -1,13 +1,14 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System;
-using System.Globalization;
-using System.Linq;
-using Vlc.DotNet.Core.Interops;
-using Vlc.DotNet.Core.Interops.Signatures;
-
 namespace FoxIPTV.Classes
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
+    using System.Linq;
+    using Vlc.DotNet.Core.Interops;
+    using Vlc.DotNet.Core.Interops.Signatures;
+
     public class TvIconData : IEquatable<TvIconData>
     {
         private const string VIDEO_CODEC = "VC_{0}";
@@ -17,23 +18,37 @@ namespace FoxIPTV.Classes
         private const string AUDIO_CHANNELS = "CH_{0}";
         private const string AUDIO_RATE = "AR_{0}KHZ";
 
-        public bool ClosedCaptioning;
-        public string VideoCodec;
-        public string VideoSize;
-        public string FrameRate;
-        public string AudioCodec;
-        public string AudioChannel;
-        public string AudioRate;
+        public bool ClosedCaptioning { get; set; }
+
+        public string VideoCodec { get; set; }
+
+        public string VideoSize { get; set; }
+
+        public string FrameRate { get; set; }
+
+        public string AudioCodec { get; set; }
+
+        public string AudioChannel { get; set; }
+
+        public string AudioRate { get; set; }
 
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((TvIconData)obj);
+            if (obj is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((TvIconData) obj);
         }
 
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
             unchecked
@@ -91,7 +106,7 @@ namespace FoxIPTV.Classes
 
                     if (videoTrack.FrameRateNum > 0)
                     {
-                        var frameRateStr = Math.Ceiling((double)videoTrack.FrameRateNum / (double)videoTrack.FrameRateDen).ToString();
+                        var frameRateStr = Math.Ceiling(videoTrack.FrameRateNum / (double)videoTrack.FrameRateDen).ToString(CultureInfo.InvariantCulture);
 
                         if (videoTrack.FrameRateNum > 90 && videoTrack.FrameRateDen == 1)
                         {

@@ -401,6 +401,52 @@ namespace FoxIPTV.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Channels ({0}).
+        /// </summary>
+        internal static string ChannelsForm_AllChannelsTitle {
+            get {
+                return ResourceManager.GetString("ChannelsForm_AllChannelsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} ({1}).
+        /// </summary>
+        internal static string ChannelsForm_CategoryNodeTitle {
+            get {
+                return ResourceManager.GetString("ChannelsForm_CategoryNodeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to N/A ({0}).
+        /// </summary>
+        internal static string ChannelsForm_CategoryNotAvailableTitle {
+            get {
+                return ResourceManager.GetString("ChannelsForm_CategoryNotAvailableTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}
+        ///{1}.
+        /// </summary>
+        internal static string ChannelsForm_ChannelNameLabel {
+            get {
+                return ResourceManager.GetString("ChannelsForm_ChannelNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorite Channels ({0}).
+        /// </summary>
+        internal static string ChannelsForm_FavoritesRootTitle {
+            get {
+                return ResourceManager.GetString("ChannelsForm_FavoritesRootTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap door__arrow {
@@ -429,6 +475,15 @@ namespace FoxIPTV.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0:F}.
+        /// </summary>
+        internal static string GuideForm_HeaderTimeFormat {
+            get {
+                return ResourceManager.GetString("GuideForm_HeaderTimeFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon iptv {
@@ -439,12 +494,158 @@ namespace FoxIPTV.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}:.
+        /// </summary>
+        internal static string LoginForm_DynamicFieldLabel {
+            get {
+                return ResourceManager.GetString("LoginForm_DynamicFieldLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter a username and/or password..
+        /// </summary>
+        internal static string LoginForm_LoginCredentialsNeededWarning {
+            get {
+                return ResourceManager.GetString("LoginForm_LoginCredentialsNeededWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning.
+        /// </summary>
+        internal static string LoginForm_LoginCredentialsNeededWarningTitle {
+            get {
+                return ResourceManager.GetString("LoginForm_LoginCredentialsNeededWarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap question_white {
             get {
                 object obj = ResourceManager.GetObject("question_white", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Buffering.
+        /// </summary>
+        internal static string TvForm_Buffering {
+            get {
+                return ResourceManager.GetString("TvForm_Buffering", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CH: {0}.
+        /// </summary>
+        internal static string TvForm_ChannelShorthand {
+            get {
+                return ResourceManager.GetString("TvForm_ChannelShorthand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Channels Loaded.
+        /// </summary>
+        internal static string TvForm_ChannelsLoaded {
+            get {
+                return ResourceManager.GetString("TvForm_ChannelsLoaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string TvForm_Error {
+            get {
+                return ResourceManager.GetString("TvForm_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stream Error: Retrying in {0:F1} second{1}.
+        /// </summary>
+        internal static string TvForm_ErrorRetry {
+            get {
+                return ResourceManager.GetString("TvForm_ErrorRetry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guide Loaded.
+        /// </summary>
+        internal static string TvForm_GuideLoaded {
+            get {
+                return ResourceManager.GetString("TvForm_GuideLoaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading | Channels {0}% | Guide {1}% | Please Wait....
+        /// </summary>
+        internal static string TvForm_LoadingBarMessage {
+            get {
+                return ResourceManager.GetString("TvForm_LoadingBarMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paused.
+        /// </summary>
+        internal static string TvForm_Paused {
+            get {
+                return ResourceManager.GetString("TvForm_Paused", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}:{1}.
+        /// </summary>
+        internal static string TvForm_PlaybackTime {
+            get {
+                return ResourceManager.GetString("TvForm_PlaybackTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Playing.
+        /// </summary>
+        internal static string TvForm_Playing {
+            get {
+                return ResourceManager.GetString("TvForm_Playing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///Description: {0}.
+        /// </summary>
+        internal static string TvForm_ProgrammeDescription {
+            get {
+                return ResourceManager.GetString("TvForm_ProgrammeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///{0}{1}.
+        /// </summary>
+        internal static string TvForm_ProgrammeDetailDisplay {
+            get {
+                return ResourceManager.GetString("TvForm_ProgrammeDetailDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CH: {0} [ {1} ]{2} Fox IPTV.
+        /// </summary>
+        internal static string TvForm_TitleInfo {
+            get {
+                return ResourceManager.GetString("TvForm_TitleInfo", resourceCulture);
             }
         }
     }

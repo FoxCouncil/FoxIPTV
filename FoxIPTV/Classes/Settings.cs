@@ -2,11 +2,10 @@
 
 namespace FoxIPTV.Classes
 {
+    using Newtonsoft.Json;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Threading;
-    using Newtonsoft.Json;
 
     public class Settings
     {
@@ -19,8 +18,6 @@ namespace FoxIPTV.Classes
         public Point TvFormLocation { get; set; } = new Point(0, 0);
 
         public Size TvFormSize { get; set; } = new Size(0, 0);
-
-        public string TvFormState { get; set; }
 
         public Point TvFormOldLocation { get; set; } = new Point(0,0);
 
@@ -51,21 +48,23 @@ namespace FoxIPTV.Classes
 
         public void Save()
         {
-            var differences = _loadedSettingsData.Difference(this);
-
-            if (differences.Count == 0)
+            if (_loadedSettingsData != null)
             {
-                return;
+                var differences = _loadedSettingsData.Difference(this);
+
+                if (differences.Count == 0)
+                {
+                    return;
+                }
+#if DEBUG
+                foreach (var diff in differences)
+                {
+                    TvCore.LogDebug($"[Settings] {diff}");
+                }
+#endif
             }
 
             _fileLock.EnterWriteLock();
-
-#if DEBUG
-            foreach (var diff in differences)
-            {
-                TvCore.LogDebug($"[Settings] {diff}");
-            }
-#endif
 
             try
             {

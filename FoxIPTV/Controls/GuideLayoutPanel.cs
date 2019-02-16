@@ -6,7 +6,6 @@ namespace FoxIPTV.Controls
     using System.Drawing;
     using System.Linq;
     using System.Threading;
-    using System.Threading.Tasks;
     using System.Windows.Forms;
     using Classes;
     using Properties;
@@ -371,19 +370,23 @@ namespace FoxIPTV.Controls
                         {
                             borderedLabel.MouseEnter += (s, a) =>
                             {
-                                var window = s as IWin32Window;
-
-                                _toolTip.Show(string.Empty, window, 0);
+                                if (s is IWin32Window window)
+                                {
+                                    _toolTip.Show(string.Empty, window, 0);
+                                }
                             };
 
                             borderedLabel.MouseMove += (s, a) =>
                             {
-                                var window = s as IWin32Window;
                                 const int offset = 5;
                                 var newPoint = new Point(a.Location.X + offset, a.Location.Y + offset);
 
                                 _toolTip.ToolTipTitle = $"{channelCurrentProgramme.Start.ToLocalTime():h:mm tt} to {channelCurrentProgramme.Stop.ToLocalTime():h:mm tt} - {channelCurrentProgramme.BlockLength * 10} minutes";
-                                _toolTip.Show($"{channelCurrentProgramme.Title}\n{channelCurrentProgramme.Description}", window, newPoint);
+
+                                if (s is IWin32Window window)
+                                {
+                                    _toolTip.Show($"{channelCurrentProgramme.Title}\n{channelCurrentProgramme.Description}", window, newPoint);
+                                }
                             };
 
                             borderedLabel.MouseLeave += (s, a) => { _toolTip.Hide(this); };

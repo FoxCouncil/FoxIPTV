@@ -1,20 +1,21 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-using FoxIPTV.Classes;
-
 namespace FoxIPTV.Forms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Windows.Forms;
+    using Classes;
+    using Properties;
+
     public partial class LoginForm : Form
     {
-        private Size _originalFormSize;
+        private readonly Size _originalFormSize;
 
-        private List<Label> _labels = new List<Label>();
+        private readonly List<Label> _labels = new List<Label>();
 
-        private List<Control> _inputs = new List<Control>();
+        private readonly List<Control> _inputs = new List<Control>();
 
         public LoginForm()
         {
@@ -88,7 +89,7 @@ namespace FoxIPTV.Forms
                 var newLabel = new Label
                 {
                     Name = $"{field.Key}Label",
-                    Text = $"{field.Key}:",
+                    Text = string.Format(Resources.LoginForm_DynamicFieldLabel, field.Key),
                     TextAlign = ContentAlignment.TopRight,
                     Size = labelSize,
                     Location = labelLocation
@@ -132,7 +133,7 @@ namespace FoxIPTV.Forms
         {
             if (string.IsNullOrWhiteSpace(usernameTextBox.Text) || string.IsNullOrWhiteSpace(passwordTextBox.Text))
             {
-                MessageBox.Show("Please enter a username and/or password.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Resources.LoginForm_LoginCredentialsNeededWarning, Resources.LoginForm_LoginCredentialsNeededWarningTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

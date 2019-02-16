@@ -104,9 +104,9 @@
             this.textBoxAllChannelsSearch.Size = new System.Drawing.Size(264, 20);
             this.textBoxAllChannelsSearch.TabIndex = 1;
             this.textBoxAllChannelsSearch.Text = "Search...";
-            this.textBoxAllChannelsSearch.TextChanged += new System.EventHandler(this.textBoxAllChannelsSearch_TextChanged);
-            this.textBoxAllChannelsSearch.Enter += new System.EventHandler(this.textBoxAllChannelsSearch_Enter);
-            this.textBoxAllChannelsSearch.Leave += new System.EventHandler(this.textBoxAllChannelsSearch_Leave);
+            this.textBoxAllChannelsSearch.TextChanged += new System.EventHandler(this.TextBoxAllChannelsSearch_TextChanged);
+            this.textBoxAllChannelsSearch.Enter += new System.EventHandler(this.TextBoxAllChannelsSearch_Enter);
+            this.textBoxAllChannelsSearch.Leave += new System.EventHandler(this.TextBoxAllChannelsSearch_Leave);
             // 
             // flowLayoutPanel1
             // 
@@ -133,7 +133,7 @@
             this.buttonFilterNone.Tag = "None";
             this.buttonFilterNone.Text = "None";
             this.buttonFilterNone.UseVisualStyleBackColor = true;
-            this.buttonFilterNone.Click += new System.EventHandler(this.buttonFilter_Click);
+            this.buttonFilterNone.Click += new System.EventHandler(this.ButtonFilter_Click);
             // 
             // buttonFilterCountries
             // 
@@ -146,7 +146,7 @@
             this.buttonFilterCountries.Tag = "Countries";
             this.buttonFilterCountries.Text = "Countries";
             this.buttonFilterCountries.UseVisualStyleBackColor = true;
-            this.buttonFilterCountries.Click += new System.EventHandler(this.buttonFilter_Click);
+            this.buttonFilterCountries.Click += new System.EventHandler(this.ButtonFilter_Click);
             // 
             // splitContainer
             // 
@@ -278,7 +278,7 @@
             this.buttonFavoriteAdd.TabIndex = 1;
             this.buttonFavoriteAdd.Text = "Add To Favourites";
             this.buttonFavoriteAdd.UseVisualStyleBackColor = true;
-            this.buttonFavoriteAdd.Click += new System.EventHandler(this.buttonFavoriteAdd_Click);
+            this.buttonFavoriteAdd.Click += new System.EventHandler(this.ButtonFavoriteAdd_Click);
             // 
             // buttonFavoriteRemove
             // 
@@ -292,7 +292,7 @@
             this.buttonFavoriteRemove.TabIndex = 2;
             this.buttonFavoriteRemove.Text = "Remove Favourite";
             this.buttonFavoriteRemove.UseVisualStyleBackColor = true;
-            this.buttonFavoriteRemove.Click += new System.EventHandler(this.buttonFavoriteRemove_Click);
+            this.buttonFavoriteRemove.Click += new System.EventHandler(this.ButtonFavoriteRemove_Click);
             // 
             // ChannelsForm
             // 

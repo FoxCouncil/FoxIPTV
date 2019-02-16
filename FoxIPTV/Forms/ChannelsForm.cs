@@ -2,12 +2,12 @@
 
 namespace FoxIPTV.Forms
 {
+    using Classes;
+    using Properties;
     using System;
+    using System.Linq;
     using System.Threading;
     using System.Windows.Forms;
-    using Classes;
-    using System.Linq;
-    using Properties;
 
     public partial class ChannelsForm : Form
     {
@@ -15,7 +15,7 @@ namespace FoxIPTV.Forms
 
         private bool _isInitialized;
 
-        private bool _isChannelChanging = false;
+        private bool _isChannelChanging;
 
         private string _allChannelsFilter;
 
@@ -98,7 +98,7 @@ namespace FoxIPTV.Forms
                     treeViewAllChannels.SelectedNode = treeViewAllChannels.Nodes[0].Nodes[currentChannelIndex.ToString()];
                 }
 
-                labelChannelName.Text = $"{TvCore.CurrentChannel.Index}\n{TvCore.CurrentChannel.Name.Replace(": ", "\n")}";
+                labelChannelName.Text = string.Format(Resources.ChannelsForm_ChannelNameLabel, TvCore.CurrentChannel.Index, TvCore.CurrentChannel.Name.Replace(": ", "\n"));
 
                 if (TvCore.CurrentChannel.Logo == null)
                 {
@@ -154,13 +154,13 @@ namespace FoxIPTV.Forms
 
                 tvChannelCategories.Sort();
 
-                var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = $"{_allChannelCategoryFilter} ({tvChannelCategories.Count})" };
+                var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = string.Format(Resources.ChannelsForm_CategoryNodeTitle, _allChannelCategoryFilter, tvChannelCategories.Count) };
 
                 foreach (var channelCat in tvChannelCategories)
                 {
                     var tvChannelByCat = tvChannels.FindAll(x => x.Name.ToLower().StartsWith(channelCat.ToLower() + ":"));
 
-                    var tmpCatTreeNode = new TreeNode($"NodeCat{channelCat}") { Name = $"NodeCat{channelCat}", Text = channelCat + $" ({tvChannelByCat.Count})" };
+                    var tmpCatTreeNode = new TreeNode($"NodeCat{channelCat}") { Name = $"NodeCat{channelCat}", Text = string.Format(Resources.ChannelsForm_CategoryNodeTitle, channelCat, tvChannelByCat.Count) };
 
                     foreach (var channel in tvChannelByCat)
                     {
@@ -173,7 +173,7 @@ namespace FoxIPTV.Forms
 
                 if (tvChannelsCopy.Any())
                 {
-                    var naCatTreeNode = new TreeNode("NodeCatNA") { Name = "NodeCatNA", Text = $"N/A ({tvChannelsCopy.Count})" };
+                    var naCatTreeNode = new TreeNode("NodeCatNA") { Name = "NodeCatNA", Text = string.Format(Resources.ChannelsForm_CategoryNotAvailableTitle, tvChannelsCopy.Count) };
 
                     foreach (var channel in tvChannelsCopy.ToList())
                     {
@@ -193,7 +193,7 @@ namespace FoxIPTV.Forms
             }
             else
             {
-                var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = $"All Channels ({tvChannels.Count})" };
+                var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = string.Format(Resources.ChannelsForm_AllChannelsTitle, tvChannels.Count) };
 
                 foreach (var channel in tvChannels)
                 {
@@ -220,7 +220,7 @@ namespace FoxIPTV.Forms
                 return;
             }
 
-            var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = $"Favorite Channels ({channelFavoritesCount})" };
+            var tmpTreeNode = new TreeNode("NodeRoot") { Name = "NodeRoot", Text = string.Format(Resources.ChannelsForm_FavoritesRootTitle, channelFavoritesCount) };
 
             foreach (var channelId in TvCore.ChannelFavorites)
             {
@@ -252,7 +252,7 @@ namespace FoxIPTV.Forms
             Hide();
         }
 
-        private void textBoxAllChannelsSearch_Enter(object sender, EventArgs e)
+        private void TextBoxAllChannelsSearch_Enter(object sender, EventArgs e)
         {
             if (textBoxAllChannelsSearch.Text == SearchTextFieldPlaceholder)
             {
@@ -260,7 +260,7 @@ namespace FoxIPTV.Forms
             }
         }
 
-        private void textBoxAllChannelsSearch_Leave(object sender, EventArgs e)
+        private void TextBoxAllChannelsSearch_Leave(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxAllChannelsSearch.Text))
             {
@@ -268,26 +268,19 @@ namespace FoxIPTV.Forms
             }
         }
 
-        private void textBoxAllChannelsSearch_TextChanged(object sender, EventArgs e)
+        private void TextBoxAllChannelsSearch_TextChanged(object sender, EventArgs e)
         {
             if (textBoxAllChannelsSearch.Text == SearchTextFieldPlaceholder)
             {
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(textBoxAllChannelsSearch.Text))
-            {
-                _allChannelsFilter = textBoxAllChannelsSearch.Text;
-            }
-            else
-            {
-                _allChannelsFilter = string.Empty;
-            }
+            _allChannelsFilter = !string.IsNullOrWhiteSpace(textBoxAllChannelsSearch.Text) ? textBoxAllChannelsSearch.Text : string.Empty;
 
             LoadAll();
         }
 
-        private void buttonFilter_Click(object sender, EventArgs e)
+        private void ButtonFilter_Click(object sender, EventArgs e)
         {
             if (!(sender is Button button))
             {
@@ -319,7 +312,7 @@ namespace FoxIPTV.Forms
             LoadAll();
         }
 
-        private void buttonFavoriteAdd_Click(object sender, EventArgs e)
+        private void ButtonFavoriteAdd_Click(object sender, EventArgs e)
         {
             var channelIdx = int.Parse(treeViewAllChannels.SelectedNode.Name);
 
@@ -327,17 +320,16 @@ namespace FoxIPTV.Forms
 
             if (channel == null)
             {
-                MessageBox.Show("Oops");
+                TvCore.LogError("[.NET] Channel was not found when adding to favorite channels");
+                return;
             }
-            else
-            {
-                TvCore.AddFavoriteChannel(channel.Id);
 
-                LoadAll();
-            }
+            TvCore.AddFavoriteChannel(channel.Id);
+
+            LoadAll();
         }
 
-        private void buttonFavoriteRemove_Click(object sender, EventArgs e)
+        private void ButtonFavoriteRemove_Click(object sender, EventArgs e)
         {
             var channelIdx = int.Parse(treeViewFavoriteChannels.SelectedNode.Name);
 
@@ -345,14 +337,13 @@ namespace FoxIPTV.Forms
 
             if (channel == null)
             {
-                MessageBox.Show("Oops");
+                TvCore.LogError("[.NET] Channel was not found when removing a favorite channel");
+                return;
             }
-            else
-            {
-                TvCore.RemoveFavoriteChannel(channel.Id);
 
-                LoadAll();
-            }
+            TvCore.RemoveFavoriteChannel(channel.Id);
+
+            LoadAll();
         }
     }
 }

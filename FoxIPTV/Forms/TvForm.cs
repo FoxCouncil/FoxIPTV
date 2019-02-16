@@ -1,21 +1,19 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
-using FoxIPTV.Classes;
-using Vlc.DotNet.Core;
-using Vlc.DotNet.Forms;
-
 namespace FoxIPTV.Forms
 {
-    using System.Runtime.InteropServices;
+    using Classes;
     using Properties;
-    using Settings = Classes.Settings;
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Threading;
+    using System.Windows.Forms;
+    using Vlc.DotNet.Core;
+    using Vlc.DotNet.Forms;
 
     public partial class TvForm : Form
     {
@@ -122,7 +120,7 @@ namespace FoxIPTV.Forms
 
             var chanName = channelObj.Name.Contains(':') ? channelObj.Name.Split(new[] {':'}, 2).Skip(1).FirstOrDefault()?.TrimStart() : channelObj.Name;
 
-            Text = $"CH: {TvCore.CurrentChannel.Index} [ {chanName} ]{currentProgramme} Fox IPTV";
+            Text = string.Format(Resources.TvForm_TitleInfo, TvCore.CurrentChannel.Index, chanName, currentProgramme);
         }
 
         private static void InitializeTvIcons()
@@ -278,26 +276,23 @@ namespace FoxIPTV.Forms
 
         private async void TvForm_Load(object sender, EventArgs e)
         {
-            var channelProgress = 0;
-            var guideProgress = 0;
-
             TvCore.ChannelLoadPercentageChanged += percentage => this.InvokeIfRequired(() =>
             {
-                channelStatusProgressBar.Value = channelProgress =  percentage;
-                labelStatus.Text = $"Loading | Channels {channelProgress}% | Guide {guideProgress}% | Please Wait...";
+                channelStatusProgressBar.Value = percentage;
+                labelStatus.Text = string.Format(Resources.TvForm_LoadingBarMessage, channelStatusProgressBar.Value, guideStatusProgressBar.Value);
             });
 
             TvCore.GuideLoadPercentageChanged += percentage => this.InvokeIfRequired(() =>
             {
-                guideStatusProgressBar.Value = guideProgress = percentage;
-                labelStatus.Text = $"Loading | Channels {channelProgress}% | Guide {guideProgress}% | Please Wait...";
+                guideStatusProgressBar.Value = percentage;
+                labelStatus.Text = string.Format(Resources.TvForm_LoadingBarMessage, channelStatusProgressBar.Value, guideStatusProgressBar.Value);
             });
 
             await TvCore.Start();
 
-            channelStatusLabel.Text = "Channels Loaded";
+            channelStatusLabel.Text = Resources.TvForm_ChannelsLoaded;
 
-            guideStatusLabel.Text = "Guide Loaded";
+            guideStatusLabel.Text = Resources.TvForm_GuideLoaded;
 
             guideStatusProgressBar.Visible = channelStatusProgressBar.Visible = false;
 
@@ -455,7 +450,7 @@ namespace FoxIPTV.Forms
         {
             if (e.CloseReason != CloseReason.UserClosing)
             {
-                TvCore.LogDebug($"[.NET] Closing main TvForm");
+                TvCore.LogDebug("[.NET] Closing main TvForm");
 
                 return;
             }
@@ -569,12 +564,12 @@ namespace FoxIPTV.Forms
         {
             if (Visible)
             {
-                TvCore.LogDebug($"[.NET] Hiding main TvForm");
+                TvCore.LogDebug("[.NET] Hiding main TvForm");
                 Hide();
             }
             else
             {
-                TvCore.LogDebug($"[.NET] Showing main TvForm");
+                TvCore.LogDebug("[.NET] Showing main TvForm");
                 Show();
             }
 
@@ -622,7 +617,7 @@ namespace FoxIPTV.Forms
 
         private void contextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            toolStripMenuItemChannelNumber.Text = $"CH: {TvCore.CurrentChannel.Index}";
+            toolStripMenuItemChannelNumber.Text = string.Format(Resources.TvForm_ChannelShorthand, TvCore.CurrentChannel.Index);
             toolStripMenuItemChannelName.Text = TvCore.CurrentChannel.Name;
 
             toolStripMenuItemWindowState.Checked = Visible;
@@ -730,7 +725,7 @@ namespace FoxIPTV.Forms
                     }
 
                     var time = new TimeSpan(e.NewTime * 10000);
-                    timeStatusLabel.Text = $"{time.Minutes.ToString().PadLeft(2, '0')}:{time.Seconds.ToString().PadLeft(2, '0')}";
+                    timeStatusLabel.Text = string.Format(Resources.TvForm_PlaybackTime, time.Minutes.ToString().PadLeft(2, '0'), time.Seconds.ToString().PadLeft(2, '0'));
                 }
             });
         }
@@ -746,18 +741,18 @@ namespace FoxIPTV.Forms
 
             this.InvokeIfRequired(() =>
             {
-                playerStatusLabel.Text = "Playing";
+                playerStatusLabel.Text = Resources.TvForm_Playing;
             });
         }
 
         private void VlcControl_Paused(object sender, VlcMediaPlayerPausedEventArgs e)
         {
-            this.InvokeIfRequired(() => { playerStatusLabel.Text = "Paused"; });
+            this.InvokeIfRequired(() => { playerStatusLabel.Text = Resources.TvForm_Paused; });
         }
 
         private void VlcControl_Stopped(object sender, VlcMediaPlayerStoppedEventArgs e)
         {
-            TvCore.LogDebug($"[.NET] VlcControl_Stopped()");
+            TvCore.LogDebug("[.NET] VlcControl_Stopped()");
 
             this.InvokeIfRequired(() =>
             {
@@ -773,7 +768,7 @@ namespace FoxIPTV.Forms
                     }
                 }
 
-                playerStatusLabel.Text = "Buffering";
+                playerStatusLabel.Text = Resources.TvForm_Buffering;
 
                 if (!Disposing && !_isErrorState)
                 {
@@ -794,7 +789,7 @@ namespace FoxIPTV.Forms
             this.InvokeIfRequired(() =>
             {
                 SetErrorState();
-                playerStatusLabel.Text = "Error";
+                playerStatusLabel.Text = Resources.TvForm_Error;
             });
         }
 
@@ -804,7 +799,7 @@ namespace FoxIPTV.Forms
 
             this.InvokeIfRequired(() =>
             {
-                playerStatusLabel.Text = "Buffering";
+                playerStatusLabel.Text = Resources.TvForm_Buffering;
                 ThreadPool.QueueUserWorkItem(state => vlcControl.Play(TvCore.CurrentChannel.Stream));
             });
         }
@@ -936,11 +931,14 @@ namespace FoxIPTV.Forms
                     var localStartTime = TvCore.CurrentProgramme.Start.ToLocalTime();
                     var localEndTime = TvCore.CurrentProgramme.Stop.ToLocalTime();
 
-                    var timeBlockText = $"{localStartTime.ToString("h:mm tt")}-{localEndTime.ToString("h:mm tt")}: ";
+                    var timeBlockText = $"{localStartTime:h:mm tt}-{localEndTime:h:mm tt}: ";
 
-                    channelNameLabel.Text += "\n" + timeBlockText + TvCore.CurrentProgramme.Title;
+                    channelNameLabel.Text += string.Format(Resources.TvForm_ProgrammeDetailDisplay, timeBlockText, TvCore.CurrentProgramme.Title);
 
-                    if (!string.IsNullOrWhiteSpace(TvCore.CurrentProgramme.Description)) channelNameLabel.Text += "\nDescription: " + TvCore.CurrentProgramme.Description;
+                    if (!string.IsNullOrWhiteSpace(TvCore.CurrentProgramme.Description))
+                    {
+                        channelNameLabel.Text += string.Format(Resources.TvForm_ProgrammeDescription, TvCore.CurrentProgramme.Description);
+                    }
                 }
 
                 AspectRatioResize();
@@ -1009,16 +1007,9 @@ namespace FoxIPTV.Forms
             {
                 channelNameLabel.MaximumSize = new Size(0, 0);
 
-                channelNameLabel.Text += " ";
+                channelNameLabel.Text += @" ";
 
-                if (channelNameLabel.Width > ClientSize.Width - 18)
-                {
-                    channelNameLabel.MinimumSize = new Size(ClientSize.Width - 18, 0);
-                }
-                else
-                {
-                    channelNameLabel.MinimumSize = new Size(0, 0);
-                }
+                channelNameLabel.MinimumSize = channelNameLabel.Width > ClientSize.Width - 18 ? new Size(ClientSize.Width - 18, 0) : new Size(0, 0);
 
                 channelNameLabel.MaximumSize = new Size(ClientSize.Width - 18, 0);
 
@@ -1032,7 +1023,7 @@ namespace FoxIPTV.Forms
 
             _isErrorRetryTimeout = 100;
 
-            labelStatus.Text = "Stream Error: Retrying in 10 seconds";
+            labelStatus.Text = string.Format(Resources.TvForm_ErrorRetry, (double)_isErrorRetryTimeout / 10, (_isErrorRetryTimeout != 10 ? "s" : " "));
 
             labelStatus.Visible = true;
         }
@@ -1061,7 +1052,8 @@ namespace FoxIPTV.Forms
                 if (_isErrorState)
                 {
                     _isErrorRetryTimeout--;
-                    labelStatus.Text = $"Stream Error: Retrying in {(double)_isErrorRetryTimeout/10:F1} second{(_isErrorRetryTimeout != 10 ? "s" : " ")}";
+
+                    labelStatus.Text = string.Format(Resources.TvForm_ErrorRetry, (double)_isErrorRetryTimeout/10, (_isErrorRetryTimeout != 10 ? "s" : " "));
 
                     if (_isErrorRetryTimeout <= 0)
                     {
