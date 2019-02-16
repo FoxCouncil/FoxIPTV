@@ -21,7 +21,7 @@ namespace FoxIPTV.Classes
 
             lock (_fixedQueueLock)
             {
-                while (Count > FixedSize && TryDequeue(out var tempObj)) { }
+                while (Count > FixedSize && TryDequeue(out _)) { }
             }
         }
     }

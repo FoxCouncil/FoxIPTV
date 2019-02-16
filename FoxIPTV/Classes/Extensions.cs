@@ -14,6 +14,11 @@ namespace FoxIPTV.Classes
     {
         public static List<Difference> Difference<T>(this T valueA, T valueB)
         {
+            if (valueA == null || valueB == null)
+            {
+                throw new ArgumentException();
+            }
+
             var differences = new List<Difference>();
 
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);

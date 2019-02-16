@@ -41,9 +41,9 @@ namespace FoxIPTV.Forms
             Hide();
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
-            labelDateTime.Text = $"{DateTime.Now:F}";
+            labelDateTime.Text = string.Format(Resources.GuideForm_HeaderTimeFormat, DateTime.Now);
         }
     }
 }

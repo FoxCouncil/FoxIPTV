@@ -2,14 +2,13 @@
 
 namespace FoxIPTV
 {
+    using Classes;
+    using Forms;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using System.Windows.Forms;
-    using Classes;
-    using Forms;
-    using Properties;
-    using Newtonsoft.Json.Linq;
 
     public static class Program
     {

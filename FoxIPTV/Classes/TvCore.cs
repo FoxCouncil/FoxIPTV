@@ -1,7 +1,5 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System.Drawing;
-
 namespace FoxIPTV.Classes
 {
     using Newtonsoft.Json;
@@ -9,6 +7,7 @@ namespace FoxIPTV.Classes
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -17,7 +16,6 @@ namespace FoxIPTV.Classes
     using System.Threading.Tasks;
     using System.Timers;
     using System.Windows.Forms;
-    using Properties;
     using Timer = System.Timers.Timer;
 
     public static class TvCore
@@ -104,7 +102,7 @@ namespace FoxIPTV.Classes
 
             LogStart();
 
-            LogInfo("[TVCore] Startup: Begining Fox IPTV Setup...");
+            LogMessage($"[TVCore] Startup: Fox IPTV {Assembly.GetEntryAssembly().GetName().Version}...");
 
             LogInfo("[TVCore] Startup: Binding ThreadException & UnhandledException...");
 
@@ -208,7 +206,7 @@ namespace FoxIPTV.Classes
 
             BlacklistLoad();
 
-            LogDebug($"[TVCore] Startup: Finished Fox IPTV TVCore Startup");
+            LogMessage("[TVCore] Startup: Finished Fox IPTV TVCore Startup");
         }
 
         public static void LogError(string message) => Log(TvCoreLogLevel.Error, message);
@@ -228,10 +226,10 @@ namespace FoxIPTV.Classes
 
             ChangeState(TvCoreState.Starting);
 
-            var processedData = await CurrentService.Process();
+            var (channels, guide) = await CurrentService.Process();
 
-            Channels = processedData.Item1;
-            Guide = processedData.Item2;
+            Channels = channels;
+            Guide = guide;
 
             ChannelIndexList = Channels.Select(x => x.Index).ToList();
 
@@ -305,6 +303,7 @@ namespace FoxIPTV.Classes
             FavoritesSave();
         }
 
+/*
         public static void AddFavoriteChannels(IEnumerable<string> channelIds)
         {
             LogDebug("[TVCore] AddFavoriteChannels()");
@@ -314,6 +313,7 @@ namespace FoxIPTV.Classes
 
             FavoritesSave();
         }
+*/
 
         public static void RemoveFavoriteChannel(string channelId)
         {

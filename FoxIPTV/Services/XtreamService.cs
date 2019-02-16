@@ -1,18 +1,18 @@
 ﻿// Copyright (c) 2019 Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using FoxIPTV.Classes;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 namespace FoxIPTV.Services
 {
+    using Classes;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Threading.Tasks;
+    using System.Xml.Linq;
+
     public class XtreamService : IService
     {
         private const int CacheTimeChannelsInHours = 12;

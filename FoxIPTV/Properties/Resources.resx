@@ -235,4 +235,73 @@
   <data name="__VS_400P" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\__VS_400P.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GuideForm_HeaderTimeFormat" xml:space="preserve">
+    <value>{0:F}</value>
+  </data>
+  <data name="LoginForm_DynamicFieldLabel" xml:space="preserve">
+    <value>{0}:</value>
+  </data>
+  <data name="ChannelsForm_ChannelNameLabel" xml:space="preserve">
+    <value>{0}
+{1}</value>
+  </data>
+  <data name="TvForm_TitleInfo" xml:space="preserve">
+    <value>CH: {0} [ {1} ]{2} Fox IPTV</value>
+  </data>
+  <data name="LoginForm_LoginCredentialsNeededWarning" xml:space="preserve">
+    <value>Please enter a username and/or password.</value>
+  </data>
+  <data name="LoginForm_LoginCredentialsNeededWarningTitle" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="ChannelsForm_CategoryNodeTitle" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="ChannelsForm_CategoryNotAvailableTitle" xml:space="preserve">
+    <value>N/A ({0})</value>
+  </data>
+  <data name="ChannelsForm_AllChannelsTitle" xml:space="preserve">
+    <value>All Channels ({0})</value>
+  </data>
+  <data name="ChannelsForm_FavoritesRootTitle" xml:space="preserve">
+    <value>Favorite Channels ({0})</value>
+  </data>
+  <data name="TvForm_LoadingBarMessage" xml:space="preserve">
+    <value>Loading | Channels {0}% | Guide {1}% | Please Wait...</value>
+  </data>
+  <data name="TvForm_GuideLoaded" xml:space="preserve">
+    <value>Guide Loaded</value>
+  </data>
+  <data name="TvForm_ChannelsLoaded" xml:space="preserve">
+    <value>Channels Loaded</value>
+  </data>
+  <data name="TvForm_ChannelShorthand" xml:space="preserve">
+    <value>CH: {0}</value>
+  </data>
+  <data name="TvForm_PlaybackTime" xml:space="preserve">
+    <value>{0}:{1}</value>
+  </data>
+  <data name="TvForm_Playing" xml:space="preserve">
+    <value>Playing</value>
+  </data>
+  <data name="TvForm_Paused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="TvForm_Buffering" xml:space="preserve">
+    <value>Buffering</value>
+  </data>
+  <data name="TvForm_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="TvForm_ProgrammeDetailDisplay" xml:space="preserve">
+    <value>
+{0}{1}</value>
+  </data>
+  <data name="TvForm_ProgrammeDescription" xml:space="preserve">
+    <value>
+Description: {0}</value>
+  </data>
+  <data name="TvForm_ErrorRetry" xml:space="preserve">
+    <value>Stream Error: Retrying in {0:F1} second{1}</value>
+  </data>
 </root>
