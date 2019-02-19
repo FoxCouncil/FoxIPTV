@@ -75,7 +75,6 @@
             this.toolStripMenuItemTransparency9 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemStereoMode = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemStereoModeSurround = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemStereoModeOriginal = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemStereoModeHeadphones = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemStereoModeStereo = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemStereoModeReverse = new System.Windows.Forms.ToolStripMenuItem();
@@ -116,27 +115,27 @@
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(175, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(175, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(175, 6);
+            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(175, 6);
+            toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(175, 6);
+            toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
             // 
             // channelStatusLabel
             // 
@@ -319,7 +318,7 @@
             this.toolStripMenuItemQuit});
             this.contextMenuStrip.Name = "contextMenuStrip";
             this.contextMenuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.contextMenuStrip.Size = new System.Drawing.Size(179, 414);
+            this.contextMenuStrip.Size = new System.Drawing.Size(181, 436);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip_Opening);
             // 
             // toolStripMenuItemChannelNumber
@@ -327,7 +326,7 @@
             this.toolStripMenuItemChannelNumber.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripMenuItemChannelNumber.Enabled = false;
             this.toolStripMenuItemChannelNumber.Name = "toolStripMenuItemChannelNumber";
-            this.toolStripMenuItemChannelNumber.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemChannelNumber.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemChannelNumber.Text = "<ChannelNumber>";
             // 
             // toolStripMenuItemChannelName
@@ -335,14 +334,14 @@
             this.toolStripMenuItemChannelName.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripMenuItemChannelName.Enabled = false;
             this.toolStripMenuItemChannelName.Name = "toolStripMenuItemChannelName";
-            this.toolStripMenuItemChannelName.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemChannelName.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemChannelName.Text = "<ChannelName>";
             // 
             // toolStripMenuItemChannelUp
             // 
             this.toolStripMenuItemChannelUp.Image = global::FoxIPTV.Properties.Resources.arrow_090;
             this.toolStripMenuItemChannelUp.Name = "toolStripMenuItemChannelUp";
-            this.toolStripMenuItemChannelUp.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemChannelUp.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemChannelUp.Text = "Channel Up";
             this.toolStripMenuItemChannelUp.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             // 
@@ -350,50 +349,50 @@
             // 
             this.toolStripMenuItemChannelDown.Image = global::FoxIPTV.Properties.Resources.arrow_270;
             this.toolStripMenuItemChannelDown.Name = "toolStripMenuItemChannelDown";
-            this.toolStripMenuItemChannelDown.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemChannelDown.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemChannelDown.Text = "Channel Down";
             // 
             // toolStripMenuItemWindowState
             // 
             this.toolStripMenuItemWindowState.Name = "toolStripMenuItemWindowState";
-            this.toolStripMenuItemWindowState.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemWindowState.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemWindowState.Text = "Show Window";
             // 
             // toolStripMenuItemMute
             // 
             this.toolStripMenuItemMute.Name = "toolStripMenuItemMute";
-            this.toolStripMenuItemMute.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemMute.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemMute.Text = "&Mute";
             // 
             // toolStripMenuItemStatusBar
             // 
             this.toolStripMenuItemStatusBar.Name = "toolStripMenuItemStatusBar";
-            this.toolStripMenuItemStatusBar.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemStatusBar.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStatusBar.Text = "&Status Bar";
             // 
             // toolStripMenuItemClosedCaptioning
             // 
             this.toolStripMenuItemClosedCaptioning.Name = "toolStripMenuItemClosedCaptioning";
-            this.toolStripMenuItemClosedCaptioning.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemClosedCaptioning.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemClosedCaptioning.Text = "&Closed Captioning";
             // 
             // toolStripMenuItemBorders
             // 
             this.toolStripMenuItemBorders.Name = "toolStripMenuItemBorders";
-            this.toolStripMenuItemBorders.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemBorders.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemBorders.Text = "Borders";
             // 
             // toolStripMenuItemFullscreen
             // 
             this.toolStripMenuItemFullscreen.Name = "toolStripMenuItemFullscreen";
-            this.toolStripMenuItemFullscreen.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemFullscreen.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemFullscreen.Text = "&Fullscreen";
             // 
             // toolStripMenuItemAlwaysOnTop
             // 
             this.toolStripMenuItemAlwaysOnTop.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
             this.toolStripMenuItemAlwaysOnTop.Name = "toolStripMenuItemAlwaysOnTop";
-            this.toolStripMenuItemAlwaysOnTop.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemAlwaysOnTop.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemAlwaysOnTop.Text = "Always On Top";
             // 
             // toolStripMenuItemTransparencyMenu
@@ -410,7 +409,7 @@
             this.toolStripMenuItemTransparency8,
             this.toolStripMenuItemTransparency9});
             this.toolStripMenuItemTransparencyMenu.Name = "toolStripMenuItemTransparencyMenu";
-            this.toolStripMenuItemTransparencyMenu.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemTransparencyMenu.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemTransparencyMenu.Text = "Transparency";
             // 
             // toolStripMenuItemTransparency0
@@ -499,7 +498,6 @@
             // 
             this.toolStripMenuItemStereoMode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItemStereoModeSurround,
-            this.toolStripMenuItemStereoModeOriginal,
             this.toolStripMenuItemStereoModeHeadphones,
             this.toolStripMenuItemStereoModeStereo,
             this.toolStripMenuItemStereoModeReverse,
@@ -507,39 +505,31 @@
             this.toolStripMenuItemStereoModeRight,
             this.toolStripMenuItemStereoModeMono});
             this.toolStripMenuItemStereoMode.Name = "toolStripMenuItemStereoMode";
-            this.toolStripMenuItemStereoMode.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemStereoMode.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoMode.Text = "Stereo Mode";
             // 
             // toolStripMenuItemStereoModeSurround
             // 
             this.toolStripMenuItemStereoModeSurround.Name = "toolStripMenuItemStereoModeSurround";
-            this.toolStripMenuItemStereoModeSurround.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeSurround.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeSurround.Tag = "5";
             this.toolStripMenuItemStereoModeSurround.Text = "Surround (5.1+)";
             this.toolStripMenuItemStereoModeSurround.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
-            // toolStripMenuItemStereoModeOriginal
-            // 
-            this.toolStripMenuItemStereoModeOriginal.Checked = true;
-            this.toolStripMenuItemStereoModeOriginal.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.toolStripMenuItemStereoModeOriginal.Name = "toolStripMenuItemStereoModeOriginal";
-            this.toolStripMenuItemStereoModeOriginal.Size = new System.Drawing.Size(157, 22);
-            this.toolStripMenuItemStereoModeOriginal.Tag = "0";
-            this.toolStripMenuItemStereoModeOriginal.Text = "Original";
-            this.toolStripMenuItemStereoModeOriginal.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
-            // 
             // toolStripMenuItemStereoModeHeadphones
             // 
             this.toolStripMenuItemStereoModeHeadphones.Name = "toolStripMenuItemStereoModeHeadphones";
-            this.toolStripMenuItemStereoModeHeadphones.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeHeadphones.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeHeadphones.Tag = "6";
             this.toolStripMenuItemStereoModeHeadphones.Text = "Headphones";
             this.toolStripMenuItemStereoModeHeadphones.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeStereo
             // 
+            this.toolStripMenuItemStereoModeStereo.Checked = true;
+            this.toolStripMenuItemStereoModeStereo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.toolStripMenuItemStereoModeStereo.Name = "toolStripMenuItemStereoModeStereo";
-            this.toolStripMenuItemStereoModeStereo.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeStereo.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeStereo.Tag = "1";
             this.toolStripMenuItemStereoModeStereo.Text = "Stereo";
             this.toolStripMenuItemStereoModeStereo.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
@@ -547,7 +537,7 @@
             // toolStripMenuItemStereoModeReverse
             // 
             this.toolStripMenuItemStereoModeReverse.Name = "toolStripMenuItemStereoModeReverse";
-            this.toolStripMenuItemStereoModeReverse.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeReverse.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeReverse.Tag = "2";
             this.toolStripMenuItemStereoModeReverse.Text = "Reverse Stereo";
             this.toolStripMenuItemStereoModeReverse.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
@@ -555,7 +545,7 @@
             // toolStripMenuItemStereoModeLeft
             // 
             this.toolStripMenuItemStereoModeLeft.Name = "toolStripMenuItemStereoModeLeft";
-            this.toolStripMenuItemStereoModeLeft.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeLeft.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeLeft.Tag = "3";
             this.toolStripMenuItemStereoModeLeft.Text = "Left Channel";
             this.toolStripMenuItemStereoModeLeft.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
@@ -563,7 +553,7 @@
             // toolStripMenuItemStereoModeRight
             // 
             this.toolStripMenuItemStereoModeRight.Name = "toolStripMenuItemStereoModeRight";
-            this.toolStripMenuItemStereoModeRight.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeRight.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeRight.Tag = "4";
             this.toolStripMenuItemStereoModeRight.Text = "Right Channel";
             this.toolStripMenuItemStereoModeRight.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
@@ -571,7 +561,7 @@
             // toolStripMenuItemStereoModeMono
             // 
             this.toolStripMenuItemStereoModeMono.Name = "toolStripMenuItemStereoModeMono";
-            this.toolStripMenuItemStereoModeMono.Size = new System.Drawing.Size(157, 22);
+            this.toolStripMenuItemStereoModeMono.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemStereoModeMono.Tag = "7";
             this.toolStripMenuItemStereoModeMono.Text = "Mono";
             this.toolStripMenuItemStereoModeMono.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
@@ -579,32 +569,32 @@
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(175, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripMenuItemGuide
             // 
             this.toolStripMenuItemGuide.Name = "toolStripMenuItemGuide";
-            this.toolStripMenuItemGuide.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemGuide.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemGuide.Text = "Guide";
             // 
             // toolStripMenuItemChannelEditor
             // 
             this.toolStripMenuItemChannelEditor.Name = "toolStripMenuItemChannelEditor";
-            this.toolStripMenuItemChannelEditor.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemChannelEditor.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemChannelEditor.Text = "Channel Editor";
             // 
             // toolStripMenuItemAbout
             // 
             this.toolStripMenuItemAbout.Image = global::FoxIPTV.Properties.Resources.question_white;
             this.toolStripMenuItemAbout.Name = "toolStripMenuItemAbout";
-            this.toolStripMenuItemAbout.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemAbout.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemAbout.Text = "&About";
             // 
             // toolStripMenuItemQuit
             // 
             this.toolStripMenuItemQuit.Image = global::FoxIPTV.Properties.Resources.door__arrow;
             this.toolStripMenuItemQuit.Name = "toolStripMenuItemQuit";
-            this.toolStripMenuItemQuit.Size = new System.Drawing.Size(178, 22);
+            this.toolStripMenuItemQuit.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemQuit.Text = "Quit";
             // 
             // pictureBoxAudioRate
@@ -829,7 +819,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeSurround;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeStereo;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeOriginal;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeReverse;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeLeft;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStereoModeRight;
