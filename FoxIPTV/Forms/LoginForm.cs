@@ -9,14 +9,19 @@ namespace FoxIPTV.Forms
     using Classes;
     using Properties;
 
+    /// <inheritdoc/>
     public partial class LoginForm : Form
     {
+        /// <summary>Store original form size, when switching services that have more or less fields than the form started with</summary>
         private readonly Size _originalFormSize;
 
+        /// <summary>A list of labels that the service requires</summary>
         private readonly List<Label> _labels = new List<Label>();
 
+        /// <summary>A list of inputs that the service requires</summary>
         private readonly List<Control> _inputs = new List<Control>();
 
+        /// <inheritdoc/>
         public LoginForm()
         {
             InitializeComponent();
@@ -27,10 +32,14 @@ namespace FoxIPTV.Forms
             _originalFormSize = Size;
         }
 
+        /// <summary>An event handler when the form is loaded</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void LoginForm_Load(object sender, EventArgs e)
         {
             if (TvCore.Services.Count == 0)
             {
+                // This shouldn't happen, but eh
                 usernameTextBox.Enabled = false;
                 passwordTextBox.Enabled = false;
                 loginButton.Enabled = false;
@@ -49,11 +58,15 @@ namespace FoxIPTV.Forms
 
                 if (servicesComboBox.Items.Count == 1)
                 {
+                    // No point allowing a single selection
                     servicesComboBox.Enabled = false;
                 }
             }
         }
 
+        /// <summary>An event handler to handle when the service is selected</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void ServicesComboBoxOnSelectedIndexChanged(object sender, EventArgs e)
         {
             Size = _originalFormSize;
@@ -119,7 +132,10 @@ namespace FoxIPTV.Forms
             }
         }
 
-        private Control DetermineControl(Type fieldValue)
+        /// <summary>Returns a control matching a type provided</summary>
+        /// <param name="fieldValue">The type to match a control to</param>
+        /// <returns>A matched control for the type, or null</returns>
+        private static Control DetermineControl(Type fieldValue)
         {
             if (fieldValue == typeof(string))
             {
@@ -129,7 +145,10 @@ namespace FoxIPTV.Forms
             return null;
         }
 
-        private void loginButton_Click(object sender, EventArgs e)
+        /// <summary>A <see cref="Button"/> click handler, used to trigger the login process</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
+        private void LoginButton_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(usernameTextBox.Text) || string.IsNullOrWhiteSpace(passwordTextBox.Text))
             {

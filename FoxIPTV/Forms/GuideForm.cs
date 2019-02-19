@@ -8,8 +8,10 @@ namespace FoxIPTV.Forms
     using Controls;
     using Properties;
 
+    /// <inheritdoc/>
     public sealed partial class GuideForm : Form
     {
+        /// <inheritdoc/>
         public GuideForm()
         {
             DoubleBuffered = true;
@@ -23,9 +25,13 @@ namespace FoxIPTV.Forms
 
             buttonResetView.Click += (s, a) => guideControl.ResetView();
 
+            // For some reason, only Forms have this event
             ResizeEnd += (s, a) => guideControl.DrawGuide(); 
         }
 
+        /// <summary>The <see cref="Form"/> close event handler, we don't want to dispose of this window</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void GuideForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason != CloseReason.UserClosing)
@@ -41,6 +47,9 @@ namespace FoxIPTV.Forms
             Hide();
         }
 
+        /// <summary>A <see cref="Timer"/> event, used to update the current time on the header of the form</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void Timer_Tick(object sender, EventArgs e)
         {
             labelDateTime.Text = string.Format(Resources.GuideForm_HeaderTimeFormat, DateTime.Now);

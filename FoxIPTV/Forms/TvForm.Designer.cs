@@ -227,7 +227,7 @@
             this.ccOptionsDropDownButton.Name = "ccOptionsDropDownButton";
             this.ccOptionsDropDownButton.Size = new System.Drawing.Size(13, 22);
             this.ccOptionsDropDownButton.Visible = false;
-            this.ccOptionsDropDownButton.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.ccOptionsDropDownButton_DropDownItemClicked);
+            this.ccOptionsDropDownButton.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.CCOptionsDropDownButton_DropDownItemClicked);
             // 
             // bufferStatusProgressBar
             // 
@@ -320,7 +320,7 @@
             this.contextMenuStrip.Name = "contextMenuStrip";
             this.contextMenuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.contextMenuStrip.Size = new System.Drawing.Size(179, 414);
-            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
+            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip_Opening);
             // 
             // toolStripMenuItemChannelNumber
             // 
@@ -421,7 +421,7 @@
             this.toolStripMenuItemTransparency0.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency0.Tag = "1.0";
             this.toolStripMenuItemTransparency0.Text = "0%";
-            this.toolStripMenuItemTransparency0.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency0.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency1
             // 
@@ -429,7 +429,7 @@
             this.toolStripMenuItemTransparency1.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency1.Tag = ".9";
             this.toolStripMenuItemTransparency1.Text = "10%";
-            this.toolStripMenuItemTransparency1.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency1.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency2
             // 
@@ -437,7 +437,7 @@
             this.toolStripMenuItemTransparency2.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency2.Tag = ".8";
             this.toolStripMenuItemTransparency2.Text = "20%";
-            this.toolStripMenuItemTransparency2.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency2.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency3
             // 
@@ -445,7 +445,7 @@
             this.toolStripMenuItemTransparency3.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency3.Tag = ".7";
             this.toolStripMenuItemTransparency3.Text = "30%";
-            this.toolStripMenuItemTransparency3.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency3.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency4
             // 
@@ -453,7 +453,7 @@
             this.toolStripMenuItemTransparency4.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency4.Tag = ".6";
             this.toolStripMenuItemTransparency4.Text = "40%";
-            this.toolStripMenuItemTransparency4.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency4.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency5
             // 
@@ -461,7 +461,7 @@
             this.toolStripMenuItemTransparency5.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency5.Tag = ".5";
             this.toolStripMenuItemTransparency5.Text = "50%";
-            this.toolStripMenuItemTransparency5.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency5.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency6
             // 
@@ -469,7 +469,7 @@
             this.toolStripMenuItemTransparency6.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency6.Tag = ".4";
             this.toolStripMenuItemTransparency6.Text = "60%";
-            this.toolStripMenuItemTransparency6.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency6.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency7
             // 
@@ -477,7 +477,7 @@
             this.toolStripMenuItemTransparency7.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency7.Tag = ".3";
             this.toolStripMenuItemTransparency7.Text = "70%";
-            this.toolStripMenuItemTransparency7.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency7.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency8
             // 
@@ -485,7 +485,7 @@
             this.toolStripMenuItemTransparency8.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency8.Tag = ".2";
             this.toolStripMenuItemTransparency8.Text = "80%";
-            this.toolStripMenuItemTransparency8.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency8.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemTransparency9
             // 
@@ -493,7 +493,7 @@
             this.toolStripMenuItemTransparency9.Size = new System.Drawing.Size(96, 22);
             this.toolStripMenuItemTransparency9.Tag = ".1";
             this.toolStripMenuItemTransparency9.Text = "90%";
-            this.toolStripMenuItemTransparency9.Click += new System.EventHandler(this.toolStripMenuItemTransparency_Clicked);
+            this.toolStripMenuItemTransparency9.Click += new System.EventHandler(this.ToolStripMenuItemTransparency_Clicked);
             // 
             // toolStripMenuItemStereoMode
             // 
@@ -516,7 +516,7 @@
             this.toolStripMenuItemStereoModeSurround.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeSurround.Tag = "5";
             this.toolStripMenuItemStereoModeSurround.Text = "Surround (5.1+)";
-            this.toolStripMenuItemStereoModeSurround.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeSurround.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeOriginal
             // 
@@ -526,7 +526,7 @@
             this.toolStripMenuItemStereoModeOriginal.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeOriginal.Tag = "0";
             this.toolStripMenuItemStereoModeOriginal.Text = "Original";
-            this.toolStripMenuItemStereoModeOriginal.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeOriginal.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeHeadphones
             // 
@@ -534,7 +534,7 @@
             this.toolStripMenuItemStereoModeHeadphones.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeHeadphones.Tag = "6";
             this.toolStripMenuItemStereoModeHeadphones.Text = "Headphones";
-            this.toolStripMenuItemStereoModeHeadphones.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeHeadphones.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeStereo
             // 
@@ -542,7 +542,7 @@
             this.toolStripMenuItemStereoModeStereo.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeStereo.Tag = "1";
             this.toolStripMenuItemStereoModeStereo.Text = "Stereo";
-            this.toolStripMenuItemStereoModeStereo.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeStereo.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeReverse
             // 
@@ -550,7 +550,7 @@
             this.toolStripMenuItemStereoModeReverse.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeReverse.Tag = "2";
             this.toolStripMenuItemStereoModeReverse.Text = "Reverse Stereo";
-            this.toolStripMenuItemStereoModeReverse.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeReverse.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeLeft
             // 
@@ -558,7 +558,7 @@
             this.toolStripMenuItemStereoModeLeft.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeLeft.Tag = "3";
             this.toolStripMenuItemStereoModeLeft.Text = "Left Channel";
-            this.toolStripMenuItemStereoModeLeft.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeLeft.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeRight
             // 
@@ -566,7 +566,7 @@
             this.toolStripMenuItemStereoModeRight.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeRight.Tag = "4";
             this.toolStripMenuItemStereoModeRight.Text = "Right Channel";
-            this.toolStripMenuItemStereoModeRight.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeRight.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripMenuItemStereoModeMono
             // 
@@ -574,7 +574,7 @@
             this.toolStripMenuItemStereoModeMono.Size = new System.Drawing.Size(157, 22);
             this.toolStripMenuItemStereoModeMono.Tag = "7";
             this.toolStripMenuItemStereoModeMono.Text = "Mono";
-            this.toolStripMenuItemStereoModeMono.Click += new System.EventHandler(this.toolStripMenuItemStereoMode_Click);
+            this.toolStripMenuItemStereoModeMono.Click += new System.EventHandler(this.ToolStripMenuItemStereoMode_Click);
             // 
             // toolStripSeparator6
             // 
@@ -711,7 +711,7 @@
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "Fox IPTV";
             this.notifyIcon.Visible = true;
-            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
+            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseClick);
             // 
             // labelStatus
             // 

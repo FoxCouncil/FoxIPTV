@@ -74,7 +74,7 @@
             linkLabelIconAttribution.TabStop = true;
             linkLabelIconAttribution.Text = "Some icons by Yusuke Kamiyamane";
             linkLabelIconAttribution.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            linkLabelIconAttribution.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelIconAttribution_LinkClicked);
+            linkLabelIconAttribution.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelIconAttribution_LinkClicked);
             // 
             // buttonClose
             // 
@@ -84,7 +84,7 @@
             this.buttonClose.TabIndex = 0;
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
-            this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
+            this.buttonClose.Click += new System.EventHandler(this.ButtonClose_Click);
             // 
             // label2
             // 

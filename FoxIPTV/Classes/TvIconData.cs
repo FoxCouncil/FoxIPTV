@@ -9,8 +9,13 @@ namespace FoxIPTV.Classes
     using Vlc.DotNet.Core.Interops;
     using Vlc.DotNet.Core.Interops.Signatures;
 
+    /// <summary>
+    /// A class to contain the data state of various icons to inform
+    /// the user of technical stream details.
+    /// </summary>
     public class TvIconData : IEquatable<TvIconData>
     {
+        // Constants to format the data to icon resource keys
         private const string VIDEO_CODEC = "VC_{0}";
         private const string VIDEO_SIZE = "VS_{0}P";
         private const string FRAME_RATE = "FR_{0}FPS";
@@ -18,18 +23,25 @@ namespace FoxIPTV.Classes
         private const string AUDIO_CHANNELS = "CH_{0}";
         private const string AUDIO_RATE = "AR_{0}KHZ";
 
+        /// <summary>Show or hide an icon if Closed Captioning information is available</summary>
         public bool ClosedCaptioning { get; set; }
 
+        /// <summary>Icon key of the current video codec in FourCC format, ie: H264, etc</summary>
         public string VideoCodec { get; set; }
 
+        /// <summary>Icon key of the current video height in uppercase P format, ie: 720P, 1080P</summary>
         public string VideoSize { get; set; }
 
+        /// <summary>Icon key of the current video frame rate, suffixed with capitals FPS, ie: 25FPS, 30FPS</summary>
         public string FrameRate { get; set; }
 
+        /// <summary>Icon key of the current audio codec in FourCC format, ie: M4A, AC3</summary>
         public string AudioCodec { get; set; }
 
+        /// <summary>Icon key of the current audio channel, ie: STEREO, 5.1</summary>
         public string AudioChannel { get; set; }
 
+        /// <summary>Icon key of the current audio sample rate, ie: 44KHZ, 48KHZ</summary>
         public string AudioRate { get; set; }
 
         /// <inheritdoc />
@@ -48,6 +60,7 @@ namespace FoxIPTV.Classes
             return obj.GetType() == GetType() && Equals((TvIconData) obj);
         }
 
+        /// <inheritdoc />
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
@@ -74,6 +87,7 @@ namespace FoxIPTV.Classes
             return !Equals(left, right);
         }
 
+        /// <inheritdoc />
         public bool Equals(TvIconData other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -87,23 +101,32 @@ namespace FoxIPTV.Classes
                    string.Equals(AudioRate, other.AudioRate, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Create a TVIconData factory, mapped from a bool for closed captioning status and a VLC MediaTrack object</summary>
+        /// <param name="closedCaptioning">The current Closed Caption state</param>
+        /// <param name="mediaTracks">The current VLC MediaTrack object to map values from</param>
+        /// <returns>A new instance of a TVIconData mapped from the arguments specified</returns>
         public static TvIconData CreateData(bool closedCaptioning, MediaTrack[] mediaTracks)
         {
             var newObj = new TvIconData { ClosedCaptioning = closedCaptioning };
 
+            // Get VLC's video data
             var videoData = mediaTracks.FirstOrDefault(x => x.Type == MediaTrackTypes.Video);
 
             if (videoData != null)
             {
+                // Get the video codec, converting to FourCC output
                 newObj.VideoCodec = string.Format(VIDEO_CODEC, videoData.CodecFourcc.ToFourCC().ToUpper());
 
+                // If the media object has a video track
                 if (videoData.TrackInfo is VideoTrack videoTrack)
                 {
                     if (videoTrack.Height > 0)
                     {
+                        // Get the video height format
                         newObj.VideoSize = string.Format(VIDEO_SIZE, videoTrack.Height);
                     }
 
+                    // These VLC frame rates results can get a little wacky.
                     if (videoTrack.FrameRateNum > 0)
                     {
                         var frameRateStr = Math.Ceiling(videoTrack.FrameRateNum / (double)videoTrack.FrameRateDen).ToString(CultureInfo.InvariantCulture);
@@ -119,46 +142,48 @@ namespace FoxIPTV.Classes
                 }
             }
 
+            // Get VLC's audio track(s) of type audio or null.
             var audioData = mediaTracks.FirstOrDefault(x => x.Type == MediaTrackTypes.Audio);
 
             if (audioData == null)
             {
+                // Since we don't have any audio data yet, here, take the video data
                 return newObj;
             }
 
+            // We can get the Audio codec in FourCC format even if the audio track is not loaded
             newObj.AudioCodec = string.Format(AUDIO_CODEC, audioData.CodecFourcc.ToFourCC().ToUpper());
 
-            if (audioData.TrackInfo is AudioTrack audioTrack)
+            if (!(audioData.TrackInfo is AudioTrack audioTrack))
             {
-                if (audioTrack.Channels > 0)
+                // Since we don't have any audio track yet, here, take the video data and audio FourCC codec
+                return newObj;
+            }
+
+            if (audioTrack.Channels > 0)
+            {
+                var channels = string.Empty;
+                
+                // More study of how LibVLC exposes this information, but generally there is only two modes we care to show the user
+                if (audioTrack.Channels == 2)
                 {
-                    var channels = string.Empty;
-
-                    switch (audioTrack.Channels)
-                    {
-                        case 2:
-                        {
-                            channels = "STEREO";
-                        }
-                            break;
-
-                        case 6:
-                        {
-                            channels = "SURROUND";
-                        }
-                            break;
-                    }
-
-                    if (channels != string.Empty)
-                    {
-                        newObj.AudioChannel = string.Format(AUDIO_CHANNELS, channels);
-                    }
+                    channels = "STEREO";
+                }
+                else if (audioTrack.Channels == 6)
+                {
+                    channels = "SURROUND";
                 }
 
-                if (audioTrack.Rate > 0)
+                if (channels != string.Empty)
                 {
-                    newObj.AudioRate = string.Format(AUDIO_RATE, Math.Floor((decimal) audioTrack.Rate / 1000));
+                    newObj.AudioChannel = string.Format(AUDIO_CHANNELS, channels);
                 }
+            }
+
+            if (audioTrack.Rate > 0)
+            {
+                // Solid audio rate
+                newObj.AudioRate = string.Format(AUDIO_RATE, Math.Floor((decimal) audioTrack.Rate / 1000));
             }
 
             return newObj;

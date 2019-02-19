@@ -9,20 +9,28 @@ namespace FoxIPTV.Forms
     using System.Threading;
     using System.Windows.Forms;
 
+    /// <inheritdoc/>
     public partial class ChannelsForm : Form
     {
+        /// <summary>The string placeholder for the search text box</summary>
         private const string SearchTextFieldPlaceholder = "Search...";
 
+        /// <summary>Is the channel editor initialized yet</summary>
         private bool _isInitialized;
 
+        /// <summary>Are we changing the channel so we don't trigger our own events</summary>
         private bool _isChannelChanging;
 
+        /// <summary>The current filter for the channels</summary>
         private string _allChannelsFilter;
 
+        /// <summary>The name of the filter for all the channels to display</summary>
         private string _allChannelCategoryFilter = "None";
 
+        /// <summary>Are we filtering channels based on a search term</summary>
         private bool _isAllChannelsSearchFiltered => !string.IsNullOrWhiteSpace(_allChannelsFilter);
 
+        /// <inheritdoc/>
         public ChannelsForm()
         {
             InitializeComponent();
@@ -30,6 +38,7 @@ namespace FoxIPTV.Forms
             Shown += (sender, args) => Initialize();
         }
 
+        /// <summary>Initialize the channel editor</summary>
         private void Initialize()
         {
             LoadAll();
@@ -87,6 +96,7 @@ namespace FoxIPTV.Forms
             _isInitialized = true;
         }
 
+        /// <summary>Update the gui with data from both the channels and favorites system</summary>
         private void UpdateGui()
         {
             this.InvokeIfRequired(() =>
@@ -120,6 +130,7 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>Load all the data and update the gui all from another thread</summary>
         private void LoadAll()
         {
             ThreadPool.QueueUserWorkItem(state =>
@@ -130,6 +141,7 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>Load the channel data for display</summary>
         private void LoadChannels()
         {
             var tvChannels = TvCore.Channels;
@@ -211,6 +223,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>Load the favorite channels data for display</summary>
         private void LoadFavoriteChannels()
         {
             var channelFavoritesCount = TvCore.ChannelFavorites.Count;
@@ -237,6 +250,9 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>The <see cref="Form"/> close event handler, we don't want to dispose of this window</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void ChannelsForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason != CloseReason.UserClosing)
@@ -252,6 +268,9 @@ namespace FoxIPTV.Forms
             Hide();
         }
 
+        /// <summary>Focus handler for the <see cref="TextBox"/>, checks for and removes the placeholder text</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void TextBoxAllChannelsSearch_Enter(object sender, EventArgs e)
         {
             if (textBoxAllChannelsSearch.Text == SearchTextFieldPlaceholder)
@@ -260,6 +279,9 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>Focus lost handler for the <see cref="TextBox"/>, checks for text and adds the placeholder text if empty</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void TextBoxAllChannelsSearch_Leave(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxAllChannelsSearch.Text))
@@ -268,6 +290,9 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>A <see cref="TextBox"/> text changed handler, used to filter the channels</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void TextBoxAllChannelsSearch_TextChanged(object sender, EventArgs e)
         {
             if (textBoxAllChannelsSearch.Text == SearchTextFieldPlaceholder)
@@ -280,6 +305,9 @@ namespace FoxIPTV.Forms
             LoadAll();
         }
 
+        /// <summary>a <see cref="Button"/> click handler, used to change the category we are displaying channels under</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void ButtonFilter_Click(object sender, EventArgs e)
         {
             if (!(sender is Button button))
@@ -312,6 +340,9 @@ namespace FoxIPTV.Forms
             LoadAll();
         }
 
+        /// <summary>A <see cref="Button"/> click handler, used to add a favorite channel</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void ButtonFavoriteAdd_Click(object sender, EventArgs e)
         {
             var channelIdx = int.Parse(treeViewAllChannels.SelectedNode.Name);
@@ -329,6 +360,9 @@ namespace FoxIPTV.Forms
             LoadAll();
         }
 
+        /// <summary>A <see cref="Button"/> click handler, used to remove a favorite from the favorite channels list</summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The event arguments</param>
         private void ButtonFavoriteRemove_Click(object sender, EventArgs e)
         {
             var channelIdx = int.Parse(treeViewFavoriteChannels.SelectedNode.Name);
