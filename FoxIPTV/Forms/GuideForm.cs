@@ -11,6 +11,8 @@ namespace FoxIPTV.Forms
     /// <inheritdoc/>
     public sealed partial class GuideForm : Form
     {
+        private FormWindowState _previousState;
+
         /// <inheritdoc/>
         public GuideForm()
         {
@@ -25,8 +27,21 @@ namespace FoxIPTV.Forms
 
             buttonResetView.Click += (s, a) => guideControl.ResetView();
 
+            _previousState = WindowState;
+
             // For some reason, only Forms have this event
-            ResizeEnd += (s, a) => guideControl.DrawGuide(); 
+            ResizeEnd += (s, a) => guideControl.DrawGuide();
+            SizeChanged += (s, a) =>
+            {
+                if (_previousState == WindowState)
+                {
+                    return;
+                }
+
+                guideControl.DrawGuide();
+
+                _previousState = WindowState;
+            };
         }
 
         /// <summary>The <see cref="Form"/> close event handler, we don't want to dispose of this window</summary>

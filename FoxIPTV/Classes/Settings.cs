@@ -54,7 +54,7 @@ namespace FoxIPTV.Classes
         public bool Visibility { get; set; } = true;
 
         /// <summary>The current LibVLC audio mode</summary>
-        public int StereoMode { get; set; } = 0;
+        public int StereoMode { get; set; } = 1;
 
         //// <summary>Is the TVForm status bar visible</summary>
         public bool StatusBar { get; set; } = true;

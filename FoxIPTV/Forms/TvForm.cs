@@ -749,16 +749,6 @@ namespace FoxIPTV.Forms
 
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 submenu.Checked = stereoMode == audioChannelsVal;
-
-                if (audioChannelsVal == 0 && TvCore.Settings.StereoMode == 0 && stereoMode != TvCore.Settings.StereoMode)
-                {
-                    submenu.Enabled = false;
-                    submenu.Checked = true;
-                }
-                else
-                {
-                    submenu.Enabled = true;
-                }
             }
 
             toolStripMenuItemGuide.Checked = _guideForm.Visible;
