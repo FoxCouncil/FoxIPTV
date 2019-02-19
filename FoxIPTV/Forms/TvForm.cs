@@ -15,48 +15,82 @@ namespace FoxIPTV.Forms
     using Vlc.DotNet.Core;
     using Vlc.DotNet.Forms;
 
+    /// <inheritdoc/>
+    /// <summary>The main form for displaying IPTV streams</summary>
     public partial class TvForm : Form
     {
+        /// <summary>The title for the message box to show during debugging when an icon is missing</summary>
         private const string TvIconErrorCaption = "Missing Icon Key";
 
+        /// <summary>The default volume</summary>
         private const int DefaultVolume = 100;
 
+        /// <summary>Used when the user presses the left mouse button while the cursor is within the non-client area of a window</summary>
         private const int WM_NCLBUTTONDOWN = 0xA1;
+
+        /// <summary>In a title bar</summary>
         private const int HT_CAPTION = 0x2;
 
+        /// <summary>The current Closed Captioning track index</summary>
         private int _ccIdx;
+
+        /// <summary>The time out in 100ms chunks to wait before retrying the media stream</summary>
         private int _isErrorRetryTimeout = 100;
 
+        /// <summary>Used to determine if there is Closed Captioning data available</summary>
         private bool _ccDetected;
+
+        /// <summary>Locks the form to only allow initialization once</summary>
         private bool _isInitialized;
+
+        /// <summary>Used to determine if currently in a retry error state</summary>
         private bool _isErrorState;
+
+        /// <summary>Used to avoid called disposed methods during a multi-threaded shutdown</summary>
         private bool _isClosing;
 
+        /// <summary>The LibVLC data for the current media loaded</summary>
         private VlcMedia _currentMedia;
 
+        /// <summary>The media information icons <see cref="Dictionary{TKey,TValue}"/></summary>
         private static readonly Dictionary<string, Image> _tvIcon = new Dictionary<string, Image>();
 
+        /// <summary>The icons for the current media loaded</summary>
         private TvIconData _currentTvIconData;
 
+        /// <summary>The time value used to wait before hiding the TV UI</summary>
         private int _uiFadeoutTime;
 
+        /// <summary>Is the UI currently in channel entry mode</summary>
         private bool _numberEntryMode;
-        private int _numberEntryModeTimeout;
 
+        /// <summary>The time out before submitting the entry to change the channel</summary>
+        private int _numberEntryModeTimeout;
+        
+        /// <summary>The list of digits entered by the user</summary>
+        private readonly List<int> _numberEntryDigits = new List<int>();
+        
+        /// <summary>A synchronizer to allow cross threaded access to the quit functions, avoiding touching disposed objects</summary>
         private readonly object _isClosingLock = new object();
 
-        private readonly List<int> _numberEntryDigits = new List<int>();
-
+        /// <summary>The about form, shows information about the application, because</summary>
         private readonly AboutForm _aboutForm = new AboutForm();
+
+        /// <summary>The guide form, used to show current and upcoming programmes for the channels</summary>
         private readonly GuideForm _guideForm = new GuideForm();
+
+        /// <summary>The channels form, used to search for channels and favorite them</summary>
         private readonly ChannelsForm _channelsForm = new ChannelsForm();
 
+        /// <summary>Send a windows message on behalf of this app</summary>
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
+        /// <summary>Release the mouse capture state so we can drag a borderless window</summary>
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
 
+        /// <inheritdoc/>
         public TvForm()
         {
             TvCore.LogDebug("[.NET] TvForm(): Starting");
@@ -84,6 +118,8 @@ namespace FoxIPTV.Forms
             TvCore.LogDebug("[.NET] TvForm(): Finished starting");
         }
 
+        /// <summary>Handler for TVCore's channel changed event</summary>
+        /// <param name="channel">The new channel we are changing to</param>
         private void TvCoreOnChannelChanged(uint channel)
         {
             this.InvokeIfRequired(() => 
@@ -107,6 +143,7 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>Update the main form title to contain the channel number and current programme</summary>
         private void UpdateFormTitle()
         {
             var currentProgramme = string.Empty;
@@ -123,6 +160,7 @@ namespace FoxIPTV.Forms
             Text = string.Format(Resources.TvForm_TitleInfo, TvCore.CurrentChannel.Index, chanName, currentProgramme);
         }
 
+        /// <summary>Initialize the TV Media status icons dictionary</summary>
         private static void InitializeTvIcons()
         {
             // Video Codecs
@@ -168,6 +206,7 @@ namespace FoxIPTV.Forms
             _tvIcon.Add("AR_48KHZ", Resources.__AR_48KHZ);
         }
 
+        /// <summary>Initialize LibVLC</summary>
         private void InitializeVlcPlayer()
         {
             vlcControl.VlcMediaPlayer.Manager.SetAppId("FoxIPTV", Application.ProductVersion, "");
@@ -176,6 +215,7 @@ namespace FoxIPTV.Forms
             vlcControl.VlcMediaPlayer.Log += (s, a) => { TvCore.LogInfo($"[Media] {a.Message}"); };
         }
 
+        /// <summary>Load the form defaults from the saved user settings</summary>
         private void InitializeFormDefaults()
         {
             if (TvCore.Settings.TvFormSize != Size.Empty)
@@ -212,6 +252,7 @@ namespace FoxIPTV.Forms
             Visible = TvCore.Settings.Visibility;
         }
 
+        /// <summary>Initialize the right click menu</summary>
         private void InitializeContextMenu()
         {
             toolStripMenuItemChannelUp.Click += (sender, args) => TvCore.ChangeChannel(true);
@@ -233,6 +274,7 @@ namespace FoxIPTV.Forms
             toolStripMenuItemQuit.Click += (sender, args) => Quit();
         }
 
+        /// <summary>Initialize the status strip for the main form</summary>
         private void InitializeStatusStrip()
         {
             statusStrip.Items.Insert(2, new ToolStripSeparator());
@@ -243,6 +285,7 @@ namespace FoxIPTV.Forms
             ccStatusLabel.ForeColor = TvCore.Settings.CCEnabled ? Color.Black : Color.Gainsboro;
         }
 
+        /// <summary>Initialize the capture panel that sits on top of the drawn LibVLC output</summary>
         private void InitializeMouseCapturePanel()
         {
             var panelMouseCapture = new AlphaGradientPanel
@@ -272,8 +315,12 @@ namespace FoxIPTV.Forms
             panelMouseCapture.BringToFront();
         }
 
+        /// <summary>Gets or sets if the form is full screen or not</summary>
         public bool IsFullscreen { get; set; }
 
+        /// <summary>The Form Load handler, which starts TVCore's functionality</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private async void TvForm_Load(object sender, EventArgs e)
         {
             TvCore.ChannelLoadPercentageChanged += percentage => this.InvokeIfRequired(() =>
@@ -313,6 +360,9 @@ namespace FoxIPTV.Forms
             TvCore.SetChannel(TvCore.Settings.Channel);
         }
 
+        /// <summary>The KeyUp handler for hot keys</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void TvForm_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Z)
@@ -436,16 +486,25 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>The Form's resize end event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void TvForm_ResizeEnd(object sender, EventArgs e)
         {
             AspectRatioResize();
         }
 
+        /// <summary>The Form's handler when shown</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void TvForm_Shown(object sender, EventArgs e)
         {
             AspectRatioResize();
         }
 
+        /// <summary>Handle the Form's Closing event to hide form instead of closing it</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void TvForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason != CloseReason.UserClosing)
@@ -460,13 +519,19 @@ namespace FoxIPTV.Forms
             ToggleVisibility();
         }
 
+        /// <summary>Handle the Form's movement events to save the position</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void TvForm_Move(object sender, EventArgs e)
         {
             TvCore.Settings.TvFormLocation = Location;
             TvCore.Settings.Save();
         }
 
-        private void toolStripMenuItemTransparency_Clicked(object sender, EventArgs e)
+        /// <summary>The right click menu Opacity change handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void ToolStripMenuItemTransparency_Clicked(object sender, EventArgs e)
         {
             if (!(sender is ToolStripMenuItem item))
             {
@@ -479,7 +544,10 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
-        private void toolStripMenuItemStereoMode_Click(object sender, EventArgs e)
+        /// <summary>The right click menu Stereo mode change handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void ToolStripMenuItemStereoMode_Click(object sender, EventArgs e)
         {
             if(!(sender is ToolStripMenuItem item))
             {
@@ -494,11 +562,13 @@ namespace FoxIPTV.Forms
             ThreadPool.QueueUserWorkItem(state => { vlcControl.Audio.Channel = stereoMode; });
         }
 
+        /// <summary>Toggle this form's fullscreen state</summary>
         private void ToggleFullscreen()
         {
             FullscreenSet(!TvCore.Settings.Fullscreen);
         }
 
+        /// <summary>Toggle the visibility for the channel editor form</summary>
         private void ToggleChannelsForm()
         {
             if (_channelsForm.Visible)
@@ -515,6 +585,7 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
+        /// <summary>Toggle the visibility for the guide form</summary>
         private void ToggleGuideForm()
         {
             if (_guideForm.Visible)
@@ -531,6 +602,7 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
+        /// <summary>Toggle the visibility of the form's status strip</summary>
         private void ToggleStatusStrip()
         {
             statusStrip.Visible = !statusStrip.Visible;
@@ -541,6 +613,7 @@ namespace FoxIPTV.Forms
             AspectRatioResize();
         }
 
+        /// <summary>Toggle the form's borders</summary>
         private void ToggleBorders()
         {
             TvCore.Settings.Borders = !TvCore.Settings.Borders;
@@ -552,6 +625,7 @@ namespace FoxIPTV.Forms
             AspectRatioResize();
         }
 
+        /// <summary>Toggle the form's Always on Top state</summary>
         private void ToggleAlwaysOnTop()
         {
             TopMost = !TopMost;
@@ -560,6 +634,7 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
+        /// <summary>Toggle the main form's visibility</summary>
         private void ToggleVisibility()
         {
             if (Visible)
@@ -577,11 +652,13 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
+        /// <summary>Toggle the mute state</summary>
         private void ToggleMute()
         {
             ThreadPool.QueueUserWorkItem(state => vlcControl.Audio.Volume = vlcControl.Audio.Volume == 0 ? DefaultVolume : 0);
         }
 
+        /// <summary>Toggle Closed Captioning on or off</summary>
         private void ToggleClosedCaptioning()
         {
             TvCore.Settings.CCEnabled = !TvCore.Settings.CCEnabled;
@@ -592,6 +669,9 @@ namespace FoxIPTV.Forms
             ccStatusLabel.ForeColor = TvCore.Settings.CCEnabled ? Color.Black : Color.Gainsboro;
         }
 
+        /// <summary>The form's double click handler, used to toggle fullscreen</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void MouseDoubleClickHandler(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -600,6 +680,9 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>The form's click handler, used to detect right click and display a context menu</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void MouseClickHandler(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right)
@@ -615,7 +698,10 @@ namespace FoxIPTV.Forms
             contextMenuStrip.Show(Cursor.Position);
         }
 
-        private void contextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        /// <summary>The right click menu's opening event, used to set the various current states</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void ContextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             toolStripMenuItemChannelNumber.Text = string.Format(Resources.TvForm_ChannelShorthand, TvCore.CurrentChannel.Index);
             toolStripMenuItemChannelName.Text = TvCore.CurrentChannel.Name;
@@ -679,7 +765,10 @@ namespace FoxIPTV.Forms
             toolStripMenuItemChannelEditor.Checked = _channelsForm.Visible;
         }
 
-        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        /// <summary>The notification icon click event, used to trigger visibility on the main form</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left)
             {
@@ -689,6 +778,9 @@ namespace FoxIPTV.Forms
             ToggleVisibility();
         }
 
+        /// <summary>Direct LibVLC to the directory containing libvlc.dll</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_VlcLibDirectoryNeeded(object sender, VlcLibDirectoryNeededEventArgs e)
         {
             TvCore.LogDebug("[.NET] VlcControl_VlcLibDirectoryNeeded()");
@@ -696,6 +788,9 @@ namespace FoxIPTV.Forms
             e.VlcLibDirectory = new DirectoryInfo(TvCore.LibraryPath);
         }
 
+        /// <summary>The LibVLC TimeChanged event handler handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
             lock (_isClosingLock)
@@ -730,6 +825,9 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>The LibVLC Playing event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_Playing(object sender, VlcMediaPlayerPlayingEventArgs e)
         {
             TvCore.LogDebug("[.NET] VlcControl_Playing()");
@@ -745,11 +843,17 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>The LibVLC Paused event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_Paused(object sender, VlcMediaPlayerPausedEventArgs e)
         {
             this.InvokeIfRequired(() => { playerStatusLabel.Text = Resources.TvForm_Paused; });
         }
 
+        /// <summary>The LibVLC Stopped event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_Stopped(object sender, VlcMediaPlayerStoppedEventArgs e)
         {
             TvCore.LogDebug("[.NET] VlcControl_Stopped()");
@@ -777,11 +881,17 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>The LibVLC Buffering event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_Buffering(object sender, VlcMediaPlayerBufferingEventArgs e)
         {
             this.InvokeIfRequired(() => { bufferStatusProgressBar.Value = (int)e.NewCache; });
         }
 
+        /// <summary>The LibVLC EncounteredError event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_EncounteredError(object sender, VlcMediaPlayerEncounteredErrorEventArgs e)
         {
             TvCore.LogError($"[.NET] VlcControl_EncounteredError({e})");
@@ -793,6 +903,9 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>The LibVLC EndReached event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void VlcControl_EndReached(object sender, VlcMediaPlayerEndReachedEventArgs e)
         {
             TvCore.LogDebug($"[.NET] VlcControl_EndReached({e})");
@@ -804,6 +917,7 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>Used to actually being the quit proceedure for the application</summary>
         private void Quit()
         {
             lock (_isClosingLock)
@@ -819,6 +933,7 @@ namespace FoxIPTV.Forms
             ThreadPool.QueueUserWorkItem(state => vlcControl.Stop());
         }
 
+        /// <summary>Detect if the currently playing stream contains closed captioning</summary>
         private void ProcessClosedCaptioning()
         {
             var idx = Convert.ToInt32(TvCore.Settings.CCEnabled);
@@ -862,12 +977,17 @@ namespace FoxIPTV.Forms
             }
         }
 
-        private void ccOptionsDropDownButton_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        /// <summary>The Closed Captioning index change event handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void CCOptionsDropDownButton_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             _ccIdx = (int)e.ClickedItem.Tag;
             _ccDetected = false;
         }
 
+        /// <summary>Set fullscreen to a specific state</summary>
+        /// <param name="value">True for fullscreen, false of restored size and position</param>
         public void FullscreenSet(bool value)
         {
             TvCore.Settings.Fullscreen = value;
@@ -897,6 +1017,7 @@ namespace FoxIPTV.Forms
             AspectRatioResize();
         }
 
+        /// <summary>Show the TV GUI to the user</summary>
         private void GuiShow()
         {
             if (!_isInitialized)
@@ -947,6 +1068,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>Hide the TV GUI from the user</summary>
         private void GuiHide()
         {
             channelLabel.Text = string.Empty;
@@ -962,7 +1084,10 @@ namespace FoxIPTV.Forms
             pictureBoxAudioRate.Visible = false;
         }
 
-        private void GetTvIcon(string iconStringKey, PictureBox pictureBox)
+        /// <summary>Use with a <see cref="PictureBox"/> to set it to TV Icon needed</summary>
+        /// <param name="iconStringKey">The string key for the needed icon</param>
+        /// <param name="pictureBox">The <see cref="PictureBox"/> to modify</param>
+        private static void GetTvIcon(string iconStringKey, PictureBox pictureBox)
         {
             pictureBox.Visible = false;
 
@@ -986,6 +1111,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>Set the window size to always match the media's aspect ratio</summary>
         private void AspectRatioResize()
         {
             if (WindowState == FormWindowState.Normal)
@@ -1017,6 +1143,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>Set the media error state</summary>
         private void SetErrorState()
         {
             _isErrorState = true;
@@ -1028,6 +1155,7 @@ namespace FoxIPTV.Forms
             labelStatus.Visible = true;
         }
 
+        /// <summary>Remove the media error state</summary>
         private void RemoveErrorState()
         {
             _isErrorState = false;
@@ -1039,6 +1167,9 @@ namespace FoxIPTV.Forms
             ThreadPool.QueueUserWorkItem(state => vlcControl.Stop());
         }
 
+        /// <summary>The timer tick handler for the form</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
         private void Timer_Tick(object sender, EventArgs e)
         {
             this.InvokeIfRequired(() =>
@@ -1076,6 +1207,7 @@ namespace FoxIPTV.Forms
             });
         }
 
+        /// <summary>This is used to check for keyboard channel input</summary>
         private void TimerKeyboardEntry()
         {
             if (_numberEntryMode && _numberEntryModeTimeout == 1)
@@ -1102,6 +1234,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>The tick method to eventually hide the GUI after a certain time</summary>
         private void TimerUiFade()
         {
             if (_uiFadeoutTime == 1)
@@ -1116,6 +1249,7 @@ namespace FoxIPTV.Forms
             }
         }
 
+        /// <summary>The tick method to find and display the various media information icons</summary>
         private void TimerTvIcons()
         {
             try

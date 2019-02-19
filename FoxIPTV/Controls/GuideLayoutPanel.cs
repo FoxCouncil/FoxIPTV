@@ -11,27 +11,44 @@ namespace FoxIPTV.Controls
     using Properties;
     using Timer = System.Windows.Forms.Timer;
 
+    /// <inheritdoc />
+    /// <summary>A custom <see cref="T:System.Windows.Forms.TableLayoutPanel" /> used to display guide data</summary>
     public sealed class GuideLayoutPanel : TableLayoutPanel
     {
+        /// <summary>No idea why 42 looks good, but it made it look great!</summary>
         private const int defaultStylePercentage = 42;
 
+        /// <summary>How many pixels we try and each each row</summary>
         private const double defaultRowHeight = 60d;
+
+        /// <summary>How many pixels we try and each each column</summary>
         private const double defaultColWidth = 80d;
 
+        /// <summary>A Windows Forms based Timer object to display current time to the user</summary>
         private readonly Timer timer = new Timer();
 
+        /// <summary>The current time used to generate the time headers</summary>
         private DateTime lastHeaderTime;
 
+        /// <summary>Are we navigating the guide by time</summary>
         private bool _timeCursorOn;
+
+        /// <summary>If we are navigating the guide, this is the origin point</summary>
         private DateTime _timeCursor;
 
+        /// <summary>Is there a model to draw the table with</summary>
         private bool _dataLoaded;
 
+        /// <summary>I have been in </summary>
         private readonly ToolTip _toolTip = new ToolTip { IsBalloon = true, ToolTipIcon = ToolTipIcon.Info, ToolTipTitle = "Guide Info" };
 
+        /// <summary>The guide data model synchronizer lock, allows thread safe access to the member</summary>
         private readonly object _guideModelLock = new object();
+
+        /// <summary>The guide data model, used to store the calculated model of this control</summary>
         private GuideStateModel _guideModel;
 
+        /// <summary>Control's public constructor</summary>
         public GuideLayoutPanel()
         {
             BackColor = Color.Black;
@@ -50,19 +67,27 @@ namespace FoxIPTV.Controls
             timer.Tick += timer_Tick;
             timer.Enabled = true;
 
+            // We depend on TVCore's state
             TvCore.StateChanged += state => _dataLoaded = state == TvCoreState.Running;
             TvCore.ChannelChanged += channel => DrawGuide(true);
         }
 
+        /// <summary>Draw the guide UI</summary>
+        /// <param name="drawAnyway">Draw even if the size has not changed</param>
         public void DrawGuide(bool drawAnyway = false)
         {
+            // This makes the UI stutter less but still takes time to calculate the guide.
+            // TODO: Needs profiling
             ThreadPool.QueueUserWorkItem(state => { GenerateGuide(drawAnyway); });
         }
 
+        /// <summary>Actually draw the guide, usually in another thread</summary>
+        /// <param name="drawAnyway">Draw even if the size has not changed</param>
         private void GenerateGuide(bool drawAnyway = false)
         {
             if (!_dataLoaded)
             {
+                // If there is no data, do nothing
                 return;
             }
 
@@ -73,7 +98,7 @@ namespace FoxIPTV.Controls
                 HeaderTitle = _timeCursorOn ? (DateTime.Now.RoundUp(TimeSpan.FromMinutes(10)) - _timeCursor).ToString("g") : "Today"
             };
 
-            // Time Columns
+            // Columns: Time
             lastHeaderTime = DateTime.Now;
             var now = _timeCursorOn ? _timeCursor : lastHeaderTime;
             var minutes = now.Minute;
@@ -102,7 +127,7 @@ namespace FoxIPTV.Controls
                 now = now.AddMinutes(30);
             }
 
-            // Rows
+            // Rows: Channels & Their Programmes
             for (var rowIdx = 1; rowIdx < newGuideModel.TotalRows; rowIdx++)
             {
                 var channelIndex = TvCore.CurrentChannelIndex;
@@ -193,7 +218,8 @@ namespace FoxIPTV.Controls
 
                 newGuideModel.Rows.Add(newRow);
             }
-
+            
+            // Write the data to the control
             lock (_guideModelLock)
             {
                 _guideModel = newGuideModel;
@@ -202,8 +228,11 @@ namespace FoxIPTV.Controls
             this.InvokeIfRequired(() => Draw(drawAnyway));
         }
 
+        /// <summary>Draw the guide using GDI+ controls, using a data model</summary>
+        /// <param name="drawAnyway">Draw even if the size hasn't changed.</param>
         private void Draw(bool drawAnyway = false)
         {
+            // Do not draw if the model is being written
             lock (_guideModelLock)
             {
                 if (!drawAnyway && RowCount == _guideModel.TotalRows && ColumnCount == _guideModel.TotalColumns)
@@ -403,7 +432,10 @@ namespace FoxIPTV.Controls
             ResumeLayout(true);
         }
 
-        private void ChangeChanel(object sender, EventArgs args)
+        /// <summary>Channel changed event handler</summary>
+        /// <param name="sender">The object responsible for the event</param>
+        /// <param name="args">The event arguments</param>
+        private static void ChangeChanel(object sender, EventArgs args)
         {
             var control = sender as Control;
 
@@ -415,6 +447,7 @@ namespace FoxIPTV.Controls
             TvCore.SetChannel((uint) TvCore.ChannelIndexList.IndexOf(clickedChannel.Index));
         }
 
+        /// <summary>Turns off navigation and resets the view to DateTime.Now</summary>
         public void ResetView()
         {
             _timeCursorOn = false;
@@ -422,6 +455,9 @@ namespace FoxIPTV.Controls
             DrawGuide(true);
         }
 
+        /// <summary>Draw the guide when the minute changes</summary>
+        /// <param name="sender">The object responsible for the event</param>
+        /// <param name="args">The event arguments</param>
         private void timer_Tick(object sender, EventArgs e)
         {
             if (lastHeaderTime.Minute != DateTime.Now.Minute)
