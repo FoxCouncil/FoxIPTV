@@ -7,6 +7,7 @@ namespace FoxIPTV.Services
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -187,15 +188,30 @@ namespace FoxIPTV.Services
 
             foreach (var chan in channelArray)
             {
-                channelList.Add(new Channel
+                try
                 {
-                    Index = chan["num"].ToObject<uint>(),
-                    Id = chan["epg_channel_id"].ToString(),
-                    Name = chan["name"].ToString(),
-                    Logo = Uri.TryCreate(chan["stream_icon"].ToString(), UriKind.Absolute, out var result) ? result : null,
-                    Group = categoryDictionary[chan["category_id"].ToString()],
-                    Stream = new Uri($"{BuildUri(VideoLiveStreamUrl)}{chan["stream_id"]}.ts")
-                });
+                    var group = chan["category_id"].ToString();
+                    if (!string.IsNullOrWhiteSpace(group) && categoryDictionary.ContainsKey(group))
+                    {
+                        group = categoryDictionary[group];
+                    }
+
+                    channelList.Add(new Channel
+                    {
+                        Index = chan["num"].ToObject<uint>(),
+                        Id = chan["epg_channel_id"].ToString(),
+                        Name = chan["name"].ToString(),
+                        Logo = Uri.TryCreate(chan["stream_icon"].ToString(), UriKind.Absolute, out var result) ? result : null,
+                        Group = group,
+                        Stream = new Uri($"{BuildUri(VideoLiveStreamUrl)}{chan["stream_id"]}.ts")
+                    });
+                }
+                catch (Exception e)
+                {
+                    Debugger.Break();
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
 
             TvCore.LogDebug($"[{Title}] ProcessChannels() End: {channelList.Count} channel(s) processed");
