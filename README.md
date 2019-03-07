@@ -27,4 +27,3 @@ The OSS LibVLC based IPTV client.
 
 # How To Help •°•═════
 - Submit a Pull Request
-
