@@ -26,5 +26,6 @@ The OSS LibVLC based IPTV client.
 - Channel Favorites Only Navigation
 
 # How To Help •°•═════
+- [Donate (API Documentation/Account Details) For More IPTV Providers](https://forms.gle/yRH4HPUC5AqyUxYKA)
 - Submit a Pull Request
 - Donate Bitcoins to: [3EmPXjzZ7Lmpjn859oiu4wzK6d3GeK6W1z](bitcoin:32ueQev4wTXHmWGpR1GkTVfhABdw1xeBrf?amount=0.1)
