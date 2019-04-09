@@ -47,11 +47,14 @@ namespace FoxIPTV.Classes
         /// <summary>Is the GuideForm currently open (visible)</summary>
         public bool GuideOpen { get; set; } = false;
 
-        /// <summary>The currently level of opacity for the TVForm</summary>
-        public double Opacity { get; set; } = 1;
-
         /// <summary>Is the main TVForm open (visible)</summary>
         public bool Visibility { get; set; } = true;
+
+        /// <summary>The current level of opacity for the TVForm</summary>
+        public double Opacity { get; set; } = 1;
+
+        /// <summary>The current aspect ratio for the video</summary>
+        public string AspectRatio { get; set; } = string.Empty;
 
         /// <summary>The current LibVLC audio mode</summary>
         public int StereoMode { get; set; } = 1;

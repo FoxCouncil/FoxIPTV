@@ -19,6 +19,18 @@ namespace FoxIPTV.Forms
     /// <summary>The main form for displaying IPTV streams</summary>
     public partial class TvForm : Form
     {
+        private readonly Dictionary<string, float> AspectRatioConversionTable = new Dictionary<string, float> {
+            { string.Empty, 0.5625f },
+            { "16:9",       0.5625f },
+            { "4:3",        0.75f },
+            { "1:1",        1.0f },
+            { "16:10",      0.625f },
+            { "2.21:1",     0.4524886877828054f },
+            { "2.35:1",     0.425531914893617f },
+            { "2.39:1",     0.4184100418410042f },
+            { "5:4",        0.8f }
+        };
+
         /// <summary>The title for the message box to show during debugging when an icon is missing</summary>
         private const string TvIconErrorCaption = "Missing Icon Key";
 
@@ -544,6 +556,28 @@ namespace FoxIPTV.Forms
             TvCore.Settings.Save();
         }
 
+        /// <summary>The right click menu Opacity change handler</summary>
+        /// <param name="sender">The object that triggered the event</param>
+        /// <param name="e">The event arguments</param>
+        private void ToolStripMenuItemAspectRatio_Clicked(object sender, EventArgs e)
+        {
+            if (!(sender is ToolStripMenuItem item))
+            {
+                return;
+            }
+
+            var aspectRatioVal = item.Tag.ToString();
+
+            aspectRatioVal = aspectRatioVal == "null" ? string.Empty : aspectRatioVal;
+
+            TvCore.Settings.AspectRatio = aspectRatioVal;
+            TvCore.Settings.Save();
+
+            ThreadPool.QueueUserWorkItem(state => { vlcControl.Video.AspectRatio = aspectRatioVal; });
+
+            AspectRatioResize();
+        }
+
         /// <summary>The right click menu Stereo mode change handler</summary>
         /// <param name="sender">The object that triggered the event</param>
         /// <param name="e">The event arguments</param>
@@ -734,6 +768,21 @@ namespace FoxIPTV.Forms
 
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 submenu.Checked = Opacity == opacityVal;
+            }
+
+            var aspectRatio = vlcControl.Video.AspectRatio;
+
+            foreach (ToolStripMenuItem submenu in toolStripMenuItemAspectRatio.DropDownItems)
+            {
+                if (submenu.GetType() != typeof(ToolStripMenuItem))
+                {
+                    return;
+                }
+
+                var aspectRatioVar = submenu.Tag.ToString();
+
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                submenu.Checked = (aspectRatio == null && aspectRatioVar == "null") || aspectRatio == aspectRatioVar;
             }
 
             var stereoMode = vlcControl.Audio.Channel;
@@ -1113,7 +1162,18 @@ namespace FoxIPTV.Forms
                     heightAdjust = statusStrip.Height;
                 }
 
-                ClientSize = new Size(ClientSize.Width, (int)(0.5625f * ClientSize.Width) + heightAdjust);
+                var aspectRatio = AspectRatioConversionTable[TvCore.Settings.AspectRatio];
+
+                if (aspectRatio != 1)
+                {
+                    ClientSize = new Size(ClientSize.Width, (int)(aspectRatio * ClientSize.Width) + heightAdjust);
+                }
+                else
+                {
+                    var maxVal = Math.Min(ClientSize.Width, ClientSize.Height + heightAdjust);
+
+                    ClientSize = new Size(maxVal, maxVal + heightAdjust);
+                }
             }
 
             TvCore.Settings.TvFormSize = ClientSize;
@@ -1192,7 +1252,12 @@ namespace FoxIPTV.Forms
 
                 if (vlcControl.Audio.Channel != TvCore.Settings.StereoMode)
                 {
-                    vlcControl.Audio.Channel = TvCore.Settings.StereoMode;
+                    ThreadPool.QueueUserWorkItem(state => vlcControl.Audio.Channel = TvCore.Settings.StereoMode);
+                }
+
+                if (vlcControl.Video.AspectRatio != TvCore.Settings.AspectRatio)
+                {
+                    ThreadPool.QueueUserWorkItem(state => vlcControl.Video.AspectRatio = TvCore.Settings.AspectRatio);
                 }
             });
         }

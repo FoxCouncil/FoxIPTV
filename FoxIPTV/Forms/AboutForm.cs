@@ -3,6 +3,7 @@
 namespace FoxIPTV.Forms
 {
     using System;
+    using System.Reflection;
     using System.Windows.Forms;
 
     /// <inheritdoc/>
@@ -12,6 +13,8 @@ namespace FoxIPTV.Forms
         public AboutForm()
         {
             InitializeComponent();
+
+            labelTitle.Text += $" V{((AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyFileVersionAttribute), false)).Version}";
         }
 
         /// <summary>The click handler for the amazing person that shared their icons with the world!</summary>

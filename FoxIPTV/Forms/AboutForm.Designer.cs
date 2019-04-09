@@ -28,27 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.Label label1;
             System.Windows.Forms.GroupBox groupBoxWhy;
-            System.Windows.Forms.LinkLabel linkLabelIconAttribution;
             System.Windows.Forms.Label label2;
+            System.Windows.Forms.LinkLabel linkLabelIconAttribution;
+            this.labelTitle = new System.Windows.Forms.Label();
             this.buttonClose = new System.Windows.Forms.Button();
-            label1 = new System.Windows.Forms.Label();
             groupBoxWhy = new System.Windows.Forms.GroupBox();
-            linkLabelIconAttribution = new System.Windows.Forms.LinkLabel();
             label2 = new System.Windows.Forms.Label();
+            linkLabelIconAttribution = new System.Windows.Forms.LinkLabel();
             groupBoxWhy.SuspendLayout();
             this.SuspendLayout();
             // 
-            // label1
+            // labelTitle
             // 
-            label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            label1.Location = new System.Drawing.Point(12, 9);
-            label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(279, 23);
-            label1.TabIndex = 1;
-            label1.Text = "Fox IPTV";
-            label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTitle.Location = new System.Drawing.Point(12, 9);
+            this.labelTitle.Name = "labelTitle";
+            this.labelTitle.Size = new System.Drawing.Size(279, 23);
+            this.labelTitle.TabIndex = 1;
+            this.labelTitle.Text = "Fox IPTV";
+            this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBoxWhy
             // 
@@ -59,6 +58,16 @@
             groupBoxWhy.TabIndex = 2;
             groupBoxWhy.TabStop = false;
             groupBoxWhy.Text = "Why?";
+            // 
+            // label2
+            // 
+            label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            label2.Location = new System.Drawing.Point(7, 20);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(266, 58);
+            label2.TabIndex = 0;
+            label2.Text = "BECAUSE";
+            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // linkLabelIconAttribution
             // 
@@ -86,16 +95,6 @@
             this.buttonClose.UseVisualStyleBackColor = true;
             this.buttonClose.Click += new System.EventHandler(this.ButtonClose_Click);
             // 
-            // label2
-            // 
-            label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            label2.Location = new System.Drawing.Point(7, 20);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(266, 58);
-            label2.TabIndex = 0;
-            label2.Text = "BECAUSE";
-            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // AboutForm
             // 
             this.AcceptButton = this.buttonClose;
@@ -104,7 +103,7 @@
             this.ClientSize = new System.Drawing.Size(304, 201);
             this.Controls.Add(linkLabelIconAttribution);
             this.Controls.Add(groupBoxWhy);
-            this.Controls.Add(label1);
+            this.Controls.Add(this.labelTitle);
             this.Controls.Add(this.buttonClose);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -123,5 +122,6 @@
         
 
         private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.Label labelTitle;
     }
 }

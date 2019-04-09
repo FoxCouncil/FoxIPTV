@@ -237,13 +237,13 @@ namespace FoxIPTV.Services
 
             foreach (var element in parsedGuide.Descendants("programme"))
             {
-                DateTime start;
-                DateTime stop;
+                DateTimeOffset start;
+                DateTimeOffset stop;
 
                 try
                 {
-                    start = DateTime.ParseExact(element.Attribute("start")?.Value, "yyyyMMddHHmmss +0000", null);
-                    stop = DateTime.ParseExact(element.Attribute("stop")?.Value, "yyyyMMddHHmmss +0000", null);
+                    start = DateTimeOffset.ParseExact(element.Attribute("start")?.Value, "yyyyMMddHHmmss zzz", null);
+                    stop = DateTimeOffset.ParseExact(element.Attribute("stop")?.Value, "yyyyMMddHHmmss zzz", null);
                 }
                 catch (Exception)
                 {
