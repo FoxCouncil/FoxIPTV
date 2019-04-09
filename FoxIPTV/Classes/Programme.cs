@@ -11,10 +11,10 @@ namespace FoxIPTV.Classes
         public string Channel { get; set; }
 
         /// <summary>The start time of this programme</summary>
-        public DateTime Start { get; set; }
+        public DateTimeOffset Start { get; set; }
 
         /// <summary>The stop time of this programme</summary>
-        public DateTime Stop { get; set; }
+        public DateTimeOffset Stop { get; set; }
 
         /// <summary>How many blocks long is this programme, in 10 minute intervals</summary>
         public int BlockLength { get; set; }
