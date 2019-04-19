@@ -12,6 +12,7 @@ namespace FoxIPTV.Services
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
+    using System.Web;
     using System.Xml.Linq;
 
     public class XtreamService : IService
@@ -62,6 +63,8 @@ namespace FoxIPTV.Services
 
             var authDataFile = Path.Combine(TvCore.UserStoragePath, ServiceDataFilename);
 
+            Uri domainUri = null;
+
             Uri authUrl;
 
             if (!File.Exists(authDataFile))
@@ -82,7 +85,7 @@ namespace FoxIPTV.Services
                     return false;
                 }
 
-                var domainUri = new Uri(Services);
+                domainUri = new Uri(Services);
 
                 authUrl = new Uri($"http://{domainUri.DnsSafeHost}/{string.Format(AuthenticationUrl, Username, Password)}");
 
@@ -105,6 +108,9 @@ namespace FoxIPTV.Services
                 {
                     var data = await wc.DownloadStringTaskAsync(authUrl);
                     _authData = JsonConvert.DeserializeObject<AuthResponse>(data);
+
+                    _authData.Server.UserUrl = domainUri?.DnsSafeHost ?? string.Empty;
+                    _authData.Server.UserPort = domainUri?.Port ?? 0;
 
                     TvCore.LogDebug($"[{Title}] IsAuthenticated(): Checking server connection SUCCESS! IsAuthenticated: {_authData.User.Authenticated}");
                 }
@@ -148,7 +154,12 @@ namespace FoxIPTV.Services
 
         private string BuildUri(string endpointUrl)
         {
-            return $"{_authData.Server.ServerProtocol}://{_authData.Server.Url}:{_authData.Server.Port}/{string.Format(endpointUrl, _authData.User.Username, _authData.User.Password)}";
+            string url = string.IsNullOrEmpty(_authData.Server.UserUrl) ? _authData.Server.Url : _authData.Server.UserUrl;
+            int port = _authData.Server.UserPort == 0 ? _authData.Server.Port : _authData.Server.UserPort;
+
+            var user = HttpUtility.UrlEncode(_authData.User.Username);
+
+            return $"{_authData.Server.ServerProtocol}://{url}:{port}/{string.Format(endpointUrl, user, _authData.User.Password)}";
         }
 
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
@@ -321,8 +332,14 @@ namespace FoxIPTV.Services
             [JsonProperty("url")]
             public string Url { get; set; }
 
+            [JsonProperty("user_url")]
+            public string UserUrl { get; set; }
+
             [JsonProperty("port")]
             public int Port { get; set; }
+
+            [JsonProperty("user_port")]
+            public int UserPort { get; set; }
 
             [JsonProperty("https_port")]
             public int HttpsPort { get; set; }
