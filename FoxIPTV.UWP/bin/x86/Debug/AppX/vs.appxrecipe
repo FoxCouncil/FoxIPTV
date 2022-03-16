@@ -1,0 +1,1698 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Machine>FOXDESK</Machine>
+    <WindowsUser>Fox</WindowsUser>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetOsVersion>10.0</TargetOsVersion>
+    <TargetOsDescription>Windows 10.0</TargetOsDescription>
+    <SolutionConfiguration>Debug|x86</SolutionConfiguration>
+    <PackageArchitecture>x86</PackageArchitecture>
+    <PackageIdentityName>29aa5679-e997-4db5-becc-640cf98cb8ab</PackageIdentityName>
+    <PackageIdentityPublisher>CN=Fox</PackageIdentityPublisher>
+    <IntermediateOutputPath>X:\GitHub\FoxIPTV\FoxIPTV.UWP\obj\x86\Debug\</IntermediateOutputPath>
+    <RemoteDeploymentType>
+    </RemoteDeploymentType>
+    <PackageRegistrationPath>
+    </PackageRegistrationPath>
+    <RemoveNonLayoutFiles>true</RemoveNonLayoutFiles>
+    <DeployOptionalPackages>false</DeployOptionalPackages>
+    <WindowsSdkPath>C:\Program Files %28x86%29\Windows Kits\10\</WindowsSdkPath>
+    <LayoutDir>X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\AppX</LayoutDir>
+    <RegisteredManifestChecksum>352D8CF8C35CD2630A098DBC416982EA004E468D5ABC8BE1242AC3881B034DC2</RegisteredManifestChecksum>
+    <RegisteredPackageMoniker>29aa5679-e997-4db5-becc-640cf98cb8ab_1.0.0.0_x86__45phwvm7c7aq6</RegisteredPackageMoniker>
+    <RegisteredUserModeAppID>29aa5679-e997-4db5-becc-640cf98cb8ab_45phwvm7c7aq6!App</RegisteredUserModeAppID>
+    <RegisteredPackageID>29aa5679-e997-4db5-becc-640cf98cb8ab</RegisteredPackageID>
+    <RegisteredPackagePublisher>CN=Fox</RegisteredPackagePublisher>
+    <RegisteredVersion>1.0.0.0</RegisteredVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppXManifest Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\Core\AppxManifest.xml">
+      <PackagePath>AppxManifest.xml</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-14T06:58:33.275</Modified>
+    </AppXManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\FoxIPTV.exe">
+      <PackagePath>entrypoint\FoxIPTV.exe</PackagePath>
+      <Modified>2019-06-14T06:58:32.198</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\libvlcsharp\3.0.2\lib\uap10.0.16299\LibVLCSharp.dll">
+      <PackagePath>LibVLCSharp.dll</PackagePath>
+      <Modified>2019-06-12T11:57:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\newtonsoft.json\12.0.2\lib\netstandard2.0\Newtonsoft.Json.dll">
+      <PackagePath>Newtonsoft.Json.dll</PackagePath>
+      <Modified>2019-04-22T08:06:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.netcore.universalwindowsplatform\6.2.8\runtimes\win10-x86\lib\uap10.0.15138\System.Runtime.dll">
+      <PackagePath>System.Runtime.dll</PackagePath>
+      <Modified>2019-03-13T05:22:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\sharpdx\4.2.0\lib\uap10.0\SharpDX.dll">
+      <PackagePath>SharpDX.dll</PackagePath>
+      <Modified>2018-08-24T12:58:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\sharpdx.direct3d11\4.2.0\lib\uap10.0\SharpDX.Direct3D11.dll">
+      <PackagePath>SharpDX.Direct3D11.dll</PackagePath>
+      <Modified>2018-08-24T12:59:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\sharpdx.dxgi\4.2.0\lib\uap10.0\SharpDX.DXGI.dll">
+      <PackagePath>SharpDX.DXGI.dll</PackagePath>
+      <Modified>2018-08-24T12:59:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.Library\bin\Debug\netstandard2.0\FoxIPTV.Library.dll">
+      <PackagePath>FoxIPTV.Library.dll</PackagePath>
+      <Modified>2019-06-10T07:57:41.098</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\bin\10.0.17763.0\XamlCompiler\Microsoft.UI.Xaml.Markup.winmd">
+      <PackagePath>Microsoft.UI.Xaml.Markup.winmd</PackagePath>
+      <Modified>2018-10-23T08:33:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\bgloop.mp4">
+      <PackagePath>Assets\bgloop.mp4</PackagePath>
+      <Modified>2019-05-10T04:33:47.716</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\FoxIPTV-Icon.png">
+      <PackagePath>Assets\FoxIPTV-Icon.png</PackagePath>
+      <Modified>2019-05-10T04:05:00.413</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\LargeTile.scale-100.png">
+      <PackagePath>Assets\LargeTile.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.863</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\LargeTile.scale-125.png">
+      <PackagePath>Assets\LargeTile.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.888</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\LargeTile.scale-150.png">
+      <PackagePath>Assets\LargeTile.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.921</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\LargeTile.scale-200.png">
+      <PackagePath>Assets\LargeTile.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.976</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\LargeTile.scale-400.png">
+      <PackagePath>Assets\LargeTile.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.180</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SmallTile.scale-100.png">
+      <PackagePath>Assets\SmallTile.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.549</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SmallTile.scale-125.png">
+      <PackagePath>Assets\SmallTile.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.557</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SmallTile.scale-150.png">
+      <PackagePath>Assets\SmallTile.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.564</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SmallTile.scale-200.png">
+      <PackagePath>Assets\SmallTile.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.573</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SmallTile.scale-400.png">
+      <PackagePath>Assets\SmallTile.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.590</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SplashScreen.scale-100.png">
+      <PackagePath>Assets\SplashScreen.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.312</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SplashScreen.scale-125.png">
+      <PackagePath>Assets\SplashScreen.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.350</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SplashScreen.scale-150.png">
+      <PackagePath>Assets\SplashScreen.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.400</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SplashScreen.scale-200.png">
+      <PackagePath>Assets\SplashScreen.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.487</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\SplashScreen.scale-400.png">
+      <PackagePath>Assets\SplashScreen.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.809</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square150x150Logo.scale-100.png">
+      <PackagePath>Assets\Square150x150Logo.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.602</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square150x150Logo.scale-125.png">
+      <PackagePath>Assets\Square150x150Logo.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.613</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square150x150Logo.scale-150.png">
+      <PackagePath>Assets\Square150x150Logo.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.625</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square150x150Logo.scale-200.png">
+      <PackagePath>Assets\Square150x150Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.644</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square150x150Logo.scale-400.png">
+      <PackagePath>Assets\Square150x150Logo.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.695</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.altform-unplated_targetsize-16.png">
+      <PackagePath>Assets\Square44x44Logo.altform-unplated_targetsize-16.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.256</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.altform-unplated_targetsize-24.png">
+      <PackagePath>Assets\Square44x44Logo.altform-unplated_targetsize-24.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.261</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.altform-unplated_targetsize-256.png">
+      <PackagePath>Assets\Square44x44Logo.altform-unplated_targetsize-256.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.285</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.altform-unplated_targetsize-32.png">
+      <PackagePath>Assets\Square44x44Logo.altform-unplated_targetsize-32.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.265</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.altform-unplated_targetsize-48.png">
+      <PackagePath>Assets\Square44x44Logo.altform-unplated_targetsize-48.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.270</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.scale-100.png">
+      <PackagePath>Assets\Square44x44Logo.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.185</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.scale-125.png">
+      <PackagePath>Assets\Square44x44Logo.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.190</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.scale-150.png">
+      <PackagePath>Assets\Square44x44Logo.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.198</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.scale-200.png">
+      <PackagePath>Assets\Square44x44Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.204</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.scale-400.png">
+      <PackagePath>Assets\Square44x44Logo.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.215</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.targetsize-16.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-16.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.219</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.targetsize-24.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-24.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.225</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.targetsize-256.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-256.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.251</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.targetsize-32.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-32.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.230</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Square44x44Logo.targetsize-48.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-48.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.235</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\StoreLogo.scale-100.png">
+      <PackagePath>Assets\StoreLogo.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.815</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\StoreLogo.scale-125.png">
+      <PackagePath>Assets\StoreLogo.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.820</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\StoreLogo.scale-150.png">
+      <PackagePath>Assets\StoreLogo.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.828</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\StoreLogo.scale-200.png">
+      <PackagePath>Assets\StoreLogo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.836</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\StoreLogo.scale-400.png">
+      <PackagePath>Assets\StoreLogo.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:44.847</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Wide310x150Logo.scale-100.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.706</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Wide310x150Logo.scale-125.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-125.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.719</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Wide310x150Logo.scale-150.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-150.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.736</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Wide310x150Logo.scale-200.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.762</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Assets\Wide310x150Logo.scale-400.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-400.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-05-10T06:51:43.845</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\Properties\Default.rd.xml">
+      <PackagePath>Properties\Default.rd.xml</PackagePath>
+      <Modified>2019-04-20T02:23:22.567</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\libvlc.dll">
+      <PackagePath>libvlc.dll</PackagePath>
+      <Modified>2018-07-25T14:52:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\libvlccore.dll">
+      <PackagePath>libvlccore.dll</PackagePath>
+      <Modified>2018-07-25T14:52:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libaccess_concat_plugin.dll">
+      <PackagePath>plugins\access\libaccess_concat_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libaccess_imem_plugin.dll">
+      <PackagePath>plugins\access\libaccess_imem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libaccess_mms_plugin.dll">
+      <PackagePath>plugins\access\libaccess_mms_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libaccess_realrtsp_plugin.dll">
+      <PackagePath>plugins\access\libaccess_realrtsp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libaccess_winrt_plugin.dll">
+      <PackagePath>plugins\access\libaccess_winrt_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libattachment_plugin.dll">
+      <PackagePath>plugins\access\libattachment_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libdsm_plugin.dll">
+      <PackagePath>plugins\access\libdsm_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libfilesystem_plugin.dll">
+      <PackagePath>plugins\access\libfilesystem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libftp_plugin.dll">
+      <PackagePath>plugins\access\libftp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libhttps_plugin.dll">
+      <PackagePath>plugins\access\libhttps_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libhttp_plugin.dll">
+      <PackagePath>plugins\access\libhttp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libidummy_plugin.dll">
+      <PackagePath>plugins\access\libidummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libimem_plugin.dll">
+      <PackagePath>plugins\access\libimem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\liblive555_plugin.dll">
+      <PackagePath>plugins\access\liblive555_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libnfs_plugin.dll">
+      <PackagePath>plugins\access\libnfs_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\librtp_plugin.dll">
+      <PackagePath>plugins\access\librtp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libsatip_plugin.dll">
+      <PackagePath>plugins\access\libsatip_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libsdp_plugin.dll">
+      <PackagePath>plugins\access\libsdp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libsftp_plugin.dll">
+      <PackagePath>plugins\access\libsftp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libshm_plugin.dll">
+      <PackagePath>plugins\access\libshm_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libtcp_plugin.dll">
+      <PackagePath>plugins\access\libtcp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libtimecode_plugin.dll">
+      <PackagePath>plugins\access\libtimecode_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libudp_plugin.dll">
+      <PackagePath>plugins\access\libudp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access\libvdr_plugin.dll">
+      <PackagePath>plugins\access\libvdr_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_dummy_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_dummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_file_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_file_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_http_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_http_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_livehttp_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_livehttp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_shout_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_shout_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\access_output\libaccess_output_udp_plugin.dll">
+      <PackagePath>plugins\access_output\libaccess_output_udp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libaudiobargraph_a_plugin.dll">
+      <PackagePath>plugins\audio_filter\libaudiobargraph_a_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libaudio_format_plugin.dll">
+      <PackagePath>plugins\audio_filter\libaudio_format_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libchorus_flanger_plugin.dll">
+      <PackagePath>plugins\audio_filter\libchorus_flanger_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libcompressor_plugin.dll">
+      <PackagePath>plugins\audio_filter\libcompressor_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libdolby_surround_decoder_plugin.dll">
+      <PackagePath>plugins\audio_filter\libdolby_surround_decoder_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libequalizer_plugin.dll">
+      <PackagePath>plugins\audio_filter\libequalizer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libgain_plugin.dll">
+      <PackagePath>plugins\audio_filter\libgain_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libheadphone_channel_mixer_plugin.dll">
+      <PackagePath>plugins\audio_filter\libheadphone_channel_mixer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libkaraoke_plugin.dll">
+      <PackagePath>plugins\audio_filter\libkaraoke_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libmad_plugin.dll">
+      <PackagePath>plugins\audio_filter\libmad_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libmono_plugin.dll">
+      <PackagePath>plugins\audio_filter\libmono_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libnormvol_plugin.dll">
+      <PackagePath>plugins\audio_filter\libnormvol_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libparam_eq_plugin.dll">
+      <PackagePath>plugins\audio_filter\libparam_eq_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libremap_plugin.dll">
+      <PackagePath>plugins\audio_filter\libremap_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libsamplerate_plugin.dll">
+      <PackagePath>plugins\audio_filter\libsamplerate_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libscaletempo_pitch_plugin.dll">
+      <PackagePath>plugins\audio_filter\libscaletempo_pitch_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libscaletempo_plugin.dll">
+      <PackagePath>plugins\audio_filter\libscaletempo_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libsimple_channel_mixer_plugin.dll">
+      <PackagePath>plugins\audio_filter\libsimple_channel_mixer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libspatialaudio_plugin.dll">
+      <PackagePath>plugins\audio_filter\libspatialaudio_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libspatializer_plugin.dll">
+      <PackagePath>plugins\audio_filter\libspatializer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libspeex_resampler_plugin.dll">
+      <PackagePath>plugins\audio_filter\libspeex_resampler_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libstereo_widen_plugin.dll">
+      <PackagePath>plugins\audio_filter\libstereo_widen_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libtospdif_plugin.dll">
+      <PackagePath>plugins\audio_filter\libtospdif_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libtrivial_channel_mixer_plugin.dll">
+      <PackagePath>plugins\audio_filter\libtrivial_channel_mixer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_filter\libugly_resampler_plugin.dll">
+      <PackagePath>plugins\audio_filter\libugly_resampler_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_mixer\libfloat_mixer_plugin.dll">
+      <PackagePath>plugins\audio_mixer\libfloat_mixer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_mixer\libinteger_mixer_plugin.dll">
+      <PackagePath>plugins\audio_mixer\libinteger_mixer_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_output\libadummy_plugin.dll">
+      <PackagePath>plugins\audio_output\libadummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_output\libafile_plugin.dll">
+      <PackagePath>plugins\audio_output\libafile_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_output\libamem_plugin.dll">
+      <PackagePath>plugins\audio_output\libamem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_output\libwasapi_plugin.dll">
+      <PackagePath>plugins\audio_output\libwasapi_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\audio_output\libwinstore_plugin.dll">
+      <PackagePath>plugins\audio_output\libwinstore_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libadpcm_plugin.dll">
+      <PackagePath>plugins\codec\libadpcm_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libaes3_plugin.dll">
+      <PackagePath>plugins\codec\libaes3_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libaraw_plugin.dll">
+      <PackagePath>plugins\codec\libaraw_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libavcodec_plugin.dll">
+      <PackagePath>plugins\codec\libavcodec_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libcc_plugin.dll">
+      <PackagePath>plugins\codec\libcc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libcdg_plugin.dll">
+      <PackagePath>plugins\codec\libcdg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libcvdsub_plugin.dll">
+      <PackagePath>plugins\codec\libcvdsub_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libd3d11va_plugin.dll">
+      <PackagePath>plugins\codec\libd3d11va_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libdca_plugin.dll">
+      <PackagePath>plugins\codec\libdca_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libddummy_plugin.dll">
+      <PackagePath>plugins\codec\libddummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libdvbsub_plugin.dll">
+      <PackagePath>plugins\codec\libdvbsub_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libedummy_plugin.dll">
+      <PackagePath>plugins\codec\libedummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libflac_plugin.dll">
+      <PackagePath>plugins\codec\libflac_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libfluidsynth_plugin.dll">
+      <PackagePath>plugins\codec\libfluidsynth_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libg711_plugin.dll">
+      <PackagePath>plugins\codec\libg711_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libjpeg_plugin.dll">
+      <PackagePath>plugins\codec\libjpeg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libkate_plugin.dll">
+      <PackagePath>plugins\codec\libkate_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\liblibass_plugin.dll">
+      <PackagePath>plugins\codec\liblibass_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\liblibmpeg2_plugin.dll">
+      <PackagePath>plugins\codec\liblibmpeg2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\liblpcm_plugin.dll">
+      <PackagePath>plugins\codec\liblpcm_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libmft_plugin.dll">
+      <PackagePath>plugins\codec\libmft_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libmpg123_plugin.dll">
+      <PackagePath>plugins\codec\libmpg123_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\liboggspots_plugin.dll">
+      <PackagePath>plugins\codec\liboggspots_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libopus_plugin.dll">
+      <PackagePath>plugins\codec\libopus_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libpng_plugin.dll">
+      <PackagePath>plugins\codec\libpng_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libqsv_plugin.dll">
+      <PackagePath>plugins\codec\libqsv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\librawvideo_plugin.dll">
+      <PackagePath>plugins\codec\librawvideo_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\librtpvideo_plugin.dll">
+      <PackagePath>plugins\codec\librtpvideo_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libscte18_plugin.dll">
+      <PackagePath>plugins\codec\libscte18_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libscte27_plugin.dll">
+      <PackagePath>plugins\codec\libscte27_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libspdif_plugin.dll">
+      <PackagePath>plugins\codec\libspdif_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libspeex_plugin.dll">
+      <PackagePath>plugins\codec\libspeex_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libspudec_plugin.dll">
+      <PackagePath>plugins\codec\libspudec_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libstl_plugin.dll">
+      <PackagePath>plugins\codec\libstl_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libsubsdec_plugin.dll">
+      <PackagePath>plugins\codec\libsubsdec_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libsubstx3g_plugin.dll">
+      <PackagePath>plugins\codec\libsubstx3g_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libsubsusf_plugin.dll">
+      <PackagePath>plugins\codec\libsubsusf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:14.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libsvcdsub_plugin.dll">
+      <PackagePath>plugins\codec\libsvcdsub_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libt140_plugin.dll">
+      <PackagePath>plugins\codec\libt140_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:14.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libtextst_plugin.dll">
+      <PackagePath>plugins\codec\libtextst_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libtheora_plugin.dll">
+      <PackagePath>plugins\codec\libtheora_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libttml_plugin.dll">
+      <PackagePath>plugins\codec\libttml_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libuleaddvaudio_plugin.dll">
+      <PackagePath>plugins\codec\libuleaddvaudio_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:14.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libvorbis_plugin.dll">
+      <PackagePath>plugins\codec\libvorbis_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libvpx_plugin.dll">
+      <PackagePath>plugins\codec\libvpx_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libwebvtt_plugin.dll">
+      <PackagePath>plugins\codec\libwebvtt_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\codec\libzvbi_plugin.dll">
+      <PackagePath>plugins\codec\libzvbi_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\control\libdummy_plugin.dll">
+      <PackagePath>plugins\control\libdummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\control\libgestures_plugin.dll">
+      <PackagePath>plugins\control\libgestures_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:16.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\control\libhotkeys_plugin.dll">
+      <PackagePath>plugins\control\libhotkeys_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\control\libnetsync_plugin.dll">
+      <PackagePath>plugins\control\libnetsync_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\d3d11\libdirect3d11_filters_plugin.dll">
+      <PackagePath>plugins\d3d11\libdirect3d11_filters_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libadaptive_plugin.dll">
+      <PackagePath>plugins\demux\libadaptive_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libaiff_plugin.dll">
+      <PackagePath>plugins\demux\libaiff_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libasf_plugin.dll">
+      <PackagePath>plugins\demux\libasf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libau_plugin.dll">
+      <PackagePath>plugins\demux\libau_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libavi_plugin.dll">
+      <PackagePath>plugins\demux\libavi_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libcaf_plugin.dll">
+      <PackagePath>plugins\demux\libcaf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:18.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdemuxdump_plugin.dll">
+      <PackagePath>plugins\demux\libdemuxdump_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdemux_cdg_plugin.dll">
+      <PackagePath>plugins\demux\libdemux_cdg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdemux_chromecast_plugin.dll">
+      <PackagePath>plugins\demux\libdemux_chromecast_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdemux_stl_plugin.dll">
+      <PackagePath>plugins\demux\libdemux_stl_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdiracsys_plugin.dll">
+      <PackagePath>plugins\demux\libdiracsys_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libdirectory_demux_plugin.dll">
+      <PackagePath>plugins\demux\libdirectory_demux_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libes_plugin.dll">
+      <PackagePath>plugins\demux\libes_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:20.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libflacsys_plugin.dll">
+      <PackagePath>plugins\demux\libflacsys_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libgme_plugin.dll">
+      <PackagePath>plugins\demux\libgme_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libh26x_plugin.dll">
+      <PackagePath>plugins\demux\libh26x_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libimage_plugin.dll">
+      <PackagePath>plugins\demux\libimage_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libmjpeg_plugin.dll">
+      <PackagePath>plugins\demux\libmjpeg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libmkv_plugin.dll">
+      <PackagePath>plugins\demux\libmkv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libmp4_plugin.dll">
+      <PackagePath>plugins\demux\libmp4_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libmpc_plugin.dll">
+      <PackagePath>plugins\demux\libmpc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libmpgv_plugin.dll">
+      <PackagePath>plugins\demux\libmpgv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libnoseek_plugin.dll">
+      <PackagePath>plugins\demux\libnoseek_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libnsc_plugin.dll">
+      <PackagePath>plugins\demux\libnsc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libnsv_plugin.dll">
+      <PackagePath>plugins\demux\libnsv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:24.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libnuv_plugin.dll">
+      <PackagePath>plugins\demux\libnuv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libogg_plugin.dll">
+      <PackagePath>plugins\demux\libogg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libplaylist_plugin.dll">
+      <PackagePath>plugins\demux\libplaylist_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libps_plugin.dll">
+      <PackagePath>plugins\demux\libps_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libpva_plugin.dll">
+      <PackagePath>plugins\demux\libpva_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\librawaud_plugin.dll">
+      <PackagePath>plugins\demux\librawaud_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\librawdv_plugin.dll">
+      <PackagePath>plugins\demux\librawdv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\librawvid_plugin.dll">
+      <PackagePath>plugins\demux\librawvid_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:26.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libreal_plugin.dll">
+      <PackagePath>plugins\demux\libreal_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libsid_plugin.dll">
+      <PackagePath>plugins\demux\libsid_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libsmf_plugin.dll">
+      <PackagePath>plugins\demux\libsmf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libsubtitle_plugin.dll">
+      <PackagePath>plugins\demux\libsubtitle_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libts_plugin.dll">
+      <PackagePath>plugins\demux\libts_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libtta_plugin.dll">
+      <PackagePath>plugins\demux\libtta_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libty_plugin.dll">
+      <PackagePath>plugins\demux\libty_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libvc1_plugin.dll">
+      <PackagePath>plugins\demux\libvc1_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libvobsub_plugin.dll">
+      <PackagePath>plugins\demux\libvobsub_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libvoc_plugin.dll">
+      <PackagePath>plugins\demux\libvoc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libwav_plugin.dll">
+      <PackagePath>plugins\demux\libwav_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\demux\libxa_plugin.dll">
+      <PackagePath>plugins\demux\libxa_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\keystore\libfile_keystore_plugin.dll">
+      <PackagePath>plugins\keystore\libfile_keystore_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\keystore\libmemory_keystore_plugin.dll">
+      <PackagePath>plugins\keystore\libmemory_keystore_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\logger\libconsole_logger_plugin.dll">
+      <PackagePath>plugins\logger\libconsole_logger_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\logger\libfile_logger_plugin.dll">
+      <PackagePath>plugins\logger\libfile_logger_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:30.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\lua\liblua_plugin.dll">
+      <PackagePath>plugins\lua\liblua_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\meta_engine\libfolder_plugin.dll">
+      <PackagePath>plugins\meta_engine\libfolder_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\meta_engine\libtaglib_plugin.dll">
+      <PackagePath>plugins\meta_engine\libtaglib_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libaddonsfsstorage_plugin.dll">
+      <PackagePath>plugins\misc\libaddonsfsstorage_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libaddonsvorepository_plugin.dll">
+      <PackagePath>plugins\misc\libaddonsvorepository_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libaudioscrobbler_plugin.dll">
+      <PackagePath>plugins\misc\libaudioscrobbler_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libexport_plugin.dll">
+      <PackagePath>plugins\misc\libexport_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libfingerprinter_plugin.dll">
+      <PackagePath>plugins\misc\libfingerprinter_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libgnutls_plugin.dll">
+      <PackagePath>plugins\misc\libgnutls_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:52:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\liblogger_plugin.dll">
+      <PackagePath>plugins\misc\liblogger_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libstats_plugin.dll">
+      <PackagePath>plugins\misc\libstats_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libvod_rtsp_plugin.dll">
+      <PackagePath>plugins\misc\libvod_rtsp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\misc\libxml_plugin.dll">
+      <PackagePath>plugins\misc\libxml_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_asf_plugin.dll">
+      <PackagePath>plugins\mux\libmux_asf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:32.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_avi_plugin.dll">
+      <PackagePath>plugins\mux\libmux_avi_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:32.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_dummy_plugin.dll">
+      <PackagePath>plugins\mux\libmux_dummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:32.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_mp4_plugin.dll">
+      <PackagePath>plugins\mux\libmux_mp4_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_mpjpeg_plugin.dll">
+      <PackagePath>plugins\mux\libmux_mpjpeg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_ogg_plugin.dll">
+      <PackagePath>plugins\mux\libmux_ogg_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_ps_plugin.dll">
+      <PackagePath>plugins\mux\libmux_ps_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_ts_plugin.dll">
+      <PackagePath>plugins\mux\libmux_ts_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\mux\libmux_wav_plugin.dll">
+      <PackagePath>plugins\mux\libmux_wav_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:34.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_a52_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_a52_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_copy_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_copy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_dirac_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_dirac_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_dts_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_dts_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_flac_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_flac_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_h264_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_h264_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_hevc_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_hevc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_mlp_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_mlp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_mpeg4audio_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_mpeg4audio_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_mpeg4video_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_mpeg4video_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_mpegaudio_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_mpegaudio_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_mpegvideo_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_mpegvideo_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\packetizer\libpacketizer_vc1_plugin.dll">
+      <PackagePath>plugins\packetizer\libpacketizer_vc1_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\services_discovery\libmediadirs_plugin.dll">
+      <PackagePath>plugins\services_discovery\libmediadirs_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\services_discovery\libmicrodns_plugin.dll">
+      <PackagePath>plugins\services_discovery\libmicrodns_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\services_discovery\libpodcast_plugin.dll">
+      <PackagePath>plugins\services_discovery\libpodcast_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\services_discovery\libsap_plugin.dll">
+      <PackagePath>plugins\services_discovery\libsap_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\services_discovery\libupnp_plugin.dll">
+      <PackagePath>plugins\services_discovery\libupnp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\libaudiobargraph_v_plugin.dll">
+      <PackagePath>plugins\spu\libaudiobargraph_v_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\liblogo_plugin.dll">
+      <PackagePath>plugins\spu\liblogo_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\libmarq_plugin.dll">
+      <PackagePath>plugins\spu\libmarq_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\libmosaic_plugin.dll">
+      <PackagePath>plugins\spu\libmosaic_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\libremoteosd_plugin.dll">
+      <PackagePath>plugins\spu\libremoteosd_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:40.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\librss_plugin.dll">
+      <PackagePath>plugins\spu\librss_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\spu\libsubsdelay_plugin.dll">
+      <PackagePath>plugins\spu\libsubsdelay_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_extractor\libarchive_plugin.dll">
+      <PackagePath>plugins\stream_extractor\libarchive_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libadf_plugin.dll">
+      <PackagePath>plugins\stream_filter\libadf_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libcache_block_plugin.dll">
+      <PackagePath>plugins\stream_filter\libcache_block_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libcache_read_plugin.dll">
+      <PackagePath>plugins\stream_filter\libcache_read_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libhds_plugin.dll">
+      <PackagePath>plugins\stream_filter\libhds_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libinflate_plugin.dll">
+      <PackagePath>plugins\stream_filter\libinflate_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\librecord_plugin.dll">
+      <PackagePath>plugins\stream_filter\librecord_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_filter\libskiptags_plugin.dll">
+      <PackagePath>plugins\stream_filter\libskiptags_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_autodel_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_autodel_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_bridge_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_bridge_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_chromecast_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_chromecast_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_cycle_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_cycle_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_delay_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_delay_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:44.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_description_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_description_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_display_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_display_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_dummy_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_dummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_duplicate_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_duplicate_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_es_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_es_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_gather_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_gather_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_mosaic_bridge_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_mosaic_bridge_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:46.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_record_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_record_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_rtp_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_rtp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_setid_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_setid_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_smem_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_smem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_standard_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_standard_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_stats_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_stats_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\stream_out\libstream_out_transcode_plugin.dll">
+      <PackagePath>plugins\stream_out\libstream_out_transcode_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\text_renderer\libfreetype_plugin.dll">
+      <PackagePath>plugins\text_renderer\libfreetype_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\text_renderer\libtdummy_plugin.dll">
+      <PackagePath>plugins\text_renderer\libtdummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libchain_plugin.dll">
+      <PackagePath>plugins\video_chroma\libchain_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libgrey_yuv_plugin.dll">
+      <PackagePath>plugins\video_chroma\libgrey_yuv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_10_p010_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_10_p010_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_nv12_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_nv12_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_rgb_mmx_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_rgb_mmx_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:50.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_rgb_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_rgb_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_rgb_sse2_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_rgb_sse2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_yuy2_mmx_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_yuy2_mmx_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_yuy2_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_yuy2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi420_yuy2_sse2_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi420_yuy2_sse2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi422_i420_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi422_i420_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi422_yuy2_mmx_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi422_yuy2_mmx_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi422_yuy2_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi422_yuy2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libi422_yuy2_sse2_plugin.dll">
+      <PackagePath>plugins\video_chroma\libi422_yuy2_sse2_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\librv32_plugin.dll">
+      <PackagePath>plugins\video_chroma\librv32_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:52.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libswscale_plugin.dll">
+      <PackagePath>plugins\video_chroma\libswscale_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libyuvp_plugin.dll">
+      <PackagePath>plugins\video_chroma\libyuvp_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libyuy2_i420_plugin.dll">
+      <PackagePath>plugins\video_chroma\libyuy2_i420_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_chroma\libyuy2_i422_plugin.dll">
+      <PackagePath>plugins\video_chroma\libyuy2_i422_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libadjust_plugin.dll">
+      <PackagePath>plugins\video_filter\libadjust_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:54.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libalphamask_plugin.dll">
+      <PackagePath>plugins\video_filter\libalphamask_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libanaglyph_plugin.dll">
+      <PackagePath>plugins\video_filter\libanaglyph_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libantiflicker_plugin.dll">
+      <PackagePath>plugins\video_filter\libantiflicker_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libball_plugin.dll">
+      <PackagePath>plugins\video_filter\libball_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libblendbench_plugin.dll">
+      <PackagePath>plugins\video_filter\libblendbench_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libblend_plugin.dll">
+      <PackagePath>plugins\video_filter\libblend_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libbluescreen_plugin.dll">
+      <PackagePath>plugins\video_filter\libbluescreen_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libcanvas_plugin.dll">
+      <PackagePath>plugins\video_filter\libcanvas_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:56.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libcolorthres_plugin.dll">
+      <PackagePath>plugins\video_filter\libcolorthres_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libcroppadd_plugin.dll">
+      <PackagePath>plugins\video_filter\libcroppadd_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libdeinterlace_plugin.dll">
+      <PackagePath>plugins\video_filter\libdeinterlace_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libedgedetection_plugin.dll">
+      <PackagePath>plugins\video_filter\libedgedetection_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\liberase_plugin.dll">
+      <PackagePath>plugins\video_filter\liberase_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libextract_plugin.dll">
+      <PackagePath>plugins\video_filter\libextract_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libfps_plugin.dll">
+      <PackagePath>plugins\video_filter\libfps_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libfreeze_plugin.dll">
+      <PackagePath>plugins\video_filter\libfreeze_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libgaussianblur_plugin.dll">
+      <PackagePath>plugins\video_filter\libgaussianblur_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:53:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libgradfun_plugin.dll">
+      <PackagePath>plugins\video_filter\libgradfun_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libgradient_plugin.dll">
+      <PackagePath>plugins\video_filter\libgradient_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:00.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libgrain_plugin.dll">
+      <PackagePath>plugins\video_filter\libgrain_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libhqdn3d_plugin.dll">
+      <PackagePath>plugins\video_filter\libhqdn3d_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libinvert_plugin.dll">
+      <PackagePath>plugins\video_filter\libinvert_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libmagnify_plugin.dll">
+      <PackagePath>plugins\video_filter\libmagnify_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libmirror_plugin.dll">
+      <PackagePath>plugins\video_filter\libmirror_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libmotionblur_plugin.dll">
+      <PackagePath>plugins\video_filter\libmotionblur_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libmotiondetect_plugin.dll">
+      <PackagePath>plugins\video_filter\libmotiondetect_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\liboldmovie_plugin.dll">
+      <PackagePath>plugins\video_filter\liboldmovie_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libposterize_plugin.dll">
+      <PackagePath>plugins\video_filter\libposterize_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libpostproc_plugin.dll">
+      <PackagePath>plugins\video_filter\libpostproc_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:04.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libpsychedelic_plugin.dll">
+      <PackagePath>plugins\video_filter\libpsychedelic_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libpuzzle_plugin.dll">
+      <PackagePath>plugins\video_filter\libpuzzle_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libripple_plugin.dll">
+      <PackagePath>plugins\video_filter\libripple_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\librotate_plugin.dll">
+      <PackagePath>plugins\video_filter\librotate_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libscale_plugin.dll">
+      <PackagePath>plugins\video_filter\libscale_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libscene_plugin.dll">
+      <PackagePath>plugins\video_filter\libscene_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libsepia_plugin.dll">
+      <PackagePath>plugins\video_filter\libsepia_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libsharpen_plugin.dll">
+      <PackagePath>plugins\video_filter\libsharpen_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libtransform_plugin.dll">
+      <PackagePath>plugins\video_filter\libtransform_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libvhs_plugin.dll">
+      <PackagePath>plugins\video_filter\libvhs_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:06.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_filter\libwave_plugin.dll">
+      <PackagePath>plugins\video_filter\libwave_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libdirect3d11_plugin.dll">
+      <PackagePath>plugins\video_output\libdirect3d11_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libdrawable_plugin.dll">
+      <PackagePath>plugins\video_output\libdrawable_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libflaschen_plugin.dll">
+      <PackagePath>plugins\video_output\libflaschen_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libvdummy_plugin.dll">
+      <PackagePath>plugins\video_output\libvdummy_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libvmem_plugin.dll">
+      <PackagePath>plugins\video_output\libvmem_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_output\libyuv_plugin.dll">
+      <PackagePath>plugins\video_output\libyuv_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:08.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_splitter\libclone_plugin.dll">
+      <PackagePath>plugins\video_splitter\libclone_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\video_splitter\libwall_plugin.dll">
+      <PackagePath>plugins\video_splitter\libwall_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Fox\.nuget\packages\videolan.libvlc.uwp\3.1.1\build\win10-x86\plugins\visualization\libvisual_plugin.dll">
+      <PackagePath>plugins\visualization\libvisual_plugin.dll</PackagePath>
+      <Modified>2018-07-25T14:54:10.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\FoxIPTV.xr.xml">
+      <PackagePath>FoxIPTV.xr.xml</PackagePath>
+      <Modified>2019-06-13T05:21:20.624</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\App.xbf">
+      <PackagePath>App.xbf</PackagePath>
+      <Modified>2019-06-14T06:58:32.014</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\Ui\LoginContentDialog.xbf">
+      <PackagePath>Ui\LoginContentDialog.xbf</PackagePath>
+      <Modified>2019-06-14T06:58:32.015</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\Ui\MainPage.xbf">
+      <PackagePath>Ui\MainPage.xbf</PackagePath>
+      <Modified>2019-06-14T06:58:32.015</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd">
+      <PackagePath>WinMetadata\Windows.winmd</PackagePath>
+      <Modified>2018-10-23T07:44:28.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\resources.pri">
+      <PackagePath>resources.pri</PackagePath>
+      <Modified>2019-06-14T03:55:01.227</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="X:\GitHub\FoxIPTV\FoxIPTV.UWP\bin\x86\Debug\Core\FoxIPTV.exe">
+      <PackagePath>FoxIPTV.exe</PackagePath>
+      <Modified>2019-06-14T06:58:33.271</Modified>
+    </AppxPackagedFile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx">
+      <Name>Microsoft.NET.CoreRuntime.2.2</Name>
+      <Version>2.2.27404.2</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreRuntime.2.2, MinVersion = 2.2.27404.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x64.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx">
+      <Name>Microsoft.NET.CoreRuntime.2.2</Name>
+      <Version>2.2.27404.2</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreRuntime.2.2, MinVersion = 2.2.27404.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x64.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-arm.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx">
+      <Name>Microsoft.NET.CoreRuntime.2.2</Name>
+      <Version>2.2.27404.2</Version>
+      <Architecture>arm</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreRuntime.2.2, MinVersion = 2.2.27404.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-arm.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreRuntime.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx">
+      <Name>Microsoft.NET.CoreFramework.Debug.2.2</Name>
+      <Version>2.2.27505.2</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreFramework.Debug.2.2, MinVersion = 2.2.27505.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x64.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx">
+      <Name>Microsoft.NET.CoreFramework.Debug.2.2</Name>
+      <Version>2.2.27505.2</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreFramework.Debug.2.2, MinVersion = 2.2.27505.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x64.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-arm.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx">
+      <Name>Microsoft.NET.CoreFramework.Debug.2.2</Name>
+      <Version>2.2.27505.2</Version>
+      <Architecture>arm</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.CoreFramework.Debug.2.2, MinVersion = 2.2.27505.2, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-arm.microsoft.net.uwpcoreruntimesdk\2.2.8\build\..\tools\Appx\Microsoft.NET.CoreFramework.Debug.2.2.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\">
+      <Name>Microsoft.VCLibs.120.00.Debug.Universal</Name>
+      <Version>12.0.30501.0</Version>
+      <Architecture>ARM</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.120.00.Debug.Universal, MinVersion = 12.0.30501.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\.\AppX\Debug\ARM\Microsoft.VCLibs.ARM.Debug.12.00.Universal.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\">
+      <Name>Microsoft.VCLibs.120.00.Debug.Universal</Name>
+      <Version>12.0.30501.0</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.120.00.Debug.Universal, MinVersion = 12.0.30501.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\.\AppX\Debug\x64\Microsoft.VCLibs.x64.Debug.12.00.Universal.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\">
+      <Name>Microsoft.VCLibs.120.00.Debug.Universal</Name>
+      <Version>12.0.30501.0</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.120.00.Debug.Universal, MinVersion = 12.0.30501.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs.120\14.0\.\AppX\Debug\x86\Microsoft.VCLibs.x86.Debug.12.00.Universal.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00.Debug</Name>
+      <Version>14.0.27323.0</Version>
+      <Architecture>ARM</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00.Debug, MinVersion = 14.0.27323.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Debug\ARM\Microsoft.VCLibs.ARM.Debug.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00.Debug</Name>
+      <Version>14.0.27323.0</Version>
+      <Architecture>ARM64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00.Debug, MinVersion = 14.0.27323.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Debug\ARM64\Microsoft.VCLibs.ARM64.Debug.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00.Debug</Name>
+      <Version>14.0.27323.0</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00.Debug, MinVersion = 14.0.27323.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Debug\x64\Microsoft.VCLibs.x64.Debug.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00.Debug</Name>
+      <Version>14.0.27323.0</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00.Debug, MinVersion = 14.0.27323.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Debug\x86\Microsoft.VCLibs.x86.Debug.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+  </ItemGroup>
+</Project>

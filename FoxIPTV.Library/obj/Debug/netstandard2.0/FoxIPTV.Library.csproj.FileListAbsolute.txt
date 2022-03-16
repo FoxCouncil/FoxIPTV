@@ -1,0 +1,9 @@
+X:\GitHub\FoxIPTV\FoxIPTV.Library\bin\Debug\netstandard2.0\FoxIPTV.Library.deps.json
+X:\GitHub\FoxIPTV\FoxIPTV.Library\bin\Debug\netstandard2.0\FoxIPTV.Library.dll
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.csproj.CoreCompileInputs.cache
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.AssemblyInfoInputs.cache
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.AssemblyInfo.cs
+X:\GitHub\FoxIPTV\FoxIPTV.Library\bin\Debug\netstandard2.0\FoxIPTV.Library.pdb
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.dll
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.pdb
+X:\GitHub\FoxIPTV\FoxIPTV.Library\obj\Debug\netstandard2.0\FoxIPTV.Library.csprojAssemblyReference.cache

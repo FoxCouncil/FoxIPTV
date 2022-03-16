@@ -1,0 +1,1 @@
+X:\GitHub\FoxIPTV\FoxIPTV.UWP\FoxIPTV.UWP.csproj;x86

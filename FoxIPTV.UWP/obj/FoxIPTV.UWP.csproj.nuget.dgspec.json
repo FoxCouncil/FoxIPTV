@@ -1,0 +1,157 @@
+{
+  "format": 1,
+  "restore": {
+    "X:\\GitHub\\FoxIPTV\\FoxIPTV.UWP\\FoxIPTV.UWP.csproj": {}
+  },
+  "projects": {
+    "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\FoxIPTV.Library.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\FoxIPTV.Library.csproj",
+        "projectName": "FoxIPTV.Library",
+        "projectPath": "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\FoxIPTV.Library.csproj",
+        "packagesPath": "C:\\Users\\Fox\\.nuget\\packages\\",
+        "outputPath": "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Fox\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "dependencies": {
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.5.0, )"
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.2, )"
+            },
+            "System.Dynamic.Runtime": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    },
+    "X:\\GitHub\\FoxIPTV\\FoxIPTV.UWP\\FoxIPTV.UWP.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "X:\\GitHub\\FoxIPTV\\FoxIPTV.UWP\\FoxIPTV.UWP.csproj",
+        "projectName": "FoxIPTV.UWP",
+        "projectPath": "X:\\GitHub\\FoxIPTV\\FoxIPTV.UWP\\FoxIPTV.UWP.csproj",
+        "packagesPath": "C:\\Users\\Fox\\.nuget\\packages\\",
+        "outputPath": "X:\\GitHub\\FoxIPTV\\FoxIPTV.UWP\\obj\\",
+        "projectStyle": "PackageReference",
+        "skipContentFileWrite": true,
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\",
+          "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Fox\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "uap10.0.16299"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "uap10.0.16299": {
+            "projectReferences": {
+              "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\FoxIPTV.Library.csproj": {
+                "projectPath": "X:\\GitHub\\FoxIPTV\\FoxIPTV.Library\\FoxIPTV.Library.csproj"
+              }
+            }
+          }
+        }
+      },
+      "frameworks": {
+        "uap10.0.16299": {
+          "dependencies": {
+            "LibVLCSharp": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            },
+            "Microsoft.NETCore.UniversalWindowsPlatform": {
+              "target": "Package",
+              "version": "[6.2.8, )"
+            },
+            "VideoLAN.LibVLC.UWP": {
+              "target": "Package",
+              "version": "[3.1.1, )"
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      },
+      "runtimes": {
+        "win10-arm": {
+          "#import": []
+        },
+        "win10-arm-aot": {
+          "#import": []
+        },
+        "win10-arm64-aot": {
+          "#import": []
+        },
+        "win10-x64": {
+          "#import": []
+        },
+        "win10-x64-aot": {
+          "#import": []
+        },
+        "win10-x86": {
+          "#import": []
+        },
+        "win10-x86-aot": {
+          "#import": []
+        }
+      }
+    }
+  }
+}
