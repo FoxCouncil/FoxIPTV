@@ -30,10 +30,6 @@ jobs:
             rid: linux-x64
             name: linux-x64
             ext: .tar.gz
-          - os: macos-13
-            rid: osx-x64
-            name: macos-x64
-            ext: .tar.gz
           - os: macos-latest
             rid: osx-arm64
             name: macos-arm64
@@ -116,5 +112,4 @@ jobs:
           files: |
             artifacts/FoxIPTV-windows-x64.zip
             artifacts/FoxIPTV-linux-x64.tar.gz
-            artifacts/FoxIPTV-macos-x64.tar.gz
             artifacts/FoxIPTV-macos-arm64.tar.gz
