@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (e.g. v3.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT: src/FoxIPTV/FoxIPTV.csproj
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            name: windows-x64
+            ext: .zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            name: linux-x64
+            ext: .tar.gz
+          - os: macos-13
+            rid: osx-x64
+            name: macos-x64
+            ext: .tar.gz
+          - os: macos-latest
+            rid: osx-arm64
+            name: macos-arm64
+            ext: .tar.gz
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version: $VERSION"
+
+      - name: Publish
+        run: >
+          dotnet publish ${{ env.PROJECT }}
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained
+          -p:PublishSingleFile=true
+          -p:Version=${{ steps.version.outputs.version }}
+          -o publish
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/* -DestinationPath FoxIPTV-${{ matrix.name }}${{ matrix.ext }}
+
+      - name: Package (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          tar -czf FoxIPTV-${{ matrix.name }}${{ matrix.ext }} -C publish .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FoxIPTV-${{ matrix.name }}
+          path: FoxIPTV-${{ matrix.name }}${{ matrix.ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: FoxIPTV ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            artifacts/FoxIPTV-windows-x64.zip
+            artifacts/FoxIPTV-linux-x64.tar.gz
+            artifacts/FoxIPTV-macos-x64.tar.gz
+            artifacts/FoxIPTV-macos-arm64.tar.gz

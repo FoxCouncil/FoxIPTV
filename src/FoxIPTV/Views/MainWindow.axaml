@@ -9,7 +9,7 @@
         x:Class="FoxIPTV.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="FoxIPTV"
+        Title="{Binding TitleText, FallbackValue=FoxIPTV}"
         Width="1280" Height="720"
         MinWidth="640" MinHeight="400"
         WindowStartupLocation="CenterScreen"
