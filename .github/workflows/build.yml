@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [master, version3]
+    branches: [master]
   pull_request:
     branches: [master]
 
@@ -13,6 +13,7 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -30,8 +31,5 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore
-        run: dotnet restore ${{ env.PROJECT }} -r ${{ matrix.rid }}
-
       - name: Build
-        run: dotnet build ${{ env.PROJECT }} -c Release --no-restore
+        run: dotnet build ${{ env.PROJECT }} -c Release
