@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>FoxIPTV</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>3.0.0-alpha</Version>
+    <AssemblyTitle>FoxIPTV</AssemblyTitle>
+    <Product>FoxIPTV</Product>
+    <Description>Cross-platform IPTV client</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Avalonia -->
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+
+    <!-- MVVM -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+
+    <!-- LibVLCSharp -->
+    <PackageReference Include="LibVLCSharp" Version="3.9.5" />
+    <PackageReference Include="LibVLCSharp.Avalonia" Version="3.9.5" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.6.2" />
+
+    <!-- LibVLC native binaries (platform-conditional) -->
+    <PackageReference Include="VideoLAN.LibVLC.Mac" Version="3.1.3.1" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="VideoLAN.LibVLC.Linux" Version="3.0.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+
+    <!-- Microsoft.Extensions -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
+  </ItemGroup>
+  <!-- macOS local dev: replace x86_64 dylibs from NuGet with arm64 symlinks from VLC.app -->
+  <Target Name="FixMacVlcArch" AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) And Exists('/Applications/VLC.app')">
+    <Exec Command="ln -sf /Applications/VLC.app/Contents/MacOS/lib/libvlc.dylib '$(OutputPath)libvlc.dylib'" />
+    <Exec Command="ln -sf /Applications/VLC.app/Contents/MacOS/lib/libvlccore.dylib '$(OutputPath)libvlccore.dylib'" />
+  </Target>
+</Project>
