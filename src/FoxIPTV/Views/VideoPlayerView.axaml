@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vlc="using:LibVLCSharp.Avalonia"
+             xmlns:vm="using:FoxIPTV.ViewModels"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
+             x:Class="FoxIPTV.Views.VideoPlayerView"
+             x:DataType="vm:VideoPlayerViewModel"
+             Background="#0a0a0a">
+
+    <Panel>
+        <vlc:VideoView x:Name="VideoView"
+                       IsVisible="{Binding IsPlaying}">
+            <Panel>
+                <!-- Hit-test surface for mouse move detection -->
+                <Panel Background="Transparent"
+                       PointerMoved="OnVideoPointerMoved" />
+
+                <!-- Buffering dim -->
+                <Border Background="#80000000"
+                        IsVisible="{Binding IsBuffering}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" />
+
+                <!-- Buffering indicator -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsBuffering}"
+                            Spacing="8">
+                    <ProgressBar IsIndeterminate="True"
+                                 Value="{Binding BufferProgress}"
+                                 Minimum="0" Maximum="100"
+                                 Width="180"
+                                 Foreground="#555555" />
+                    <TextBlock Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               Text="{Binding BufferProgress, StringFormat='Buffering {0:F0}%'}" />
+                </StackPanel>
+
+                <!-- Transport controls overlay -->
+                <Border VerticalAlignment="Bottom"
+                        IsVisible="{Binding ShouldShowOverlay}"
+                        Background="#C0000000"
+                        Padding="12,6">
+                    <DockPanel>
+                        <!-- Left: transport -->
+                        <StackPanel Orientation="Horizontal"
+                                    DockPanel.Dock="Left"
+                                    Spacing="2">
+                            <Button Command="{Binding TogglePlayPauseCommand}"
+                                    Background="Transparent"
+                                    Foreground="#cccccc"
+                                    Width="30" Height="26"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Padding="0">
+                                <Panel>
+                                    <i:Icon Value="fa-solid fa-pause"
+                                            IsVisible="{Binding !IsPaused}"
+                                            Foreground="#cccccc" FontSize="13" />
+                                    <i:Icon Value="fa-solid fa-play"
+                                            IsVisible="{Binding IsPaused}"
+                                            Foreground="#cccccc" FontSize="13" />
+                                </Panel>
+                            </Button>
+                            <Button Command="{Binding StopCommand}"
+                                    Background="Transparent"
+                                    Width="30" Height="26"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Padding="0">
+                                <i:Icon Value="fa-solid fa-stop"
+                                        Foreground="#888888" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Right: volume -->
+                        <StackPanel Orientation="Horizontal"
+                                    DockPanel.Dock="Right"
+                                    HorizontalAlignment="Right"
+                                    Spacing="2"
+                                    VerticalAlignment="Center">
+                            <Button Command="{Binding ToggleMuteCommand}"
+                                    Background="Transparent"
+                                    Width="30" Height="26"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Padding="0">
+                                <Panel>
+                                    <i:Icon Value="fa-solid fa-volume-xmark"
+                                            IsVisible="{Binding IsMuted}"
+                                            Foreground="#cccccc" FontSize="13" />
+                                    <i:Icon Value="fa-solid fa-volume-high"
+                                            IsVisible="{Binding !IsMuted}"
+                                            Foreground="#cccccc" FontSize="13" />
+                                </Panel>
+                            </Button>
+                            <Slider Value="{Binding Volume}"
+                                    Minimum="0" Maximum="100"
+                                    Width="90"
+                                    VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Center: channel name -->
+                        <TextBlock Text="{Binding CurrentChannelName}"
+                                   Foreground="#777777"
+                                   FontSize="11"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                </Border>
+            </Panel>
+        </vlc:VideoView>
+
+        <!-- Idle state -->
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    IsVisible="{Binding !IsPlaying}"
+                    Spacing="4">
+            <i:Icon Value="fa-solid fa-tv"
+                    FontSize="32"
+                    Foreground="#2a2a2a" />
+            <TextBlock Text="Select a channel"
+                       FontSize="12"
+                       Foreground="#3a3a3a"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Error -->
+        <Border IsVisible="{Binding ErrorMessage,
+                    Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="#CC333333" Padding="12,6"
+                VerticalAlignment="Top" Margin="8">
+            <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                 Foreground="#dddddd" FontSize="12"
+                                 TextWrapping="Wrap" />
+        </Border>
+    </Panel>
+</UserControl>

@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FoxIPTV.ViewModels"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="720"
+             x:Class="FoxIPTV.Views.ChannelListView"
+             x:DataType="vm:ChannelListViewModel">
+
+    <DockPanel>
+        <!-- Filters -->
+        <StackPanel DockPanel.Dock="Top" Margin="8,6" Spacing="4">
+            <Grid ColumnDefinitions="Auto,*">
+                <i:Icon Grid.Column="0"
+                        Value="fa-solid fa-magnifying-glass"
+                        FontSize="11"
+                        Foreground="#555555"
+                        VerticalAlignment="Center"
+                        Margin="0,0,6,0" />
+                <TextBox Grid.Column="1"
+                         Watermark="Search..."
+                         Text="{Binding SearchText}"
+                         FontSize="12"
+                         Padding="6,4" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,4,*">
+                <ComboBox Grid.Column="0"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory}"
+                          HorizontalAlignment="Stretch"
+                          FontSize="11"
+                          Padding="6,3" />
+                <ComboBox Grid.Column="2"
+                          ItemsSource="{Binding Countries}"
+                          SelectedItem="{Binding SelectedCountry}"
+                          HorizontalAlignment="Stretch"
+                          FontSize="11"
+                          Padding="6,3" />
+            </Grid>
+
+            <DockPanel>
+                <CheckBox IsChecked="{Binding ShowFavoritesOnly}"
+                          DockPanel.Dock="Left"
+                          Foreground="#aaaaaa"
+                          FontSize="11">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <i:Icon Value="fa-solid fa-star"
+                                FontSize="10"
+                                Foreground="#bbbbbb" />
+                        <TextBlock Text="Favorites" VerticalAlignment="Center" />
+                    </StackPanel>
+                </CheckBox>
+                <TextBlock FontSize="10" Foreground="#555555"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} ch">
+                            <Binding Path="FilteredChannels.Count" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </DockPanel>
+        </StackPanel>
+
+        <!-- Channel list -->
+        <ListBox ItemsSource="{Binding FilteredChannels}"
+                 SelectedItem="{Binding SelectedChannel}"
+                 Background="Transparent"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChannelItemViewModel">
+                    <Grid ColumnDefinitions="*,Auto" Margin="2,1">
+                        <StackPanel Grid.Column="0" Margin="2,0">
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       Foreground="#cccccc"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding CategoryDisplay}"
+                                       FontSize="10"
+                                       Foreground="#666666"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                    VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="{Binding Country}"
+                                       FontSize="9" Foreground="#555555"
+                                       VerticalAlignment="Center" />
+                            <Button Command="{Binding $parent[ListBox].((vm:ChannelListViewModel)DataContext).ToggleFavoriteCommand}"
+                                    CommandParameter="{Binding}"
+                                    Background="Transparent"
+                                    Padding="2"
+                                    Width="20" Height="20"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <Panel>
+                                    <i:Icon Value="fa-solid fa-star"
+                                            FontSize="10"
+                                            Foreground="#cccccc"
+                                            IsVisible="{Binding IsFavorite}" />
+                                    <i:Icon Value="fa-regular fa-star"
+                                            FontSize="10"
+                                            Foreground="#444444"
+                                            IsVisible="{Binding !IsFavorite}" />
+                                </Panel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

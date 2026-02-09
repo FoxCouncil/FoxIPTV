@@ -1,0 +1,137 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FoxIPTV.ViewModels"
+        xmlns:views="using:FoxIPTV.Views"
+        xmlns:i="https://github.com/projektanker/icons.avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+        x:Class="FoxIPTV.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="FoxIPTV"
+        Width="1280" Height="720"
+        MinWidth="640" MinHeight="400"
+        WindowStartupLocation="CenterScreen"
+        Background="#121212">
+
+    <Window.Styles>
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#cccccc" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#333333" />
+        </Style>
+
+        <!-- Sidebar: 0 width when closed, 300 when open -->
+        <Style Selector="Border.sidebar">
+            <Setter Property="Width" Value="0" />
+        </Style>
+        <Style Selector="Border.sidebar.open">
+            <Setter Property="Width" Value="300" />
+        </Style>
+    </Window.Styles>
+
+    <Panel>
+        <DockPanel>
+            <!-- Toolbar -->
+            <Border DockPanel.Dock="Top"
+                    IsVisible="{Binding IsToolBarVisible}"
+                    Background="#1e1e1e"
+                    BorderBrush="#2a2a2a"
+                    BorderThickness="0,0,0,1"
+                    Padding="4,1">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Spacing="1">
+                        <Button Classes="toolbar-btn"
+                                Command="{Binding ToggleChannelListCommand}"
+                                ToolTip.Tip="Channels (Ctrl+L)">
+                            <i:Icon Value="fa-solid fa-bars" FontSize="13" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="1">
+                        <Button Classes="toolbar-btn"
+                                Command="{Binding ToggleFullScreenCommand}"
+                                ToolTip.Tip="Fullscreen (F11)">
+                            <Panel>
+                                <i:Icon Value="fa-solid fa-expand" FontSize="12"
+                                        IsVisible="{Binding !IsFullScreen}" />
+                                <i:Icon Value="fa-solid fa-compress" FontSize="12"
+                                        IsVisible="{Binding IsFullScreen}" />
+                            </Panel>
+                        </Button>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding VideoPlayer.CurrentChannelName}"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Border>
+
+            <!-- Status bar -->
+            <Border DockPanel.Dock="Bottom"
+                    IsVisible="{Binding IsToolBarVisible}"
+                    Background="#1e1e1e"
+                    BorderBrush="#2a2a2a"
+                    BorderThickness="0,1,0,0"
+                    Padding="10,2">
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="#666666" FontSize="11"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Main content: sidebar + video side by side -->
+            <Grid ColumnDefinitions="Auto,*">
+                <!-- Animated sidebar (pushes video) -->
+                <Border Grid.Column="0"
+                        Classes="sidebar"
+                        Classes.open="{Binding IsChannelListVisible}"
+                        ClipToBounds="True"
+                        Background="#1a1a1a"
+                        BorderBrush="#2a2a2a"
+                        BorderThickness="0,0,1,0">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Width"
+                                              Duration="0:0:0.2"
+                                              Easing="CubicEaseOut" />
+                        </Transitions>
+                    </Border.Transitions>
+                    <Border Width="300">
+                        <views:ChannelListView DataContext="{Binding ChannelList}" />
+                    </Border>
+                </Border>
+
+                <!-- Video player -->
+                <views:VideoPlayerView Grid.Column="1"
+                                       DataContext="{Binding VideoPlayer}"
+                                       x:Name="VideoPlayerView"
+                                       DoubleTapped="OnVideoDoubleTapped" />
+            </Grid>
+        </DockPanel>
+
+        <!-- Loading overlay -->
+        <Border IsVisible="{Binding IsLoading}"
+                Background="#E0121212"
+                ZIndex="100">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+                <ProgressBar IsIndeterminate="True" Width="200"
+                             Foreground="#555555" />
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="#888888" FontSize="13"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Panel>
+</Window>
