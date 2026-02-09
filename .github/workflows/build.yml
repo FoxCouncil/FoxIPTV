@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [master, version3]
+  pull_request:
+    branches: [master]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT: src/FoxIPTV/FoxIPTV.csproj
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: osx-arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore ${{ env.PROJECT }} -r ${{ matrix.rid }}
+
+      - name: Build
+        run: dotnet build ${{ env.PROJECT }} -c Release --no-restore

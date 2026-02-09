@@ -5,6 +5,10 @@
     <RootNamespace>FoxIPTV</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>3.0.0-alpha</Version>
+    <AssemblyTitle>FoxIPTV</AssemblyTitle>
+    <Product>FoxIPTV</Product>
+    <Description>Cross-platform IPTV client</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,8 +45,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
   </ItemGroup>
-  <!-- macOS: replace the x86_64 dylib from NuGet with arm64 symlinks from VLC.app -->
-  <Target Name="FixMacVlcArch" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+  <!-- macOS local dev: replace x86_64 dylibs from NuGet with arm64 symlinks from VLC.app -->
+  <Target Name="FixMacVlcArch" AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) And Exists('/Applications/VLC.app')">
     <Exec Command="ln -sf /Applications/VLC.app/Contents/MacOS/lib/libvlc.dylib '$(OutputPath)libvlc.dylib'" />
     <Exec Command="ln -sf /Applications/VLC.app/Contents/MacOS/lib/libvlccore.dylib '$(OutputPath)libvlccore.dylib'" />
   </Target>

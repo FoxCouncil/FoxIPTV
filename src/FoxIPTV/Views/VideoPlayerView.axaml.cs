@@ -190,26 +190,42 @@ public partial class VideoPlayerView : UserControl
         var videoTrack = _mediaPlayer.VideoTrack;
         if (videoTrack != -1)
         {
-            var width = _mediaPlayer.Media?.Tracks
+            var video = _mediaPlayer.Media?.Tracks
                 .Where(t => t.TrackType == TrackType.Video)
                 .Select(t => t.Data.Video)
                 .FirstOrDefault();
 
-            if (width.HasValue && width.Value.Width > 0)
+            if (video.HasValue && video.Value.Width > 0)
             {
-                parts.Add($"{width.Value.Width}x{width.Value.Height}");
+                parts.Add($"{video.Value.Width}x{video.Value.Height}");
 
-                if (width.Value.FrameRateNum > 0 && width.Value.FrameRateDen > 0)
+                if (video.Value.FrameRateNum > 0 && video.Value.FrameRateDen > 0)
                 {
-                    var fps = (double)width.Value.FrameRateNum / width.Value.FrameRateDen;
+                    var fps = (double)video.Value.FrameRateNum / video.Value.FrameRateDen;
                     parts.Add($"{fps:F1}fps");
                 }
             }
         }
 
+        // Codec info
+        if (_mediaPlayer.Media?.Tracks is { } tracks)
+        {
+            var videoCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Video);
+            if (!string.IsNullOrEmpty(videoCodec.Description))
+                parts.Add(videoCodec.Description);
+            else if (videoCodec.Codec != 0)
+                parts.Add(FourCcToString(videoCodec.Codec));
+
+            var audioCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Audio);
+            if (!string.IsNullOrEmpty(audioCodec.Description))
+                parts.Add(audioCodec.Description);
+            else if (audioCodec.Codec != 0)
+                parts.Add(FourCcToString(audioCodec.Codec));
+        }
+
         // Audio track info
-        var audioTrack = _mediaPlayer.AudioTrack;
-        if (audioTrack != -1)
+        var audioTrackIdx = _mediaPlayer.AudioTrack;
+        if (audioTrackIdx != -1)
         {
             var audio = _mediaPlayer.Media?.Tracks
                 .Where(t => t.TrackType == TrackType.Audio)
@@ -218,36 +234,36 @@ public partial class VideoPlayerView : UserControl
 
             if (audio.HasValue && audio.Value.Rate > 0)
             {
-                parts.Add($"{audio.Value.Rate / 1000}kHz");
-                parts.Add($"{audio.Value.Channels}ch");
+                parts.Add($"{audio.Value.Rate / 1000}kHz {audio.Value.Channels}ch");
             }
         }
 
-        // Codec info from track descriptions
-        if (_mediaPlayer.Media?.Tracks is { } tracks)
+        // Media statistics: bitrate, data read, dropped frames
+        try
         {
-            var videoCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Video);
-            if (!string.IsNullOrEmpty(videoCodec.Description))
+            var stats = _mediaPlayer.Media?.Statistics;
+            if (stats.HasValue)
             {
-                parts.Add(videoCodec.Description);
-            }
-            else if (videoCodec.Codec != 0)
-            {
-                parts.Add(FourCcToString(videoCodec.Codec));
-            }
+                var s = stats.Value;
+                if (s.InputBitrate > 0)
+                {
+                    var kbps = s.InputBitrate * 8;
+                    parts.Add(kbps >= 1000 ? $"{kbps / 1000:F1} Mbps" : $"{kbps:F0} Kbps");
+                }
 
-            var audioCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Audio);
-            if (!string.IsNullOrEmpty(audioCodec.Description))
-            {
-                parts.Add(audioCodec.Description);
-            }
-            else if (audioCodec.Codec != 0)
-            {
-                parts.Add(FourCcToString(audioCodec.Codec));
+                if (s.DemuxReadBytes > 0)
+                    parts.Add($"{s.DemuxReadBytes / 1024.0 / 1024.0:F1} MB");
+
+                if (s.LostPictures > 0)
+                    parts.Add($"{s.LostPictures} dropped");
             }
         }
+        catch
+        {
+            // Statistics may not be available for all media types
+        }
 
-        return parts.Count > 0 ? string.Join(" | ", parts) : string.Empty;
+        return parts.Count > 0 ? string.Join("  |  ", parts) : string.Empty;
     }
 
     public void OnVideoPointerMoved(object? sender, PointerEventArgs e)

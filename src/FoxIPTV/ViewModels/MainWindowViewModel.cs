@@ -1,5 +1,6 @@
 namespace FoxIPTV.ViewModels;
 
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -31,6 +32,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isChannelListVisible;
 
+    public string TitleText => $"FoxIPTV v{VersionString}";
+
+    public static string VersionString { get; } =
+        Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?.Split('+')[0] ?? "0.0.0";
+
     public event Action<bool>? FullScreenRequested;
 
     public MainWindowViewModel(
@@ -54,7 +62,7 @@ public partial class MainWindowViewModel : ViewModelBase
             _logger.LogInformation("Initializing FoxIPTV...");
             await ChannelList.LoadChannelsAsync();
             IsLoading = false;
-            StatusMessage = $"{ChannelList.TotalCount} channels available";
+            StatusMessage = $"{ChannelList.TotalCount} channels  |  v{VersionString}";
             _logger.LogInformation("Loaded {Count} channels", ChannelList.TotalCount);
 
             // Auto-show sidebar after loading
@@ -116,7 +124,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!VideoPlayer.IsPlaying)
         {
-            StatusMessage = $"{ChannelList.TotalCount} channels available";
+            StatusMessage = $"{ChannelList.TotalCount} channels  |  v{VersionString}";
             return;
         }
 
