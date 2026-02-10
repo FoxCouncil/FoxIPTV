@@ -58,16 +58,16 @@ jobs:
 
       - name: Collect VLC native libs (Windows)
         if: runner.os == 'Windows'
-        shell: bash
+        shell: pwsh
         run: |
           dotnet restore ${{ env.PROJECT }} -r win-x64
-          PKG_BASE="$USERPROFILE/.nuget/packages/videolan.libvlc.windows/3.0.23"
-          VLC_DIR=$(find "$PKG_BASE" -name "libvlc.dll" | head -1 | xargs dirname)
-          echo "Found VLC at: $VLC_DIR"
-          mkdir -p vlc-collect/lib vlc-collect/plugins
-          cp "$VLC_DIR"/libvlc.dll "$VLC_DIR"/libvlccore.dll vlc-collect/lib/
-          cp -r "$VLC_DIR"/plugins/* vlc-collect/plugins/
-          cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz lib plugins
+          $vlcDll = Get-ChildItem "$env:USERPROFILE\.nuget\packages\videolan.libvlc.windows\3.0.23" -Recurse -Filter "libvlc.dll" | Select-Object -First 1
+          $vlcDir = $vlcDll.DirectoryName
+          Write-Host "Found VLC at: $vlcDir"
+          New-Item -ItemType Directory -Force -Path vlc-collect\lib, vlc-collect\plugins | Out-Null
+          Copy-Item "$vlcDir\libvlc.dll", "$vlcDir\libvlccore.dll" -Destination vlc-collect\lib\
+          Copy-Item "$vlcDir\plugins\*" -Destination vlc-collect\plugins\ -Recurse
+          tar -czf src\FoxIPTV\vlc-native.tar.gz -C vlc-collect lib plugins
 
       - name: Collect VLC native libs (macOS)
         if: runner.os == 'macOS'
