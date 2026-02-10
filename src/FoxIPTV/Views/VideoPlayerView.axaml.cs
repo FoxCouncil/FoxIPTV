@@ -15,6 +15,7 @@ public partial class VideoPlayerView : UserControl
     private static bool _nativeResolverRegistered;
     private LibVLC? _libVlc;
     private MediaPlayer? _mediaPlayer;
+    private string _lastStreamInfo = string.Empty;
 
     public VideoPlayerView()
     {
@@ -75,6 +76,8 @@ public partial class VideoPlayerView : UserControl
             vm.PauseRequested += OnPauseRequested;
             vm.ResumeRequested += OnResumeRequested;
             vm.StatsUpdateRequested += OnStatsUpdateRequested;
+            vm.AudioTrackChangeRequested += OnAudioTrackChangeRequested;
+            vm.SubtitleTrackChangeRequested += OnSubtitleTrackChangeRequested;
         }
     }
 
@@ -115,6 +118,7 @@ public partial class VideoPlayerView : UserControl
 
     private void OnStopRequested()
     {
+        _lastStreamInfo = string.Empty;
         _mediaPlayer?.Stop();
     }
 
@@ -134,6 +138,47 @@ public partial class VideoPlayerView : UserControl
         {
             _mediaPlayer.Volume = volume;
         }
+    }
+
+    private void OnAudioTrackChangeRequested(int trackId)
+    {
+        if (_mediaPlayer is null) return;
+        _mediaPlayer.SetAudioTrack(trackId);
+        RefreshTrackLists();
+    }
+
+    private void OnSubtitleTrackChangeRequested(int trackId)
+    {
+        if (_mediaPlayer is null) return;
+        _mediaPlayer.SetSpu(trackId);
+        RefreshTrackLists();
+    }
+
+    private void RefreshTrackLists()
+    {
+        if (_mediaPlayer is null || DataContext is not VideoPlayerViewModel vm) return;
+
+        try
+        {
+            var currentAudioId = _mediaPlayer.AudioTrack;
+            var audioDescs = _mediaPlayer.AudioTrackDescription;
+            if (audioDescs.Length > 1)
+            {
+                vm.AudioTracks = audioDescs
+                    .Select(d => new TrackOption(d.Id, d.Id == -1 ? "Off" : d.Name, d.Id == currentAudioId))
+                    .ToList();
+            }
+
+            var currentSpuId = _mediaPlayer.Spu;
+            var spuDescs = _mediaPlayer.SpuDescription;
+            if (spuDescs.Length > 1)
+            {
+                vm.SubtitleTracks = spuDescs
+                    .Select(d => new TrackOption(d.Id, d.Id == -1 ? "Off" : d.Name, d.Id == currentSpuId))
+                    .ToList();
+            }
+        }
+        catch { /* track descriptions not always available */ }
     }
 
     private void OnPlayerError(object? sender, EventArgs e)
@@ -179,48 +224,66 @@ public partial class VideoPlayerView : UserControl
 
     private string OnStatsUpdateRequested()
     {
-        if (_mediaPlayer is null || !_mediaPlayer.IsPlaying)
-        {
-            return string.Empty;
-        }
+        if (_mediaPlayer is null)
+            return _lastStreamInfo;
+
+        // During adaptive bitrate reconnects, IsPlaying is briefly false.
+        // Return cached info instead of blanking out.
+        if (!_mediaPlayer.IsPlaying)
+            return _lastStreamInfo;
 
         var parts = new List<string>();
+        var resolution = string.Empty;
+        var videoCodecStr = string.Empty;
+        var audioCodecStr = string.Empty;
+        var audioLayout = string.Empty;
 
-        // Video track info
-        var videoTrack = _mediaPlayer.VideoTrack;
-        if (videoTrack != -1)
+        // Video resolution from actual decoded output (updates during adaptive bitrate switches)
+        uint videoWidth = 0, videoHeight = 0;
+        if (_mediaPlayer.Size(0, ref videoWidth, ref videoHeight) && videoWidth > 0)
         {
+            parts.Add($"{videoWidth}x{videoHeight}");
+            resolution = FormatResolution(videoHeight);
+
+            // FPS from track metadata
             var video = _mediaPlayer.Media?.Tracks
                 .Where(t => t.TrackType == TrackType.Video)
                 .Select(t => t.Data.Video)
                 .FirstOrDefault();
 
-            if (video.HasValue && video.Value.Width > 0)
+            if (video.HasValue && video.Value.FrameRateNum > 0 && video.Value.FrameRateDen > 0)
             {
-                parts.Add($"{video.Value.Width}x{video.Value.Height}");
-
-                if (video.Value.FrameRateNum > 0 && video.Value.FrameRateDen > 0)
-                {
-                    var fps = (double)video.Value.FrameRateNum / video.Value.FrameRateDen;
-                    parts.Add($"{fps:F1}fps");
-                }
+                var fps = (double)video.Value.FrameRateNum / video.Value.FrameRateDen;
+                parts.Add($"{fps:F1}fps");
             }
         }
 
         // Codec info
         if (_mediaPlayer.Media?.Tracks is { } tracks)
         {
-            var videoCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Video);
-            if (!string.IsNullOrEmpty(videoCodec.Description))
-                parts.Add(videoCodec.Description);
-            else if (videoCodec.Codec != 0)
-                parts.Add(FourCcToString(videoCodec.Codec));
+            var vc = tracks.FirstOrDefault(t => t.TrackType == TrackType.Video);
+            if (!string.IsNullOrEmpty(vc.Description))
+            {
+                videoCodecStr = vc.Description;
+                parts.Add(vc.Description);
+            }
+            else if (vc.Codec != 0)
+            {
+                videoCodecStr = FourCcToString(vc.Codec);
+                parts.Add(videoCodecStr);
+            }
 
-            var audioCodec = tracks.FirstOrDefault(t => t.TrackType == TrackType.Audio);
-            if (!string.IsNullOrEmpty(audioCodec.Description))
-                parts.Add(audioCodec.Description);
-            else if (audioCodec.Codec != 0)
-                parts.Add(FourCcToString(audioCodec.Codec));
+            var ac = tracks.FirstOrDefault(t => t.TrackType == TrackType.Audio);
+            if (!string.IsNullOrEmpty(ac.Description))
+            {
+                audioCodecStr = ac.Description;
+                parts.Add(ac.Description);
+            }
+            else if (ac.Codec != 0)
+            {
+                audioCodecStr = FourCcToString(ac.Codec);
+                parts.Add(audioCodecStr);
+            }
         }
 
         // Audio track info
@@ -235,8 +298,19 @@ public partial class VideoPlayerView : UserControl
             if (audio.HasValue && audio.Value.Rate > 0)
             {
                 parts.Add($"{audio.Value.Rate / 1000}kHz {audio.Value.Channels}ch");
+                audioLayout = FormatAudioChannels(audio.Value.Channels);
             }
         }
+
+        // Track counts (player-level, survives reconnects better than Media.Tracks)
+        var audioTrackCount = 0;
+        var subtitleTrackCount = 0;
+        try
+        {
+            audioTrackCount = Math.Max(0, _mediaPlayer.AudioTrackCount - 1);
+            subtitleTrackCount = Math.Max(0, _mediaPlayer.SpuCount - 1);
+        }
+        catch { /* not available for all media */ }
 
         // Media statistics: bitrate, data read, dropped frames
         try
@@ -263,8 +337,82 @@ public partial class VideoPlayerView : UserControl
             // Statistics may not be available for all media types
         }
 
-        return parts.Count > 0 ? string.Join("  |  ", parts) : string.Empty;
+        // Push track details to ViewModel for toolbar display.
+        // Only update when we got valid data — during adaptive reconnects,
+        // Tracks can be temporarily null, which would blank out the badges.
+        if (DataContext is VideoPlayerViewModel vm)
+        {
+            if (!string.IsNullOrEmpty(resolution))
+            {
+                vm.VideoResolution = resolution;
+                vm.VideoCodecName = videoCodecStr;
+                vm.AudioCodecName = audioCodecStr;
+                vm.AudioChannelLayout = audioLayout;
+            }
+
+            if (audioTrackCount > 0)
+                vm.AudioTrackCount = audioTrackCount;
+            if (subtitleTrackCount > 0)
+                vm.SubtitleTrackCount = subtitleTrackCount;
+
+            // Populate track lists for flyout menus
+            try
+            {
+                var currentAudioId = _mediaPlayer.AudioTrack;
+                var audioDescs = _mediaPlayer.AudioTrackDescription;
+                if (audioDescs.Length > 1)
+                {
+                    vm.AudioTracks = audioDescs
+                        .Select(d => new TrackOption(d.Id, d.Id == -1 ? "Off" : d.Name, d.Id == currentAudioId))
+                        .ToList();
+                }
+
+                var currentSpuId = _mediaPlayer.Spu;
+                var spuDescs = _mediaPlayer.SpuDescription;
+                if (spuDescs.Length > 1) // >1 because first entry is always "Disable"
+                {
+                    vm.SubtitleTracks = spuDescs
+                        .Select(d => new TrackOption(d.Id, d.Id == -1 ? "Off" : d.Name, d.Id == currentSpuId))
+                        .ToList();
+                }
+            }
+            catch { /* track descriptions not available for all media */ }
+        }
+
+        var result = parts.Count > 0 ? string.Join("  |  ", parts) : string.Empty;
+        if (!string.IsNullOrEmpty(result))
+            _lastStreamInfo = result;
+
+        return _lastStreamInfo;
     }
+
+    private static string FormatResolution(uint height)
+    {
+        return height switch
+        {
+            >= 2160 => "4K",
+            >= 1440 => "1440p",
+            >= 1080 => "1080p",
+            >= 720 => "720p",
+            >= 480 => "480p",
+            >= 360 => "360p",
+            _ => $"{height}p"
+        };
+    }
+
+    private static string FormatAudioChannels(uint channels)
+    {
+        return channels switch
+        {
+            1 => "Mono",
+            2 => "Stereo",
+            6 => "5.1",
+            8 => "7.1",
+            _ => $"{channels}ch"
+        };
+    }
+
+    public event EventHandler? VideoDoubleTapped;
 
     public void OnVideoPointerMoved(object? sender, PointerEventArgs e)
     {
@@ -272,6 +420,11 @@ public partial class VideoPlayerView : UserControl
         {
             vm.ShowOverlay();
         }
+    }
+
+    public void OnVideoDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        VideoDoubleTapped?.Invoke(this, EventArgs.Empty);
     }
 
     private void ShowError(string message)

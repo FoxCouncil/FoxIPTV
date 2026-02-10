@@ -14,9 +14,10 @@
         <vlc:VideoView x:Name="VideoView"
                        IsVisible="{Binding IsPlaying}">
             <Panel>
-                <!-- Hit-test surface for mouse move detection -->
+                <!-- Hit-test surface for mouse/tap detection -->
                 <Panel Background="Transparent"
-                       PointerMoved="OnVideoPointerMoved" />
+                       PointerMoved="OnVideoPointerMoved"
+                       DoubleTapped="OnVideoDoubleTapped" />
 
                 <!-- Buffering dim -->
                 <Border Background="#80000000"
