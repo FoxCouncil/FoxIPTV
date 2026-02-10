@@ -70,6 +70,108 @@
                         </Button>
                     </StackPanel>
 
+                    <!-- Track info badges + dropdown buttons -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="2"
+                                IsVisible="{Binding VideoPlayer.IsPlaying}"
+                                VerticalAlignment="Center" Margin="4,0">
+                        <!-- Resolution badge (static) -->
+                        <Border Background="#252525" CornerRadius="2" Padding="5,1"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding VideoPlayer.VideoResolution,
+                                    Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                ToolTip.Tip="{Binding VideoPlayer.VideoCodecName}">
+                            <TextBlock Text="{Binding VideoPlayer.VideoResolution}"
+                                       Foreground="#888888" FontSize="10" />
+                        </Border>
+                        <!-- Audio layout (static) -->
+                        <Border Background="Transparent" CornerRadius="2" Padding="4,1"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding VideoPlayer.AudioChannelLayout,
+                                    Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                ToolTip.Tip="{Binding VideoPlayer.AudioCodecName}">
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <i:Icon Value="fa-solid fa-volume-low" FontSize="9"
+                                        Foreground="#666666" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding VideoPlayer.AudioChannelLayout}"
+                                           Foreground="#666666" FontSize="10"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <!-- Audio tracks dropdown -->
+                        <Button x:Name="AudioTrackButton"
+                                Background="Transparent" Foreground="#cccccc"
+                                Height="28" Padding="5,0" CornerRadius="3"
+                                IsVisible="{Binding VideoPlayer.HasMultipleAudioTracks}"
+                                ToolTip.Tip="Audio tracks">
+                            <Button.Flyout>
+                                <Flyout Placement="TopEdgeAlignedRight">
+                                    <ItemsControl ItemsSource="{Binding VideoPlayer.AudioTracks}"
+                                                  MinWidth="150">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:TrackOption">
+                                                <Button Background="Transparent"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Left"
+                                                        Padding="10,5"
+                                                        Tag="{Binding Id}"
+                                                        Click="OnAudioTrackItemClick">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="12" Foreground="#cccccc" />
+                                                        <TextBlock Text="&#x2713;" FontSize="11"
+                                                                   Foreground="#888888"
+                                                                   IsVisible="{Binding IsActive}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Flyout>
+                            </Button.Flyout>
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <i:Icon Value="fa-solid fa-language" FontSize="10"
+                                        Foreground="#666666" />
+                                <TextBlock Text="{Binding VideoPlayer.AudioTrackCount}"
+                                           Foreground="#666666" FontSize="10"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <!-- Subtitles / CC dropdown -->
+                        <Button x:Name="SubtitleButton"
+                                Background="Transparent" Foreground="#cccccc"
+                                Height="28" Padding="5,0" CornerRadius="3"
+                                IsVisible="{Binding VideoPlayer.HasSubtitles}"
+                                ToolTip.Tip="Subtitles / CC">
+                            <Button.Flyout>
+                                <Flyout Placement="TopEdgeAlignedRight">
+                                    <ItemsControl ItemsSource="{Binding VideoPlayer.SubtitleTracks}"
+                                                  MinWidth="150">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:TrackOption">
+                                                <Button Background="Transparent"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Left"
+                                                        Padding="10,5"
+                                                        Tag="{Binding Id}"
+                                                        Click="OnSubtitleTrackItemClick">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="12" Foreground="#cccccc" />
+                                                        <TextBlock Text="&#x2713;" FontSize="11"
+                                                                   Foreground="#888888"
+                                                                   IsVisible="{Binding IsActive}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Flyout>
+                            </Button.Flyout>
+                            <i:Icon Value="fa-solid fa-closed-captioning" FontSize="11"
+                                    Foreground="#666666" />
+                        </Button>
+                    </StackPanel>
+
                     <TextBlock Text="{Binding VideoPlayer.CurrentChannelName}"
                                Foreground="#888888"
                                FontSize="12"
@@ -116,8 +218,7 @@
                 <!-- Video player -->
                 <views:VideoPlayerView Grid.Column="1"
                                        DataContext="{Binding VideoPlayer}"
-                                       x:Name="VideoPlayerView"
-                                       DoubleTapped="OnVideoDoubleTapped" />
+                                       x:Name="VideoPlayerView" />
             </Grid>
         </DockPanel>
 

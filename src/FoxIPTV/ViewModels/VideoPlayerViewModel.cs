@@ -39,6 +39,33 @@ public partial class VideoPlayerViewModel : ViewModelBase
     [ObservableProperty]
     private string _streamInfo = string.Empty;
 
+    [ObservableProperty]
+    private string _videoResolution = string.Empty;
+
+    [ObservableProperty]
+    private string _videoCodecName = string.Empty;
+
+    [ObservableProperty]
+    private string _audioCodecName = string.Empty;
+
+    [ObservableProperty]
+    private string _audioChannelLayout = string.Empty;
+
+    [ObservableProperty]
+    private int _audioTrackCount;
+
+    [ObservableProperty]
+    private int _subtitleTrackCount;
+
+    [ObservableProperty]
+    private List<TrackOption> _audioTracks = [];
+
+    [ObservableProperty]
+    private List<TrackOption> _subtitleTracks = [];
+
+    public bool HasMultipleAudioTracks => AudioTrackCount > 1;
+    public bool HasSubtitles => SubtitleTrackCount > 0;
+
     private DispatcherTimer? _overlayTimer;
     private DispatcherTimer? _statsTimer;
 
@@ -50,6 +77,8 @@ public partial class VideoPlayerViewModel : ViewModelBase
     public event Action? PauseRequested;
     public event Action? ResumeRequested;
     public event Func<string>? StatsUpdateRequested;
+    public event Action<int>? AudioTrackChangeRequested;
+    public event Action<int>? SubtitleTrackChangeRequested;
 
     public void PlayChannel(ChannelItemViewModel channel)
     {
@@ -123,6 +152,28 @@ public partial class VideoPlayerViewModel : ViewModelBase
         VolumeChangeRequested?.Invoke(value ? 0 : (int)Volume);
     }
 
+    partial void OnAudioTrackCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(HasMultipleAudioTracks));
+    }
+
+    partial void OnSubtitleTrackCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(HasSubtitles));
+    }
+
+    [RelayCommand]
+    private void SelectAudioTrack(int trackId)
+    {
+        AudioTrackChangeRequested?.Invoke(trackId);
+    }
+
+    [RelayCommand]
+    private void SelectSubtitleTrack(int trackId)
+    {
+        SubtitleTrackChangeRequested?.Invoke(trackId);
+    }
+
     [RelayCommand]
     private void ToggleMute()
     {
@@ -155,6 +206,14 @@ public partial class VideoPlayerViewModel : ViewModelBase
         CurrentStreamUrl = null;
         CurrentChannelName = string.Empty;
         StreamInfo = string.Empty;
+        VideoResolution = string.Empty;
+        VideoCodecName = string.Empty;
+        AudioCodecName = string.Empty;
+        AudioChannelLayout = string.Empty;
+        AudioTrackCount = 0;
+        SubtitleTrackCount = 0;
+        AudioTracks = [];
+        SubtitleTracks = [];
         StopRequested?.Invoke();
     }
 
