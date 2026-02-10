@@ -56,6 +56,42 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building version: $VERSION"
 
+      - name: Collect VLC native libs (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          dotnet restore ${{ env.PROJECT }} -r win-x64
+          PKG_BASE="$USERPROFILE/.nuget/packages/videolan.libvlc.windows/3.0.23"
+          VLC_DIR=$(find "$PKG_BASE" -name "libvlc.dll" -printf '%h\n' 2>/dev/null | head -1)
+          if [ -z "$VLC_DIR" ]; then
+            VLC_DIR=$(find "$PKG_BASE" -name "libvlc.dll" | head -1 | xargs dirname)
+          fi
+          echo "Found VLC at: $VLC_DIR"
+          mkdir -p vlc-collect/lib vlc-collect/plugins
+          cp "$VLC_DIR"/libvlc.dll "$VLC_DIR"/libvlccore.dll vlc-collect/lib/
+          cp -r "$VLC_DIR"/plugins/* vlc-collect/plugins/
+          cd vlc-collect && tar -czf "$GITHUB_WORKSPACE/src/FoxIPTV/vlc-native.tar.gz" lib plugins
+
+      - name: Collect VLC native libs (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install --cask vlc
+          VLC_BASE="/Applications/VLC.app/Contents/MacOS"
+          mkdir -p vlc-collect/lib vlc-collect/plugins
+          cp "$VLC_BASE/lib/libvlc.dylib" "$VLC_BASE/lib/libvlccore.dylib" vlc-collect/lib/
+          cp "$VLC_BASE/plugins/"*.dylib vlc-collect/plugins/
+          cd vlc-collect && tar -czf "$GITHUB_WORKSPACE/src/FoxIPTV/vlc-native.tar.gz" lib plugins
+
+      - name: Collect VLC native libs (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update && sudo apt-get install -y vlc libvlc-dev
+          mkdir -p vlc-collect/lib vlc-collect/plugins
+          cp /usr/lib/x86_64-linux-gnu/libvlc.so.5 vlc-collect/lib/libvlc.so
+          cp /usr/lib/x86_64-linux-gnu/libvlccore.so.9 vlc-collect/lib/libvlccore.so
+          cp -r /usr/lib/x86_64-linux-gnu/vlc/plugins/* vlc-collect/plugins/
+          cd vlc-collect && tar -czf "$GITHUB_WORKSPACE/src/FoxIPTV/vlc-native.tar.gz" lib plugins
+
       - name: Publish
         run: >
           dotnet publish ${{ env.PROJECT }}
@@ -63,6 +99,8 @@ jobs:
           -r ${{ matrix.rid }}
           --self-contained
           -p:PublishSingleFile=true
+          -p:EmbedVlc=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
           -p:Version=${{ steps.version.outputs.version }}
           -o publish
 

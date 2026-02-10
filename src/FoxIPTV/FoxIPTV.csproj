@@ -9,6 +9,10 @@
     <AssemblyTitle>FoxIPTV</AssemblyTitle>
     <Product>FoxIPTV</Product>
     <Description>Cross-platform IPTV client</Description>
+    <!-- Set to true in CI to embed VLC native libs in the binary -->
+    <EmbedVlc>false</EmbedVlc>
+    <!-- Include Avalonia/SkiaSharp native libs inside single-file exe -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,14 +38,22 @@
     <PackageReference Include="LibVLCSharp.Avalonia" Version="3.9.5" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.6.2" />
 
-    <!-- LibVLC native binaries (platform-conditional) -->
-    <!-- macOS: NuGet provides bindings; arm64 dylibs symlinked from VLC.app in FixMacVlcArch target -->
-    <PackageReference Include="VideoLAN.LibVLC.Mac" Version="3.1.3.1" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
-    <!-- Windows: NuGet provides libvlc.dll + plugins -->
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <!-- LibVLC native binaries: NuGet in dev mode only (skipped when EmbedVlc=true) -->
+    <PackageReference Include="VideoLAN.LibVLC.Mac" Version="3.1.3.1"
+        Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$(EmbedVlc)' != 'true'" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23"
+        Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$(EmbedVlc)' != 'true'" />
     <!-- Linux: VLC loaded from system packages (apt install vlc); no NuGet needed -->
 
     <!-- Microsoft.Extensions -->
+  </ItemGroup>
+
+  <!-- Embed VLC native archive when building for release -->
+  <ItemGroup Condition="'$(EmbedVlc)' == 'true'">
+    <EmbeddedResource Include="vlc-native.tar.gz" LogicalName="FoxIPTV.vlc-native.tar.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />

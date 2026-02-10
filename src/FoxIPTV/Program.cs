@@ -1,4 +1,5 @@
 using Avalonia;
+using FoxIPTV.Services;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using System;
@@ -10,6 +11,7 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        VlcNativeManager.EnsureExtracted();
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

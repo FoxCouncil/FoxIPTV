@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using FoxIPTV.Services;
 using FoxIPTV.ViewModels;
 using LibVLCSharp.Shared;
 
@@ -445,39 +446,49 @@ public partial class VideoPlayerView : UserControl
     /// </summary>
     private static void RegisterNativeResolver()
     {
-        if (_nativeResolverRegistered)
-        {
-            return;
-        }
+        if (_nativeResolverRegistered) return;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            const string vlcBasePath = "/Applications/VLC.app/Contents/MacOS/";
-            const string vlcLibPath = vlcBasePath + "lib/";
+            string vlcLibPath;
+            string vlcPluginPath;
 
-            // Use native setenv so libvlc's getenv() sees these values.
-            // .NET's Environment.SetEnvironmentVariable may not propagate to native code.
+            if (VlcNativeManager.LibPath is not null)
+            {
+                vlcLibPath = VlcNativeManager.LibPath;
+                vlcPluginPath = VlcNativeManager.PluginPath!;
+            }
+            else
+            {
+                vlcLibPath = "/Applications/VLC.app/Contents/MacOS/lib/";
+                vlcPluginPath = "/Applications/VLC.app/Contents/MacOS/plugins/";
+            }
+
             setenv("DYLD_LIBRARY_PATH", vlcLibPath, 1);
-            setenv("VLC_PLUGIN_PATH", vlcBasePath + "plugins/", 1);
+            setenv("VLC_PLUGIN_PATH", vlcPluginPath, 1);
 
-            // Pre-load native libraries so they're available globally.
-            // libvlccore must be loaded before libvlc (dependency order).
-            NativeLibrary.Load(vlcLibPath + "libvlccore.dylib");
-            NativeLibrary.Load(vlcLibPath + "libvlc.dylib");
+            NativeLibrary.Load(Path.Combine(vlcLibPath, "libvlccore.dylib"));
+            NativeLibrary.Load(Path.Combine(vlcLibPath, "libvlc.dylib"));
 
-            // Also register DllImport resolver for any P/Invoke calls
             NativeLibrary.SetDllImportResolver(typeof(LibVLC).Assembly, (name, assembly, path) =>
             {
                 if (name is "libvlc" or "libvlccore")
                 {
-                    if (NativeLibrary.TryLoad(vlcLibPath + name + ".dylib", out var handle))
-                    {
+                    if (NativeLibrary.TryLoad(Path.Combine(vlcLibPath, name + ".dylib"), out var handle))
                         return handle;
-                    }
                 }
-
                 return IntPtr.Zero;
             });
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && VlcNativeManager.LibPath is not null)
+        {
+            Environment.SetEnvironmentVariable("VLC_PLUGIN_PATH", VlcNativeManager.PluginPath);
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && VlcNativeManager.LibPath is not null)
+        {
+            setenv("VLC_PLUGIN_PATH", VlcNativeManager.PluginPath!, 1);
+            var libPath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? "";
+            setenv("LD_LIBRARY_PATH", VlcNativeManager.LibPath + ":" + libPath, 1);
         }
 
         _nativeResolverRegistered = true;
