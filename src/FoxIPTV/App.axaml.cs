@@ -49,7 +49,7 @@ public partial class App : Application
         // HTTP client for iptv-org API
         services.AddHttpClient<IIptvService, IptvOrgService>(client =>
         {
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("FoxIPTV/2.0");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("FoxIPTV/3.0");
             client.Timeout = TimeSpan.FromSeconds(30);
         });
 

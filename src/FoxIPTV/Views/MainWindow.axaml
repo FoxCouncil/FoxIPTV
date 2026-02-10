@@ -8,7 +8,7 @@
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="FoxIPTV.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/FoxIPTV.ico"
         Title="{Binding TitleText, FallbackValue=FoxIPTV}"
         Width="1280" Height="720"
         MinWidth="640" MinHeight="400"
