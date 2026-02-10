@@ -8,7 +8,8 @@
     <Version>3.0.0-alpha</Version>
     <AssemblyTitle>FoxIPTV</AssemblyTitle>
     <Product>FoxIPTV</Product>
-    <Description>Cross-platform IPTV client</Description>
+    <Description>FoxIPTV - Cross-platform IPTV client</Description>
+    <ApplicationIcon>Assets\FoxIPTV.ico</ApplicationIcon>
     <!-- Set to true in CI to embed VLC native libs in the binary -->
     <EmbedVlc>false</EmbedVlc>
     <!-- Include Avalonia/SkiaSharp native libs inside single-file exe -->
@@ -16,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +60,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
   </ItemGroup>
+  <!-- macOS: copy Info.plist and .icns to output for dock name + icon -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <None Include="Info.plist" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets/FoxIPTV.icns" Link="FoxIPTV.icns" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- macOS local dev: replace x86_64 dylibs from NuGet with arm64 symlinks from VLC.app -->
   <Target Name="FixMacVlcArch" AfterTargets="Build"
           Condition="$([MSBuild]::IsOSPlatform('OSX')) And Exists('/Applications/VLC.app')">
