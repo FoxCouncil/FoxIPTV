@@ -503,6 +503,12 @@ public partial class VideoPlayerView : UserControl
             "--no-video-title-show"
         };
 
+        // Tell libvlc where plugins are when using embedded VLC
+        if (VlcNativeManager.PluginPath is not null)
+        {
+            args.Add($"--plugin-path={VlcNativeManager.PluginPath}");
+        }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             args.Add("--no-xlib");
