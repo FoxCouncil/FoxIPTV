@@ -89,6 +89,17 @@ public partial class VideoPlayerViewModel : ViewModelBase
         BufferProgress = 0;
         IsPaused = false;
         IsPlaying = true;
+
+        // Clear stale track info from previous channel
+        VideoResolution = string.Empty;
+        VideoCodecName = string.Empty;
+        AudioCodecName = string.Empty;
+        AudioChannelLayout = string.Empty;
+        AudioTrackCount = 0;
+        SubtitleTrackCount = 0;
+        AudioTracks = [];
+        SubtitleTracks = [];
+
         PlayRequested?.Invoke(channel.StreamUrl, channel.UserAgent, channel.Referrer);
     }
 

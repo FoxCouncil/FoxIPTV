@@ -30,6 +30,9 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Don't handle single-key shortcuts when a text input has focus
+        var isTyping = FocusManager?.GetFocusedElement() is TextBox;
+
         switch (e.Key)
         {
             case Key.F11:
@@ -42,12 +45,12 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
 
-            case Key.Space when vm.VideoPlayer.IsPlaying:
+            case Key.Space when !isTyping && vm.VideoPlayer.IsPlaying:
                 vm.VideoPlayer.TogglePlayPauseCommand.Execute(null);
                 e.Handled = true;
                 break;
 
-            case Key.M:
+            case Key.M when !isTyping:
                 vm.VideoPlayer.ToggleMuteCommand.Execute(null);
                 e.Handled = true;
                 break;
