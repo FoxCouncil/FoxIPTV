@@ -483,6 +483,24 @@ public partial class VideoPlayerView : UserControl
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && VlcNativeManager.LibPath is not null)
         {
             Environment.SetEnvironmentVariable("VLC_PLUGIN_PATH", VlcNativeManager.PluginPath);
+
+            // Add lib path to PATH so LoadLibrary can resolve libvlc.dll
+            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+            Environment.SetEnvironmentVariable("PATH", VlcNativeManager.LibPath + ";" + currentPath);
+
+            // Pre-load in dependency order (libvlccore first)
+            NativeLibrary.Load(Path.Combine(VlcNativeManager.LibPath, "libvlccore.dll"));
+            NativeLibrary.Load(Path.Combine(VlcNativeManager.LibPath, "libvlc.dll"));
+
+            NativeLibrary.SetDllImportResolver(typeof(LibVLC).Assembly, (name, assembly, path) =>
+            {
+                if (name is "libvlc" or "libvlccore")
+                {
+                    if (NativeLibrary.TryLoad(Path.Combine(VlcNativeManager.LibPath, name + ".dll"), out var handle))
+                        return handle;
+                }
+                return IntPtr.Zero;
+            });
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && VlcNativeManager.LibPath is not null)
         {
