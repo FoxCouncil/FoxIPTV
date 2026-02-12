@@ -2,6 +2,7 @@ namespace FoxIPTV.Services;
 
 using System.IO.Compression;
 using System.Formats.Tar;
+using System.Reflection;
 
 public static class VlcNativeManager
 {
@@ -18,7 +19,13 @@ public static class VlcNativeManager
         using var stream = assembly.GetManifestResourceStream("FoxIPTV.vlc-native.tar.gz");
         if (stream is null) return; // Dev mode — no embedded VLC, use system/NuGet
 
-        var version = assembly.GetName().Version?.ToString() ?? "dev";
+        // Use InformationalVersion (includes pre-release tag) so each alpha gets its own cache
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? assembly.GetName().Version?.ToString()
+            ?? "dev";
+        // Sanitize: InformationalVersion may contain '+commithash' — strip it for path safety
+        var plusIdx = version.IndexOf('+');
+        if (plusIdx >= 0) version = version[..plusIdx];
         var versionDir = Path.Combine(BaseDir, version);
         var markerFile = Path.Combine(versionDir, ".extracted");
 
