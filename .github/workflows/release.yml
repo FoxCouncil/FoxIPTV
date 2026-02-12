@@ -64,30 +64,30 @@ jobs:
           $vlcDll = Get-ChildItem "$env:USERPROFILE\.nuget\packages\videolan.libvlc.windows\3.0.23" -Recurse -Filter "libvlc.dll" | Select-Object -First 1
           $vlcDir = $vlcDll.DirectoryName
           Write-Host "Found VLC at: $vlcDir"
-          New-Item -ItemType Directory -Force -Path vlc-collect\lib, vlc-collect\plugins | Out-Null
-          Copy-Item "$vlcDir\libvlc.dll", "$vlcDir\libvlccore.dll" -Destination vlc-collect\lib\
+          New-Item -ItemType Directory -Force -Path vlc-collect\plugins | Out-Null
+          Copy-Item "$vlcDir\libvlc.dll", "$vlcDir\libvlccore.dll" -Destination vlc-collect\
           Copy-Item "$vlcDir\plugins\*" -Destination vlc-collect\plugins\ -Recurse
-          tar -czf src\FoxIPTV\vlc-native.tar.gz -C vlc-collect lib plugins
+          tar -czf src\FoxIPTV\vlc-native.tar.gz -C vlc-collect .
 
       - name: Collect VLC native libs (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install --cask vlc
           VLC_BASE="/Applications/VLC.app/Contents/MacOS"
-          mkdir -p vlc-collect/lib vlc-collect/plugins
-          cp "$VLC_BASE/lib/libvlc.dylib" "$VLC_BASE/lib/libvlccore.dylib" vlc-collect/lib/
+          mkdir -p vlc-collect/plugins
+          cp "$VLC_BASE/lib/libvlc.dylib" "$VLC_BASE/lib/libvlccore.dylib" vlc-collect/
           cp "$VLC_BASE/plugins/"*.dylib vlc-collect/plugins/
-          cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz lib plugins
+          cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz .
 
       - name: Collect VLC native libs (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update && sudo apt-get install -y vlc libvlc-dev
-          mkdir -p vlc-collect/lib vlc-collect/plugins
-          cp /usr/lib/x86_64-linux-gnu/libvlc.so.5 vlc-collect/lib/libvlc.so
-          cp /usr/lib/x86_64-linux-gnu/libvlccore.so.9 vlc-collect/lib/libvlccore.so
+          mkdir -p vlc-collect/plugins
+          cp /usr/lib/x86_64-linux-gnu/libvlc.so.5 vlc-collect/libvlc.so
+          cp /usr/lib/x86_64-linux-gnu/libvlccore.so.9 vlc-collect/libvlccore.so
           cp -r /usr/lib/x86_64-linux-gnu/vlc/plugins/* vlc-collect/plugins/
-          cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz lib plugins
+          cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz .
 
       - name: Publish
         run: >
