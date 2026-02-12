@@ -51,7 +51,7 @@ public static class VlcNativeManager
 
     private static void SetPaths(string versionDir)
     {
-        LibPath = Path.Combine(versionDir, "lib");
+        LibPath = versionDir;
         PluginPath = Path.Combine(versionDir, "plugins");
     }
 }
