@@ -85,9 +85,10 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal"
                                     VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="{Binding Country}"
-                                       FontSize="9" Foreground="#555555"
-                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CountryFlag}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding CountryFlag, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                             <Button Command="{Binding $parent[ListBox].((vm:ChannelListViewModel)DataContext).ToggleFavoriteCommand}"
                                     CommandParameter="{Binding}"
                                     Background="Transparent"

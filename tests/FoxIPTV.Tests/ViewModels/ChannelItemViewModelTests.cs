@@ -27,11 +27,12 @@ public class ChannelItemViewModelTests
             Id = "test",
             Name = "Test",
             Country = "US",
+            CountryName = "United States",
             StreamUrl = "http://test",
             Categories = []
         };
 
-        Assert.Equal("US", vm.CategoryDisplay);
+        Assert.Equal("United States", vm.CategoryDisplay);
     }
 
     [Fact]
