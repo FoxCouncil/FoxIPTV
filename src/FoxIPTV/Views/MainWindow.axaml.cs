@@ -35,13 +35,22 @@ public partial class MainWindow : Window
 
         switch (e.Key)
         {
+            // Fullscreen triggers that always work (even when typing)
             case Key.F11:
+            case Key.Enter when e.KeyModifiers.HasFlag(KeyModifiers.Alt):
                 vm.ToggleFullScreenCommand.Execute(null);
                 e.Handled = true;
                 break;
 
+            // Fullscreen trigger (single key — only when not typing)
+            case Key.F when !isTyping:
+                vm.ToggleFullScreenCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Escape exits fullscreen (always works)
             case Key.Escape when vm.IsFullScreen:
-                vm.IsFullScreen = false;
+                vm.ToggleFullScreenCommand.Execute(null);
                 e.Handled = true;
                 break;
 

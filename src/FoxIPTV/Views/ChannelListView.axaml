@@ -52,15 +52,30 @@
                         <TextBlock Text="Favorites" VerticalAlignment="Center" />
                     </StackPanel>
                 </CheckBox>
-                <TextBlock FontSize="10" Foreground="#555555"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} ch">
-                            <Binding Path="FilteredChannels.Count" />
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                            VerticalAlignment="Center" Spacing="4">
+                    <TextBlock FontSize="10" Foreground="#555555"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} ch">
+                                <Binding Path="FilteredChannels.Count" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <Button Command="{Binding ClearFiltersCommand}"
+                            IsVisible="{Binding HasActiveFilters}"
+                            Background="Transparent"
+                            Padding="2"
+                            Width="18" Height="18"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Center"
+                            ToolTip.Tip="Clear all filters">
+                        <i:Icon Value="fa-solid fa-xmark"
+                                FontSize="10"
+                                Foreground="#888888" />
+                    </Button>
+                </StackPanel>
             </DockPanel>
         </StackPanel>
 

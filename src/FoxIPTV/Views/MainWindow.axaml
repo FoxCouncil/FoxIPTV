@@ -60,7 +60,7 @@
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="1">
                         <Button Classes="toolbar-btn"
                                 Command="{Binding ToggleFullScreenCommand}"
-                                ToolTip.Tip="Fullscreen (F11)">
+                                ToolTip.Tip="Fullscreen (F / F11 / Alt+Enter)">
                             <Panel>
                                 <i:Icon Value="fa-solid fa-expand" FontSize="12"
                                         IsVisible="{Binding !IsFullScreen}" />
