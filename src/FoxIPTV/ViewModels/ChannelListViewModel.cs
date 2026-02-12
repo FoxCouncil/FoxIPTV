@@ -97,10 +97,25 @@ public partial class ChannelListViewModel : ViewModelBase
         ApplyFilters();
     }
 
-    partial void OnSearchTextChanged(string value) => ApplyFilters();
-    partial void OnSelectedCategoryChanged(string value) => ApplyFilters();
-    partial void OnSelectedCountryChanged(string value) => ApplyFilters();
-    partial void OnShowFavoritesOnlyChanged(bool value) => ApplyFilters();
+    public bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(SearchText) ||
+        SelectedCategory != "All" ||
+        SelectedCountry != "All" ||
+        ShowFavoritesOnly;
+
+    partial void OnSearchTextChanged(string value) { ApplyFilters(); OnPropertyChanged(nameof(HasActiveFilters)); }
+    partial void OnSelectedCategoryChanged(string value) { ApplyFilters(); OnPropertyChanged(nameof(HasActiveFilters)); }
+    partial void OnSelectedCountryChanged(string value) { ApplyFilters(); OnPropertyChanged(nameof(HasActiveFilters)); }
+    partial void OnShowFavoritesOnlyChanged(bool value) { ApplyFilters(); OnPropertyChanged(nameof(HasActiveFilters)); }
+
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        SearchText = string.Empty;
+        SelectedCategory = "All";
+        SelectedCountry = "All";
+        ShowFavoritesOnly = false;
+    }
 
     partial void OnSelectedChannelChanged(ChannelItemViewModel? value)
     {

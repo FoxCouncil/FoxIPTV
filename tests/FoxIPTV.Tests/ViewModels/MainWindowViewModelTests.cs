@@ -22,7 +22,7 @@ public class MainWindowViewModelTests
 
         _channelList = new ChannelListViewModel(iptvService, settingsService);
         var logger = Substitute.For<ILogger<MainWindowViewModel>>();
-        _vm = new MainWindowViewModel(_channelList, _videoPlayer, logger);
+        _vm = new MainWindowViewModel(_channelList, _videoPlayer, settingsService, logger);
     }
 
     [Fact]

@@ -5,11 +5,13 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FoxIPTV.Services;
 using Microsoft.Extensions.Logging;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly ILogger<MainWindowViewModel> _logger;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private ChannelListViewModel _channelList;
@@ -44,10 +46,12 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(
         ChannelListViewModel channelList,
         VideoPlayerViewModel videoPlayer,
+        ISettingsService settingsService,
         ILogger<MainWindowViewModel> logger)
     {
         _channelList = channelList;
         _videoPlayer = videoPlayer;
+        _settingsService = settingsService;
         _logger = logger;
 
         _channelList.ChannelSelected += OnChannelSelected;
@@ -60,6 +64,7 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             _logger.LogInformation("Initializing FoxIPTV...");
+            await _settingsService.LoadAsync();
             await ChannelList.LoadChannelsAsync();
             IsLoading = false;
             StatusMessage = $"{ChannelList.TotalCount} channels  |  v{VersionString}";
@@ -76,6 +81,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private bool _sidebarWasVisible;
+
     [RelayCommand]
     private void ToggleFullScreen()
     {
@@ -84,6 +91,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
     partial void OnIsFullScreenChanged(bool value)
     {
+        if (value)
+        {
+            _sidebarWasVisible = IsChannelListVisible;
+            IsChannelListVisible = false;
+        }
+        else
+        {
+            IsChannelListVisible = _sidebarWasVisible;
+        }
+
         IsToolBarVisible = !value;
         FullScreenRequested?.Invoke(value);
     }
@@ -105,6 +122,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void OnChannelSelected(ChannelItemViewModel channel)
     {
+        // De-bounce: don't restart if the same channel is already playing
+        if (VideoPlayer.IsPlaying && VideoPlayer.CurrentStreamUrl == channel.StreamUrl)
+            return;
+
         VideoPlayer.PlayChannel(channel);
         UpdateStatusMessage();
     }
