@@ -172,12 +172,25 @@
                         </Button>
                     </StackPanel>
 
-                    <TextBlock Text="{Binding VideoPlayer.CurrentChannelName}"
-                               Foreground="#888888"
-                               FontSize="12"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                VerticalAlignment="Center" Spacing="5">
+                        <TextBlock Text="{Binding VideoPlayer.CurrentCountryFlag}"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding VideoPlayer.CurrentCountryFlag,
+                                       Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        <TextBlock Text="{Binding VideoPlayer.CurrentChannelName}"
+                                   Foreground="#888888"
+                                   FontSize="12"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding VideoPlayer.CurrentCountryName}"
+                                   Foreground="#555555"
+                                   FontSize="10"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding VideoPlayer.CurrentCountryName,
+                                       Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
                 </DockPanel>
             </Border>
 

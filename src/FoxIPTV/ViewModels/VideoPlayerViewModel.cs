@@ -13,6 +13,12 @@ public partial class VideoPlayerViewModel : ViewModelBase
     private string _currentChannelName = string.Empty;
 
     [ObservableProperty]
+    private string _currentCountryFlag = string.Empty;
+
+    [ObservableProperty]
+    private string _currentCountryName = string.Empty;
+
+    [ObservableProperty]
     private double _volume = 80;
 
     [ObservableProperty]
@@ -85,6 +91,8 @@ public partial class VideoPlayerViewModel : ViewModelBase
         ErrorMessage = null;
         CurrentStreamUrl = channel.StreamUrl;
         CurrentChannelName = channel.Name;
+        CurrentCountryFlag = channel.CountryFlag;
+        CurrentCountryName = channel.CountryName;
         IsBuffering = true;
         BufferProgress = 0;
         IsPaused = false;
@@ -216,6 +224,8 @@ public partial class VideoPlayerViewModel : ViewModelBase
         IsPaused = false;
         CurrentStreamUrl = null;
         CurrentChannelName = string.Empty;
+        CurrentCountryFlag = string.Empty;
+        CurrentCountryName = string.Empty;
         StreamInfo = string.Empty;
         VideoResolution = string.Empty;
         VideoCodecName = string.Empty;

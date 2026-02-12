@@ -50,19 +50,28 @@ public partial class ChannelListViewModel : ViewModelBase
     public async Task LoadChannelsAsync(CancellationToken ct = default)
     {
         var channels = await _iptvService.GetChannelsWithStreamsAsync(ct);
+        var countries = await _iptvService.GetCountriesAsync(ct);
         var favorites = _settingsService.Current.FavoriteChannelIds;
 
-        _allChannels = channels.Select(c => new ChannelItemViewModel
+        var countryLookup = countries.ToDictionary(c => c.Code, c => c, StringComparer.OrdinalIgnoreCase);
+
+        _allChannels = channels.Select(c =>
         {
-            Id = c.Id,
-            Name = c.Name,
-            Country = c.Country,
-            StreamUrl = c.StreamUrl,
-            Quality = c.Quality,
-            UserAgent = c.UserAgent,
-            Referrer = c.Referrer,
-            Categories = c.Categories,
-            IsFavorite = favorites.Contains(c.Id)
+            countryLookup.TryGetValue(c.Country, out var country);
+            return new ChannelItemViewModel
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Country = c.Country,
+                CountryName = country?.Name ?? c.Country,
+                CountryFlag = country?.Flag ?? string.Empty,
+                StreamUrl = c.StreamUrl,
+                Quality = c.Quality,
+                UserAgent = c.UserAgent,
+                Referrer = c.Referrer,
+                Categories = c.Categories,
+                IsFavorite = favorites.Contains(c.Id)
+            };
         }).ToList();
 
         // Build category list
@@ -74,10 +83,10 @@ public partial class ChannelListViewModel : ViewModelBase
 
         Categories = new ObservableCollection<string>(["All", .. cats]);
 
-        // Build country list
-        var countryList = channels
-            .Select(c => c.Country)
-            .Where(c => !string.IsNullOrWhiteSpace(c))
+        // Build country dropdown with flags and names
+        var countryList = _allChannels
+            .Where(c => !string.IsNullOrWhiteSpace(c.Country))
+            .Select(c => c.CountryDisplay)
             .Distinct()
             .OrderBy(c => c)
             .ToList();
@@ -133,6 +142,7 @@ public partial class ChannelListViewModel : ViewModelBase
             var search = SearchText.Trim();
             filtered = filtered.Where(c =>
                 c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                c.CountryName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                 c.Country.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -143,7 +153,7 @@ public partial class ChannelListViewModel : ViewModelBase
 
         if (SelectedCountry != "All")
         {
-            filtered = filtered.Where(c => c.Country.Equals(SelectedCountry, StringComparison.OrdinalIgnoreCase));
+            filtered = filtered.Where(c => c.CountryDisplay == SelectedCountry);
         }
 
         if (ShowFavoritesOnly)
