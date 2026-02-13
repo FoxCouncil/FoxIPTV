@@ -4,6 +4,7 @@ public sealed class UserSettings
 {
     public double Volume { get; set; } = 80;
     public bool IsMuted { get; set; }
+    public bool IsChannelListVisible { get; set; } = true;
     public string? LastChannelId { get; set; }
     public List<string> FavoriteChannelIds { get; set; } = [];
     public string? PreferredCountry { get; set; }

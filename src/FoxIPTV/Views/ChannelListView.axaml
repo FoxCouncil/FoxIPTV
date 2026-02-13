@@ -104,6 +104,19 @@
                                        FontSize="12"
                                        VerticalAlignment="Center"
                                        IsVisible="{Binding CountryFlag, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <Button Tag="{Binding StreamUrl}"
+                                    Click="OnCopyStreamLinkClick"
+                                    Background="Transparent"
+                                    Padding="2"
+                                    Width="20" Height="20"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    ToolTip.Tip="Copy stream URL">
+                                <i:Icon Value="fa-solid fa-link"
+                                        FontSize="10"
+                                        Foreground="#444444" />
+                            </Button>
                             <Button Command="{Binding $parent[ListBox].((vm:ChannelListViewModel)DataContext).ToggleFavoriteCommand}"
                                     CommandParameter="{Binding}"
                                     Background="Transparent"

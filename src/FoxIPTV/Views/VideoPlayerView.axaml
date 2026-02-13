@@ -10,6 +10,22 @@
              x:DataType="vm:VideoPlayerViewModel"
              Background="#0a0a0a">
 
+    <UserControl.Styles>
+        <Style Selector="Button.overlay-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#cccccc" />
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style Selector="Button.overlay-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#33ffffff" />
+        </Style>
+    </UserControl.Styles>
+
     <Panel>
         <vlc:VideoView x:Name="VideoView"
                        IsVisible="{Binding IsPlaying}">
@@ -36,7 +52,7 @@
                                  Width="180"
                                  Foreground="#555555" />
                     <TextBlock Foreground="#888888"
-                               FontSize="12"
+                               FontSize="13"
                                HorizontalAlignment="Center"
                                Text="{Binding BufferProgress, StringFormat='Buffering {0:F0}%'}" />
                 </StackPanel>
@@ -44,74 +60,192 @@
                 <!-- Transport controls overlay -->
                 <Border VerticalAlignment="Bottom"
                         IsVisible="{Binding ShouldShowOverlay}"
-                        Background="#C0000000"
-                        Padding="12,6">
+                        Background="#99000000"
+                        Padding="6,3">
                     <DockPanel>
-                        <!-- Left: transport -->
+                        <!-- Left: sidebar + play/pause -->
                         <StackPanel Orientation="Horizontal"
                                     DockPanel.Dock="Left"
-                                    Spacing="2">
-                            <Button Command="{Binding TogglePlayPauseCommand}"
-                                    Background="Transparent"
-                                    Foreground="#cccccc"
-                                    Width="30" Height="26"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
-                                    Padding="0">
+                                    Spacing="2"
+                                    VerticalAlignment="Center">
+                            <Button Classes="overlay-btn"
+                                    Command="{Binding ToggleChannelListCommand}"
+                                    ToolTip.Tip="Channels (Ctrl+L)">
+                                <i:Icon Value="fa-solid fa-bars" FontSize="16" />
+                            </Button>
+                            <Border Width="1" Background="#33ffffff" Margin="4,6" />
+                            <Button Classes="overlay-btn"
+                                    Command="{Binding TogglePlayPauseCommand}">
                                 <Panel>
                                     <i:Icon Value="fa-solid fa-pause"
                                             IsVisible="{Binding !IsPaused}"
-                                            Foreground="#cccccc" FontSize="13" />
+                                            Foreground="#cccccc" FontSize="16" />
                                     <i:Icon Value="fa-solid fa-play"
                                             IsVisible="{Binding IsPaused}"
-                                            Foreground="#cccccc" FontSize="13" />
+                                            Foreground="#cccccc" FontSize="16" />
                                 </Panel>
-                            </Button>
-                            <Button Command="{Binding StopCommand}"
-                                    Background="Transparent"
-                                    Width="30" Height="26"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
-                                    Padding="0">
-                                <i:Icon Value="fa-solid fa-stop"
-                                        Foreground="#888888" FontSize="13" />
                             </Button>
                         </StackPanel>
 
-                        <!-- Right: volume -->
+                        <!-- Right: track info, volume, fullscreen -->
                         <StackPanel Orientation="Horizontal"
                                     DockPanel.Dock="Right"
                                     HorizontalAlignment="Right"
                                     Spacing="2"
                                     VerticalAlignment="Center">
-                            <Button Command="{Binding ToggleMuteCommand}"
-                                    Background="Transparent"
-                                    Width="30" Height="26"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
-                                    Padding="0">
+                            <!-- Resolution badge -->
+                            <TextBlock Text="{Binding VideoResolution}"
+                                       Foreground="#aaaaaa" FontSize="12"
+                                       VerticalAlignment="Center" Margin="4,0"
+                                       IsVisible="{Binding VideoResolution,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                       ToolTip.Tip="{Binding VideoDetailTooltip}" />
+                            <!-- Bitrate -->
+                            <TextBlock Text="{Binding Bitrate}"
+                                       Foreground="#666666" FontSize="11"
+                                       VerticalAlignment="Center" Margin="2,0"
+                                       IsVisible="{Binding Bitrate,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <!-- Audio layout -->
+                            <StackPanel Orientation="Horizontal" Spacing="4"
+                                        VerticalAlignment="Center" Margin="4,0"
+                                        IsVisible="{Binding AudioChannelLayout,
+                                            Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                        ToolTip.Tip="{Binding AudioCodecName}">
+                                <i:Icon Value="fa-solid fa-volume-low" FontSize="11"
+                                        Foreground="#888888" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding AudioChannelLayout}"
+                                           Foreground="#888888" FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <!-- Audio tracks dropdown -->
+                            <Button x:Name="AudioTrackButton"
+                                    Classes="overlay-btn"
+                                    IsVisible="{Binding HasMultipleAudioTracks}"
+                                    ToolTip.Tip="Audio tracks">
+                                <Button.Flyout>
+                                    <Flyout Placement="TopEdgeAlignedRight">
+                                        <ItemsControl ItemsSource="{Binding AudioTracks}"
+                                                      MinWidth="150">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:TrackOption">
+                                                    <Button Background="Transparent"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left"
+                                                            Padding="10,5"
+                                                            Tag="{Binding Id}"
+                                                            Click="OnAudioTrackItemClick">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="13" Foreground="#cccccc" />
+                                                            <TextBlock Text="&#x2713;" FontSize="12"
+                                                                       Foreground="#888888"
+                                                                       IsVisible="{Binding IsActive}" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Flyout>
+                                </Button.Flyout>
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <i:Icon Value="fa-solid fa-language" FontSize="13"
+                                            Foreground="#888888" />
+                                    <TextBlock Text="{Binding AudioTrackCount}"
+                                               Foreground="#888888" FontSize="12"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <!-- Subtitles / CC dropdown -->
+                            <Button x:Name="SubtitleButton"
+                                    Classes="overlay-btn"
+                                    IsVisible="{Binding HasSubtitles}"
+                                    ToolTip.Tip="Subtitles / CC">
+                                <Button.Flyout>
+                                    <Flyout Placement="TopEdgeAlignedRight">
+                                        <ItemsControl ItemsSource="{Binding SubtitleTracks}"
+                                                      MinWidth="150">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:TrackOption">
+                                                    <Button Background="Transparent"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left"
+                                                            Padding="10,5"
+                                                            Tag="{Binding Id}"
+                                                            Click="OnSubtitleTrackItemClick">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="13" Foreground="#cccccc" />
+                                                            <TextBlock Text="&#x2713;" FontSize="12"
+                                                                       Foreground="#888888"
+                                                                       IsVisible="{Binding IsActive}" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Flyout>
+                                </Button.Flyout>
+                                <i:Icon Value="fa-solid fa-closed-captioning" FontSize="14"
+                                        Foreground="#888888" />
+                            </Button>
+                            <!-- Separator before volume -->
+                            <Border Width="1" Background="#33ffffff" Margin="4,6" />
+                            <!-- Mute + Volume -->
+                            <Button Classes="overlay-btn"
+                                    Command="{Binding ToggleMuteCommand}">
                                 <Panel>
                                     <i:Icon Value="fa-solid fa-volume-xmark"
                                             IsVisible="{Binding IsMuted}"
-                                            Foreground="#cccccc" FontSize="13" />
+                                            Foreground="#cccccc" FontSize="16" />
                                     <i:Icon Value="fa-solid fa-volume-high"
                                             IsVisible="{Binding !IsMuted}"
-                                            Foreground="#cccccc" FontSize="13" />
+                                            Foreground="#cccccc" FontSize="16" />
                                 </Panel>
                             </Button>
                             <Slider Value="{Binding Volume}"
                                     Minimum="0" Maximum="100"
-                                    Width="90"
+                                    Width="80"
                                     VerticalAlignment="Center" />
+                            <!-- Separator before fullscreen -->
+                            <Border Width="1" Background="#33ffffff" Margin="4,6" />
+                            <!-- Fullscreen -->
+                            <Button Classes="overlay-btn"
+                                    Command="{Binding ToggleFullScreenCommand}"
+                                    ToolTip.Tip="Fullscreen (F)">
+                                <i:Icon Value="fa-solid fa-expand" FontSize="15" />
+                            </Button>
                         </StackPanel>
 
-                        <!-- Center: channel name -->
-                        <TextBlock Text="{Binding CurrentChannelName}"
-                                   Foreground="#777777"
-                                   FontSize="11"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis" />
+                        <!-- Center: channel name | flag country | star -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" Spacing="7">
+                            <TextBlock Text="{Binding CurrentChannelName}"
+                                       Foreground="#aaaaaa"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="|" Foreground="#444444" FontSize="13"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding CurrentCountryFlag,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <TextBlock Text="{Binding CurrentCountryFlag}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding CurrentCountryFlag,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <TextBlock Text="{Binding CurrentCountryName}"
+                                       Foreground="#666666"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding CurrentCountryName,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <i:Icon Value="fa-solid fa-star"
+                                    FontSize="12"
+                                    Foreground="#cccccc"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding CurrentIsFavorite}" />
+                        </StackPanel>
                     </DockPanel>
                 </Border>
             </Panel>

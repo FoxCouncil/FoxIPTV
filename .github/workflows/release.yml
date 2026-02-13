@@ -52,9 +52,11 @@ jobs:
           else
             VERSION="${GITHUB_REF_NAME}"
           fi
+          TAG="${VERSION}"
           VERSION="${VERSION#v}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Building version: $VERSION"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Building version: $VERSION (tag: $TAG)"
 
       - name: Collect VLC native libs (Windows)
         if: runner.os == 'Windows'
@@ -105,17 +107,17 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path publish/* -DestinationPath FoxIPTV-${{ matrix.name }}${{ matrix.ext }}
+          Compress-Archive -Path publish/* -DestinationPath FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}${{ matrix.ext }}
 
       - name: Package (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          tar -czf FoxIPTV-${{ matrix.name }}${{ matrix.ext }} -C publish .
+          tar -czf FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}${{ matrix.ext }} -C publish .
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FoxIPTV-${{ matrix.name }}
-          path: FoxIPTV-${{ matrix.name }}${{ matrix.ext }}
+          name: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
+          path: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}${{ matrix.ext }}
 
   release:
     needs: build
@@ -145,6 +147,6 @@ jobs:
           name: FoxIPTV ${{ steps.version.outputs.tag }}
           generate_release_notes: true
           files: |
-            artifacts/FoxIPTV-windows-x64.zip
-            artifacts/FoxIPTV-linux-x64.tar.gz
-            artifacts/FoxIPTV-macos-arm64.tar.gz
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-windows-x64.zip
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-linux-x64.tar.gz
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64.tar.gz

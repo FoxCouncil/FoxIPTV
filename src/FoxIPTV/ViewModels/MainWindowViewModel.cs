@@ -1,5 +1,6 @@
 namespace FoxIPTV.ViewModels;
 
+using System.ComponentModel;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -12,6 +13,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly ILogger<MainWindowViewModel> _logger;
     private readonly ISettingsService _settingsService;
+    private bool _initialized;
 
     [ObservableProperty]
     private ChannelListViewModel _channelList;
@@ -27,9 +29,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isFullScreen;
-
-    [ObservableProperty]
-    private bool _isToolBarVisible = true;
 
     [ObservableProperty]
     private bool _isChannelListVisible;
@@ -55,6 +54,8 @@ public partial class MainWindowViewModel : ViewModelBase
         _logger = logger;
 
         _channelList.ChannelSelected += OnChannelSelected;
+        _videoPlayer.ToggleFullScreenRequested += () => ToggleFullScreen();
+        _videoPlayer.ToggleChannelListRequested += () => ToggleChannelList();
         _videoPlayer.PropertyChanged += OnVideoPlayerPropertyChanged;
     }
 
@@ -65,13 +66,32 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             _logger.LogInformation("Initializing FoxIPTV...");
             await _settingsService.LoadAsync();
+
+            var settings = _settingsService.Current;
+
+            // Restore volume/mute before channels load (no media playing yet)
+            VideoPlayer.Volume = settings.Volume;
+            VideoPlayer.IsMuted = settings.IsMuted;
+
             await ChannelList.LoadChannelsAsync();
             IsLoading = false;
             StatusMessage = $"{ChannelList.TotalCount} channels  |  v{VersionString}";
             _logger.LogInformation("Loaded {Count} channels", ChannelList.TotalCount);
 
-            // Auto-show sidebar after loading
-            IsChannelListVisible = true;
+            // Restore sidebar visibility
+            IsChannelListVisible = settings.IsChannelListVisible;
+
+            // Auto-resume last channel
+            if (settings.LastChannelId is { } lastId)
+            {
+                var channel = ChannelList.FilteredChannels.FirstOrDefault(c => c.Id == lastId);
+                if (channel is not null)
+                {
+                    VideoPlayer.PlayChannel(channel);
+                }
+            }
+
+            _initialized = true;
         }
         catch (Exception ex)
         {
@@ -101,7 +121,6 @@ public partial class MainWindowViewModel : ViewModelBase
             IsChannelListVisible = _sidebarWasVisible;
         }
 
-        IsToolBarVisible = !value;
         FullScreenRequested?.Invoke(value);
     }
 
@@ -109,6 +128,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ToggleChannelList()
     {
         IsChannelListVisible = !IsChannelListVisible;
+        SaveSidebarState();
     }
 
     [RelayCommand]
@@ -127,34 +147,35 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
 
         VideoPlayer.PlayChannel(channel);
-        UpdateStatusMessage();
-    }
 
-    private void OnVideoPlayerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(VideoPlayerViewModel.StreamInfo)
-                           or nameof(VideoPlayerViewModel.IsPlaying)
-                           or nameof(VideoPlayerViewModel.IsPaused)
-                           or nameof(VideoPlayerViewModel.IsBuffering))
+        if (_initialized)
         {
-            UpdateStatusMessage();
+            _settingsService.Current.LastChannelId = channel.Id;
+            _ = _settingsService.SaveAsync();
         }
     }
 
-    private void UpdateStatusMessage()
+    private void OnVideoPlayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (!VideoPlayer.IsPlaying)
+        if (!_initialized) return;
+
+        switch (e.PropertyName)
         {
-            StatusMessage = $"{ChannelList.TotalCount} channels  |  v{VersionString}";
-            return;
+            case nameof(VideoPlayerViewModel.Volume):
+                _settingsService.Current.Volume = VideoPlayer.Volume;
+                _ = _settingsService.SaveAsync();
+                break;
+            case nameof(VideoPlayerViewModel.IsMuted):
+                _settingsService.Current.IsMuted = VideoPlayer.IsMuted;
+                _ = _settingsService.SaveAsync();
+                break;
         }
+    }
 
-        var state = VideoPlayer.IsBuffering ? "Buffering" :
-                    VideoPlayer.IsPaused ? "Paused" : "Playing";
-
-        var info = VideoPlayer.StreamInfo;
-        StatusMessage = string.IsNullOrEmpty(info)
-            ? $"{state}: {VideoPlayer.CurrentChannelName}"
-            : $"{state}: {VideoPlayer.CurrentChannelName}  //  {info}";
+    private void SaveSidebarState()
+    {
+        if (!_initialized) return;
+        _settingsService.Current.IsChannelListVisible = IsChannelListVisible;
+        _ = _settingsService.SaveAsync();
     }
 }
