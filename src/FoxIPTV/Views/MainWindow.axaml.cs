@@ -10,8 +10,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        VideoPlayerView.VideoDoubleTapped += OnVideoDoubleTapped;
-
         Loaded += async (_, _) =>
         {
             if (DataContext is MainWindowViewModel vm)
@@ -75,34 +73,8 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnVideoDoubleTapped(object? sender, EventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.ToggleFullScreenCommand.Execute(null);
-        }
-    }
-
     private void OnFullScreenRequested(bool fullScreen)
     {
         WindowState = fullScreen ? WindowState.FullScreen : WindowState.Normal;
-    }
-
-    private void OnAudioTrackItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: int trackId } && DataContext is MainWindowViewModel vm)
-        {
-            vm.VideoPlayer.SelectAudioTrackCommand.Execute(trackId);
-            AudioTrackButton.Flyout?.Hide();
-        }
-    }
-
-    private void OnSubtitleTrackItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: int trackId } && DataContext is MainWindowViewModel vm)
-        {
-            vm.VideoPlayer.SelectSubtitleTrackCommand.Execute(trackId);
-            SubtitleButton.Flyout?.Hide();
-        }
     }
 }

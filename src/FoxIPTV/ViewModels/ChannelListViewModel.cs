@@ -1,6 +1,7 @@
 namespace FoxIPTV.ViewModels;
 
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FoxIPTV.Models;
@@ -55,16 +56,22 @@ public partial class ChannelListViewModel : ViewModelBase
 
         var countryLookup = countries.ToDictionary(c => c.Code, c => c, StringComparer.OrdinalIgnoreCase);
 
+        // Windows doesn't render flag emojis — use ISO country code instead
+        var useEmojiFlags = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
         _allChannels = channels.Select(c =>
         {
             countryLookup.TryGetValue(c.Country, out var country);
+            var flag = useEmojiFlags
+                ? (country?.Flag ?? string.Empty)
+                : c.Country.ToUpperInvariant();
             return new ChannelItemViewModel
             {
                 Id = c.Id,
                 Name = c.Name,
                 Country = c.Country,
                 CountryName = country?.Name ?? c.Country,
-                CountryFlag = country?.Flag ?? string.Empty,
+                CountryFlag = flag,
                 StreamUrl = c.StreamUrl,
                 Quality = c.Quality,
                 UserAgent = c.UserAgent,

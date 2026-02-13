@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -41,6 +42,7 @@ public partial class VideoPlayerView : UserControl
             _mediaPlayer.Buffering += OnPlayerBuffering;
             _mediaPlayer.Playing += OnPlayerPlaying;
             _mediaPlayer.Paused += OnPlayerPaused;
+            _mediaPlayer.Vout += OnPlayerVout;
 
             VideoView.MediaPlayer = _mediaPlayer;
         }
@@ -50,7 +52,7 @@ public partial class VideoPlayerView : UserControl
         }
     }
 
-    private void OnDetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    private async void OnDetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
         if (_mediaPlayer is not null)
         {
@@ -58,9 +60,14 @@ public partial class VideoPlayerView : UserControl
             _mediaPlayer.Buffering -= OnPlayerBuffering;
             _mediaPlayer.Playing -= OnPlayerPlaying;
             _mediaPlayer.Paused -= OnPlayerPaused;
-            _mediaPlayer.Stop();
-            _mediaPlayer.Dispose();
+            _mediaPlayer.Vout -= OnPlayerVout;
+            var mp = _mediaPlayer;
             _mediaPlayer = null;
+            // Detach from VideoView BEFORE stopping — prevents Avalonia's
+            // render loop from calling into libvlc while Stop holds its mutex
+            VideoView.MediaPlayer = null;
+            await Task.Run(() => mp.Stop());
+            mp.Dispose();
         }
 
         _libVlc?.Dispose();
@@ -82,7 +89,7 @@ public partial class VideoPlayerView : UserControl
         }
     }
 
-    private void OnPlayRequested(string streamUrl, string? userAgent, string? referrer)
+    private async void OnPlayRequested(string streamUrl, string? userAgent, string? referrer)
     {
         if (_libVlc is null || _mediaPlayer is null)
         {
@@ -92,6 +99,18 @@ public partial class VideoPlayerView : UserControl
 
         try
         {
+            // Stop current playback off UI thread to avoid VLC deadlock.
+            // Detach from VideoView first so Avalonia's render loop doesn't
+            // call into libvlc while Stop holds its internal mutex.
+            if (_mediaPlayer.IsPlaying)
+            {
+                VideoView.MediaPlayer = null;
+                var mp = _mediaPlayer;
+                await Task.Run(() => mp.Stop());
+                if (_mediaPlayer is null) return; // disposed while stopping
+                VideoView.MediaPlayer = _mediaPlayer;
+            }
+
             var media = new Media(_libVlc, new Uri(streamUrl));
 
             if (!string.IsNullOrEmpty(userAgent))
@@ -117,10 +136,17 @@ public partial class VideoPlayerView : UserControl
         }
     }
 
-    private void OnStopRequested()
+    private async void OnStopRequested()
     {
         _lastStreamInfo = string.Empty;
-        _mediaPlayer?.Stop();
+        if (_mediaPlayer is not null)
+        {
+            VideoView.MediaPlayer = null;
+            var mp = _mediaPlayer;
+            await Task.Run(() => mp.Stop());
+            if (_mediaPlayer is not null)
+                VideoView.MediaPlayer = _mediaPlayer;
+        }
     }
 
     private void OnPauseRequested()
@@ -219,6 +245,19 @@ public partial class VideoPlayerView : UserControl
             if (DataContext is VideoPlayerViewModel vm)
             {
                 vm.OnPaused();
+            }
+        });
+    }
+
+    private void OnPlayerVout(object? sender, MediaPlayerVoutEventArgs e)
+    {
+        // Vout fires when video output is created/destroyed (e.g., adaptive bitrate switch).
+        // Trigger an immediate stats refresh so the resolution badge updates right away.
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (DataContext is VideoPlayerViewModel vm)
+            {
+                vm.StreamInfo = OnStatsUpdateRequested();
             }
         });
     }
@@ -327,7 +366,7 @@ public partial class VideoPlayerView : UserControl
                 }
 
                 if (s.DemuxReadBytes > 0)
-                    parts.Add($"{s.DemuxReadBytes / 1024.0 / 1024.0:F1} MB");
+                    parts.Add($"{s.DemuxReadBytes / 1024.0 / 1024.0:F1} MB read");
 
                 if (s.LostPictures > 0)
                     parts.Add($"{s.LostPictures} dropped");
@@ -338,18 +377,44 @@ public partial class VideoPlayerView : UserControl
             // Statistics may not be available for all media types
         }
 
-        // Push track details to ViewModel for toolbar display.
-        // Only update when we got valid data — during adaptive reconnects,
-        // Tracks can be temporarily null, which would blank out the badges.
+        // Bitrate string for display
+        var bitrateStr = string.Empty;
+        try
+        {
+            var stats = _mediaPlayer.Media?.Statistics;
+            if (stats is { } sv && sv.InputBitrate > 0)
+            {
+                var kbps = sv.InputBitrate * 8;
+                bitrateStr = kbps >= 1000 ? $"{kbps / 1000:F1} Mbps" : $"{kbps:F0} Kbps";
+            }
+        }
+        catch { /* statistics may not be available */ }
+
+        // Push track details to ViewModel for overlay display.
         if (DataContext is VideoPlayerViewModel vm)
         {
+            // Always push resolution when we have valid data.
+            // Resolution mismatch detection: if the badge shows something different
+            // from what the player is actually decoding, force-update immediately.
             if (!string.IsNullOrEmpty(resolution))
             {
+                Debug.Assert(
+                    string.IsNullOrEmpty(vm.VideoResolution) || vm.VideoResolution == resolution,
+                    $"Resolution mismatch: displaying '{vm.VideoResolution}' but player reports '{resolution}' ({videoWidth}x{videoHeight})");
+
                 vm.VideoResolution = resolution;
-                vm.VideoCodecName = videoCodecStr;
-                vm.AudioCodecName = audioCodecStr;
-                vm.AudioChannelLayout = audioLayout;
+                vm.VideoDimensions = $"{videoWidth}x{videoHeight}";
             }
+
+            // Always update codec/layout — these can change mid-stream
+            if (!string.IsNullOrEmpty(videoCodecStr))
+                vm.VideoCodecName = videoCodecStr;
+            if (!string.IsNullOrEmpty(audioCodecStr))
+                vm.AudioCodecName = audioCodecStr;
+            if (!string.IsNullOrEmpty(audioLayout))
+                vm.AudioChannelLayout = audioLayout;
+
+            vm.Bitrate = bitrateStr;
 
             if (audioTrackCount > 0)
                 vm.AudioTrackCount = audioTrackCount;
@@ -413,8 +478,6 @@ public partial class VideoPlayerView : UserControl
         };
     }
 
-    public event EventHandler? VideoDoubleTapped;
-
     public void OnVideoPointerMoved(object? sender, PointerEventArgs e)
     {
         if (DataContext is VideoPlayerViewModel vm)
@@ -425,7 +488,28 @@ public partial class VideoPlayerView : UserControl
 
     public void OnVideoDoubleTapped(object? sender, TappedEventArgs e)
     {
-        VideoDoubleTapped?.Invoke(this, EventArgs.Empty);
+        if (DataContext is VideoPlayerViewModel vm)
+        {
+            vm.ToggleFullScreenCommand.Execute(null);
+        }
+    }
+
+    private void OnAudioTrackItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: int trackId } && DataContext is VideoPlayerViewModel vm)
+        {
+            vm.SelectAudioTrackCommand.Execute(trackId);
+            AudioTrackButton.Flyout?.Hide();
+        }
+    }
+
+    private void OnSubtitleTrackItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: int trackId } && DataContext is VideoPlayerViewModel vm)
+        {
+            vm.SelectSubtitleTrackCommand.Execute(trackId);
+            SubtitleButton.Flyout?.Hide();
+        }
     }
 
     private void ShowError(string message)
