@@ -538,6 +538,8 @@ namespace FoxIPTV.Views
         /// <summary>The 100ms tick</summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
+            Watchdog();
+
             if (!_isInitialized)
             {
                 // Never Run Uninitialized...

@@ -61,6 +61,8 @@ namespace FoxIPTV.Views
             MenuItemQuit.Click += (sender, args) => Quit();
 
             MainContextMenu.Opening += ContextMenu_Opening;
+
+            LogMenuClicks(MainContextMenu, string.Empty);
         }
 
         /// <summary>The notification area icon: a left click shows or hides the window, the menu has the everyday items</summary>
@@ -72,7 +74,12 @@ namespace FoxIPTV.Views
             {
                 var item = new NativeMenuItem(header);
 
-                item.Click += (sender, args) => action();
+                item.Click += (sender, args) =>
+                {
+                    TvCore.LogInfo($"[UI] Tray menu: {header}");
+
+                    action();
+                };
 
                 menu.Items.Add(item);
 
@@ -107,7 +114,12 @@ namespace FoxIPTV.Views
                 IsVisible = true
             };
 
-            _trayIcon.Clicked += (sender, args) => ToggleVisibility();
+            _trayIcon.Clicked += (sender, args) =>
+            {
+                TvCore.LogInfo("[UI] Tray icon clicked");
+
+                ToggleVisibility();
+            };
 
             // A change of the Windows theme may be a change of the taskbar colour too
             if (Avalonia.Application.Current != null)
@@ -274,6 +286,8 @@ namespace FoxIPTV.Views
             {
                 return;
             }
+
+            TvCore.LogInfo($"[UI] Key {e.Key}{(e.KeyModifiers == KeyModifiers.Shift ? " with Shift" : string.Empty)}");
 
             switch (e.Key)
             {

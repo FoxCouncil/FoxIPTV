@@ -132,6 +132,8 @@ namespace FoxIPTV.Views
                     }
                 };
 
+                HookDiagnostics();
+
                 var worker = new Thread(VlcCommandLoop) { IsBackground = true, Name = "LibVLC commands" };
 
                 worker.Start();
@@ -175,22 +177,28 @@ namespace FoxIPTV.Views
         }
 
         /// <summary>Queue a command for LibVLC</summary>
-        private void Vlc(Action<MediaPlayer> command)
+        /// <param name="command">What to do with the player</param>
+        /// <param name="caller">Filled in by the compiler, names the command in the log</param>
+        /// <param name="line">Filled in by the compiler, names the command in the log</param>
+        private void Vlc(Action<MediaPlayer> command, [System.Runtime.CompilerServices.CallerMemberName] string caller = null, [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
         {
             var player = _player;
+            var name = $"{caller}:{line}";
 
             if (player == null || _vlcCommands.IsAddingCompleted)
             {
+                TvCore.LogInfo($"[VLC cmd] dropped {name}, {(player == null ? "no player" : "shutting down")}");
+
                 return;
             }
 
             try
             {
-                _vlcCommands.Add(() => command(player));
+                _vlcCommands.Add(WrapCommand(player, command, name));
             }
             catch (InvalidOperationException)
             {
-                // Shutting down
+                TvCore.LogInfo($"[VLC cmd] dropped {name}, shutting down");
             }
         }
 
@@ -207,6 +215,7 @@ namespace FoxIPTV.Views
 
                 StreamFacts.Reset();
                 AdDetector.Reset();
+                ResetDiagnostics();
                 _playPending = 0;
 
                 ClearProtected();
@@ -237,6 +246,8 @@ namespace FoxIPTV.Views
 
                 // Whatever was opening is abandoned for this
                 _playPending = 0;
+
+                ResetDiagnostics();
 
                 ClearProtected();
 
@@ -274,9 +285,9 @@ namespace FoxIPTV.Views
         }
 
         /// <summary>Stop LibVLC off the UI thread; the Stopped event says when it is done</summary>
-        private void StopPlayer()
+        private void StopPlayer([System.Runtime.CompilerServices.CallerMemberName] string caller = null)
         {
-            Vlc(player => player.Stop());
+            Vlc(player => player.Stop(), $"Stop for {caller}");
         }
 
         /// <summary>Start LibVLC on whatever should be playing: on-demand media if chosen, otherwise the live channel</summary>
@@ -291,7 +302,7 @@ namespace FoxIPTV.Views
 
             if (Interlocked.Exchange(ref _playPending, 1) == 1)
             {
-                TvCore.LogDebug("[.NET] PlayCurrent(): a play is already in flight, ignoring");
+                TvCore.LogInfo("[.NET] PlayCurrent(): a play is already in flight, ignoring");
 
                 return;
             }
@@ -323,6 +334,8 @@ namespace FoxIPTV.Views
         private void Play(Uri url, string[] options)
         {
             var libVlc = _libVlc;
+
+            TvCore.LogInfo($"[.NET] Play {url} with options [{string.Join(" ", options)}]");
 
             Vlc(player =>
             {
@@ -392,6 +405,7 @@ namespace FoxIPTV.Views
 
             StreamFacts.Observe(message);
             AdDetector.Observe(message);
+            NotePiece(message);
 
             if (message.StartsWith("using spu decoder module", StringComparison.Ordinal))
             {
@@ -442,6 +456,8 @@ namespace FoxIPTV.Views
             }
 
             PlaybackTrace.MarkOnce("clock running");
+
+            NoteClock(e.Time);
 
             _endedWithoutPlaying = 0;
 
@@ -722,6 +738,8 @@ namespace FoxIPTV.Views
 
             // The first entry is always "Disable"
             var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : all[Math.Min(enabled ? 1 : 0, all.Length - 1)];
+
+            TvCore.LogInfo($"[CC] Tracks: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; setting on {TvCore.Settings.CCEnabled}, held {held}, picked {_ccIdx}; choosing {chosen.Id}={chosen.Name}");
 
             player.SetSpu(chosen.Id);
 
