@@ -33,3 +33,6 @@ jobs:
 
       - name: Build
         run: dotnet build ${{ env.PROJECT }} -c Release
+
+      - name: Test
+        run: dotnet test tests/FoxIPTV.Tests/FoxIPTV.Tests.csproj -c Release
