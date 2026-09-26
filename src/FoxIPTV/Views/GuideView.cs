@@ -79,6 +79,8 @@ namespace FoxIPTV.Views
                 }
             });
 
+            TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(InvalidateVisual);
+
             TvCore.ChannelChanged += channel => Dispatcher.UIThread.Post(() =>
             {
                 // Keep the channel playing in view

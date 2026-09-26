@@ -9,32 +9,30 @@
         CanResize="False"
         WindowStartupLocation="CenterScreen">
 
-    <StackPanel Margin="16" Spacing="10">
+    <StackPanel Margin="16" Spacing="12">
         <TextBlock Text="Choose a content provider" FontSize="16" FontWeight="Bold" />
 
-        <Grid x:Name="ProviderGrid" ColumnDefinitions="Auto,*" RowDefinitions="Auto">
-            <TextBlock x:Name="ProviderLabel" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
-            <ComboBox x:Name="ServicesComboBox" Grid.Column="1" HorizontalAlignment="Stretch">
+        <!-- One table for the provider and its fields, so every label shares one column and every input lines up -->
+        <Grid x:Name="FormGrid" ColumnDefinitions="Auto,*" RowDefinitions="Auto" ColumnSpacing="10" RowSpacing="8">
+            <TextBlock x:Name="ProviderLabel" Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
+            <ComboBox x:Name="ServicesComboBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{ReflectionBinding Title}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            <TextBlock x:Name="NoFieldsLabel" Grid.Row="1" Grid.Column="1" Text="This provider needs no details, just press Start." Classes="muted" IsVisible="False" />
+            <CheckBox x:Name="RememberMeCheckBox" Grid.Row="1" Grid.Column="1" Content="Remember these details" />
         </Grid>
-
-        <Grid x:Name="FieldsGrid" ColumnDefinitions="Auto,*" RowSpacing="6" />
-
-        <TextBlock x:Name="NoFieldsLabel" Text="This provider needs no details, just press Start." Classes="muted" IsVisible="False" />
 
         <TextBlock x:Name="PluginErrorsLabel" Classes="warning" IsVisible="False" TextWrapping="Wrap" />
 
         <TextBlock x:Name="SigningInLabel" Classes="muted" IsVisible="False" />
 
-        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,6,0,0">
-            <Button x:Name="PluginsLinkButton" Grid.Column="0" Classes="link" Content="Open plugins folder" VerticalAlignment="Center" />
-            <CheckBox x:Name="RememberMeCheckBox" Grid.Column="2" Content="Remember these details" VerticalAlignment="Center" Margin="0,0,12,0" />
-            <Button x:Name="LoginButton" Grid.Column="3" Content="Start" Width="100" IsDefault="True" HorizontalContentAlignment="Center" />
+        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+            <Button x:Name="PluginsLinkButton" Grid.Column="0" Classes="link" Content="Open plugins folder" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <Button x:Name="LoginButton" Grid.Column="1" Content="Start" Width="100" IsDefault="True" HorizontalContentAlignment="Center" />
         </Grid>
     </StackPanel>
 </Window>

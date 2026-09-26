@@ -30,6 +30,21 @@ namespace FoxIPTV.Classes
         /// <summary>The default filename for the applications image blacklist data</summary>
         private const string ImageServerBlacklistFilename = "ibldata";
 
+        /// <summary>The default filename for the streams found to be copy-protected, one file per provider</summary>
+        private const string ProtectedChannelsFilename = "drmdata";
+
+        /// <summary>The default filename for the channels the user never wants to see, one file per provider</summary>
+        private const string HiddenChannelsFilename = "hidden";
+
+        /// <summary>The stream addresses the user has hidden for the current provider</summary>
+        private static readonly HashSet<string> _hiddenStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>The stream addresses found to be copy-protected for the current provider</summary>
+        private static readonly HashSet<string> _protectedStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>The list position a copy-protected channel was just taken out of, while it is still the current channel; -1 otherwise</summary>
+        private static int _protectedGapAt = -1;
+
         /// <summary>A non win forms timer at 100ms intervals</summary>
         private static readonly Timer _coreTimer = new Timer(100);
 
@@ -74,6 +89,9 @@ namespace FoxIPTV.Classes
 
         /// <summary>A event to inform of percentage progress on guide data being loaded</summary>
         public static event Action<uint> ChannelChanged;
+
+        /// <summary>Raised when channels leave the list, after a copy-protected one is found</summary>
+        public static event Action ChannelListChanged;
 
         /// <summary>A event to inform of a chance of the programme while active</summary>
         public static event Action<Programme> ProgrammeChanged;
@@ -345,6 +363,8 @@ namespace FoxIPTV.Classes
             // Load the user's favorite channels for this provider, if they exist
             FavoritesLoad();
 
+            ProtectedLoad();
+
             TvCore.LogDebug($"[{CurrentService.Title}] Process(): Starting data processing...");
 
             // Ask the service to give us the channel and guide data
@@ -356,6 +376,15 @@ namespace FoxIPTV.Classes
             LogInfo($"[TVCore] Start(): {Channels.Count} channel(s), {Guide.Count} programme(s) from {CurrentService.Title}");
 
             // Build the zero index map to the actual channel numbers
+            // Channels found to be copy-protected on an earlier run, and channels the user hid, never show up
+            var protectedCount = Channels.RemoveAll(x => x.Stream != null && _protectedStreams.Contains(x.Stream.ToString()));
+            var hiddenCount = Channels.RemoveAll(x => x.Stream != null && _hiddenStreams.Contains(x.Stream.ToString()));
+
+            if (protectedCount + hiddenCount > 0)
+            {
+                LogInfo($"[TVCore] Start(): {protectedCount} copy-protected and {hiddenCount} hidden channel(s) left out");
+            }
+
             ChannelIndexList = Channels.Select(x => x.Index).ToList();
 
             // Put all the logos needed to be loaded into a queue so we can load them in another thread
@@ -381,6 +410,17 @@ namespace FoxIPTV.Classes
 
             if (ChannelIndexList == null || ChannelIndexList.Count == 0)
             {
+                return;
+            }
+
+            if (_protectedGapAt >= 0 && !Channels.Contains(CurrentChannel))
+            {
+                // The current channel left the list: up is whatever took its place, down is the one before
+                var count = ChannelIndexList.Count;
+                var target = direction ? _protectedGapAt : _protectedGapAt - 1;
+
+                SetChannel((uint)((target % count + count) % count));
+
                 return;
             }
 
@@ -421,7 +461,7 @@ namespace FoxIPTV.Classes
                 channelIndex = (uint)totalChannels - 1;
             }
 
-            if (CurrentChannel != null && CurrentChannelIndex == channelIndex && CurrentMedia == null)
+            if (CurrentChannel != null && CurrentChannelIndex == channelIndex && CurrentMedia == null && Channels.Contains(CurrentChannel))
             {
                 return;
             }
@@ -431,6 +471,8 @@ namespace FoxIPTV.Classes
             CurrentMediaTitle = null;
 
             LogDebug($"[TVCore] Setting channelIndex to {channelIndex}");
+
+            _protectedGapAt = -1;
 
             CurrentChannel = Channels.Find(x => x.Index == ChannelIndexList[(int)channelIndex]);
             CurrentChannelIndex = channelIndex;
@@ -594,6 +636,83 @@ namespace FoxIPTV.Classes
             }
 
             LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} blacklist images");
+        }
+
+        /// <summary>The copy-protected streams file for the current provider</summary>
+        private static string ProtectedFilePath => Path.Combine(UserStoragePath, $"{ProtectedChannelsFilename}-{CurrentService?.Id ?? "none"}");
+
+        /// <summary>The hidden channels file for the current provider</summary>
+        private static string HiddenFilePath => Path.Combine(UserStoragePath, $"{HiddenChannelsFilename}-{CurrentService?.Id ?? "none"}");
+
+        /// <summary>Load the copy-protected and hidden stream lists for the current provider</summary>
+        private static void ProtectedLoad()
+        {
+            LoadStreamList(ProtectedFilePath, _protectedStreams);
+            LoadStreamList(HiddenFilePath, _hiddenStreams);
+        }
+
+        /// <summary>Read a saved list of stream addresses, a JSON array of strings</summary>
+        private static void LoadStreamList(string path, HashSet<string> into)
+        {
+            into.Clear();
+
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var stream in JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(path)) ?? new List<string>())
+                {
+                    into.Add(stream);
+                }
+            }
+            catch (Exception e)
+            {
+                LogError($"[TVCore] LoadStreamList(): Error parsing {path}: {e.Message}");
+            }
+        }
+
+        /// <summary>A channel turned out to be copy-protected: remember it and take it out of the channel list now; the channel stays current until the user moves on</summary>
+        /// <param name="channel">The channel</param>
+        public static void MarkProtected(Channel channel)
+        {
+            if (channel?.Stream == null || Channels == null || !_protectedStreams.Add(channel.Stream.ToString()))
+            {
+                return;
+            }
+
+            LogInfo($"[TVCore] MarkProtected({channel.Index} {channel.Name}): copy-protected, hidden from now on");
+
+            try
+            {
+                File.WriteAllText(ProtectedFilePath, JsonConvert.SerializeObject(_protectedStreams.ToList()));
+            }
+            catch (Exception e)
+            {
+                LogError($"[TVCore] MarkProtected(): Unable to write {ProtectedFilePath}: {e.Message}");
+            }
+
+            var position = Channels.IndexOf(channel);
+
+            if (position < 0)
+            {
+                return;
+            }
+
+            Channels.RemoveAt(position);
+            ChannelIndexList = Channels.Select(x => x.Index).ToList();
+
+            // Where the channel was, so channel up and down from it land on its old neighbours
+            _protectedGapAt = position;
+
+            if (ChannelIndexList.Count > 0)
+            {
+                CurrentChannelIndex = (uint)Math.Min(position, ChannelIndexList.Count - 1);
+            }
+
+            ChannelListChanged?.Invoke();
         }
 
         /// <summary>Saves the user favorite channels to the user storage location</summary>

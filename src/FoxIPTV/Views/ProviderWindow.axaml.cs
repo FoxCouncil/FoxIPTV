@@ -105,64 +105,80 @@ namespace FoxIPTV.Views
             return picker._result.Task;
         }
 
-        /// <summary>Rebuild the fields when the provider changes</summary>
+        /// <summary>The label and input controls added for the current provider, removed again when it changes</summary>
+        private readonly List<Control> _fieldControls = new List<Control>();
+
+        /// <summary>Rebuild the fields when the provider changes; they go in the same table as the provider box, one row each, with the note and the checkbox after them</summary>
         private void BuildFields()
         {
             var service = SelectedService;
 
-            FieldsGrid.Children.Clear();
-            FieldsGrid.RowDefinitions.Clear();
-
-            _inputs.Clear();
-
-            if (service == null)
+            foreach (var control in _fieldControls)
             {
-                return;
+                FormGrid.Children.Remove(control);
             }
 
-            var remembered = ProviderStore.Load(service.Id);
+            _fieldControls.Clear();
+            _inputs.Clear();
 
-            RememberMeCheckBox.IsChecked = remembered != null;
-
-            var row = 0;
-
-            foreach (var field in service.Fields)
+            while (FormGrid.RowDefinitions.Count > 1)
             {
-                FieldsGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                FormGrid.RowDefinitions.RemoveAt(FormGrid.RowDefinitions.Count - 1);
+            }
 
-                var label = new TextBlock
+            var row = 1;
+
+            if (service != null)
+            {
+                var remembered = ProviderStore.Load(service.Id);
+
+                RememberMeCheckBox.IsChecked = remembered != null;
+
+                foreach (var field in service.Fields)
                 {
-                    Text = $"{field.Label ?? field.Key}:",
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = ProviderLabel.Margin
-                };
+                    FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-                var input = CreateInput(field, remembered?[field.Key]?.ToString());
+                    var label = new TextBlock
+                    {
+                        Text = $"{field.Label ?? field.Key}:",
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Right
+                    };
 
-                input.Name = field.Key;
-                input.Tag = field;
-                input.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    var input = CreateInput(field, remembered?[field.Key]?.ToString());
 
-                Grid.SetRow(label, row);
-                Grid.SetColumn(label, 0);
-                Grid.SetRow(input, row);
-                Grid.SetColumn(input, 1);
+                    input.Name = field.Key;
+                    input.Tag = field;
+                    input.HorizontalAlignment = HorizontalAlignment.Stretch;
 
-                FieldsGrid.Children.Add(label);
-                FieldsGrid.Children.Add(input);
+                    Grid.SetRow(label, row);
+                    Grid.SetColumn(label, 0);
+                    Grid.SetRow(input, row);
+                    Grid.SetColumn(input, 1);
 
-                _inputs[field.Key] = input;
+                    FormGrid.Children.Add(label);
+                    FormGrid.Children.Add(input);
 
+                    _fieldControls.Add(label);
+                    _fieldControls.Add(input);
+
+                    _inputs[field.Key] = input;
+
+                    row++;
+                }
+            }
+
+            NoFieldsLabel.IsVisible = service != null && row == 1;
+
+            if (NoFieldsLabel.IsVisible)
+            {
+                FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                Grid.SetRow(NoFieldsLabel, row);
                 row++;
             }
 
-            NoFieldsLabel.IsVisible = row == 0;
-
-            // The two tables share one label column width so the inputs line up
-            ProviderGrid.ColumnDefinitions[0].SharedSizeGroup = "labels";
-            FieldsGrid.ColumnDefinitions[0].SharedSizeGroup = "labels";
-            Grid.SetIsSharedSizeScope(this, true);
+            FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            Grid.SetRow(RememberMeCheckBox, row);
 
             var input0 = _inputs.Values.FirstOrDefault();
 

@@ -80,6 +80,9 @@ namespace FoxIPTV.Views
 
             TvCore.ChannelChanged += newChannel => Dispatcher.UIThread.Post(UpdateGui);
 
+            // A copy-protected channel just left the list
+            TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(LoadAll);
+
             Opened += (sender, args) => LoadAll();
 
             Closing += (sender, args) =>

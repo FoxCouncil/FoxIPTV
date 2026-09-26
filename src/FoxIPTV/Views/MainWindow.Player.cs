@@ -55,6 +55,15 @@ namespace FoxIPTV.Views
         /// <summary>Whether LibVLC has reported Playing and not yet Stopped, Ended or Errored; read this instead of asking LibVLC from the UI thread</summary>
         private volatile bool _isPlaying;
 
+        /// <summary>True once the stream playing turned out to be copy-protected; nothing is retried until the channel changes</summary>
+        private volatile bool _isProtected;
+
+        /// <summary>1 once copy protection has been seen in this stream, so it is acted on once</summary>
+        private int _protectedSeen;
+
+        /// <summary>LibVLC's dump of an MP4 box tree listing an encrypted video or audio sample entry, the mark of Common Encryption (Widevine, PlayReady)</summary>
+        private static readonly Regex EncryptedSampleEntry = new Regex(@"\+ enc[av] size \d+", RegexOptions.Compiled);
+
         /// <summary>Whether the volume is zero, kept here for the same reason</summary>
         private volatile bool _muted;
 
@@ -184,6 +193,8 @@ namespace FoxIPTV.Views
                 AdDetector.Reset();
                 _playPending = 0;
 
+                ClearProtected();
+
                 _endedWithoutPlaying = 0;
 
                 RemoveErrorState();
@@ -210,6 +221,8 @@ namespace FoxIPTV.Views
 
                 // Whatever was opening is abandoned for this
                 _playPending = 0;
+
+                ClearProtected();
 
                 RemoveErrorState();
 
@@ -349,7 +362,7 @@ namespace FoxIPTV.Views
 
         /// <summary>Copy LibVLC's own messages to the log and pick the ones that mark a playback stage</summary>
         /// <param name="message">The LibVLC message</param>
-        private static void OnVlcLog(string message)
+        private void OnVlcLog(string message)
         {
             if (message == null)
             {
@@ -360,6 +373,13 @@ namespace FoxIPTV.Views
 
             StreamFacts.Observe(message);
             AdDetector.Observe(message);
+
+            if (EncryptedSampleEntry.IsMatch(message) && Interlocked.Exchange(ref _protectedSeen, 1) == 0)
+            {
+                PlaybackTrace.Mark("copy-protected");
+
+                Ui(OnProtectedStream);
+            }
 
             if (message.StartsWith("creating access: http", StringComparison.Ordinal))
             {
@@ -510,6 +530,44 @@ namespace FoxIPTV.Views
             }
         }
 
+        /// <summary>Forget any copy protection seen, a new stream is starting</summary>
+        private void ClearProtected()
+        {
+            _isProtected = false;
+
+            Interlocked.Exchange(ref _protectedSeen, 0);
+        }
+
+        /// <summary>The stream is copy-protected: LibVLC has no keys, so it would buffer scrambled data for ever. Stop, say so, and take a live channel out of the list for good</summary>
+        private void OnProtectedStream()
+        {
+            if (_isProtected || _isClosing)
+            {
+                return;
+            }
+
+            _isProtected = true;
+            _isErrorState = false;
+            _playPending = 0;
+
+            var live = TvCore.CurrentMedia == null;
+
+            TvCore.LogInfo($"[.NET] Copy-protected stream: {(live ? TvCore.CurrentChannel?.Name : TvCore.CurrentMediaTitle)}");
+
+            StopPlayer();
+
+            if (live)
+            {
+                TvCore.MarkProtected(TvCore.CurrentChannel);
+            }
+
+            StatusMessage.Text = live ? "This channel is copy-protected and can't be played. It has been taken out of the channel list." : "This is copy-protected and can't be played.";
+            StatusMessageBox.IsVisible = true;
+
+            PlayerStatusLabel.Text = "Protected";
+            PlaybackTrace.SetStatus("Copy-protected, can't be played");
+        }
+
         /// <summary>The LibVLC Stopped event handler</summary>
         private void VlcPlayer_Stopped(object sender, EventArgs e)
         {
@@ -528,7 +586,7 @@ namespace FoxIPTV.Views
 
                 PlayerStatusLabel.Text = "Buffering";
 
-                if (!_isErrorState)
+                if (!_isErrorState && !_isProtected)
                 {
                     PlayCurrent();
                 }
@@ -556,6 +614,11 @@ namespace FoxIPTV.Views
 
             Ui(() =>
             {
+                if (_isProtected)
+                {
+                    return;
+                }
+
                 SetErrorState();
                 PlayerStatusLabel.Text = "Error";
             });
@@ -582,6 +645,11 @@ namespace FoxIPTV.Views
                     return;
                 }
 
+                if (_isProtected)
+                {
+                    return;
+                }
+
                 PlayerStatusLabel.Text = "Buffering";
 
                 // A live stream that ends at once is broken, not finished: retry, but slower each time and not forever
@@ -605,7 +673,7 @@ namespace FoxIPTV.Views
 
                 Task.Delay(delay).ContinueWith(task => Ui(() =>
                 {
-                    if (!_isErrorState && !_isClosing)
+                    if (!_isErrorState && !_isProtected && !_isClosing)
                     {
                         PlayCurrent();
                     }
