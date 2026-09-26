@@ -11,6 +11,7 @@ namespace FoxIPTV.Classes
     /// Free ad-supported services splice ads into the same HLS playlist as the programme, and name the ad pieces after the ad. LibVLC logs every piece it fetches, so the names are enough to know when a break starts and ends.
     /// Pluto: "_ad/creative/&lt;id&gt;", bumpers under "Pluto_TV_OandO". Google DAI: pieces from dai.google.com.
     /// Samsung's stitcher, Xumo, Wurl and AWS MediaTailor: ad pieces come from "/v1/segment/" on the stitcher's own host while the programme comes from named origin paths.
+    /// Samsung's "/v1/segment/" addresses redirect to the ad itself on "unified-ad-segment-cdn-*.akamaized.net", and LibVLC logs that fetch as well; it is an ad too, or every break would end the moment it began.
     /// Amagi: every ad piece carries "media_type=A" and "break_type=MID_ROLL" in its query string, the piece length in "dur=", and the break length inside its id as "cue-out-120.000000".
     /// Roku names every piece alike and marks breaks only inside the playlist text and in-band SCTE-35, neither of which LibVLC 3 exposes; Roku channels get no readout.
     /// Nothing here opens a connection to anything: the stream plays exactly as the source sends it, and this reads LibVLC's log.
@@ -21,7 +22,7 @@ namespace FoxIPTV.Classes
     public static class AdDetector
     {
         /// <summary>Piece address fragments that mark an ad, a bumper or filler</summary>
-        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|unified-ad-segment-cdn|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>The ad's own id inside a Pluto piece address, so two pieces of one ad count once and the next ad counts as next</summary>
         private static readonly Regex Creative = new Regex(@"creative/([0-9a-f]{16,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);

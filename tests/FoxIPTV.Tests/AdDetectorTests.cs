@@ -59,6 +59,21 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Samsung_AdRedirectTarget_StaysInTheBreak()
+        {
+            AdDetector.Reset();
+
+            AdDetector.Observe("Retrieving https://pb-fkohs8pswgk6n.akamaized.net/v1/segment/3722c60a815c199d9c0ef36c5b73da68a62b09d1/pb-fkohs8pswgk6n/8c3d1d19/3/4701254");
+            AdDetector.Observe("Retrieving https://unified-ad-segment-cdn-ak-us-east-2.akamaized.net/tm/3722c60a815c199d9c0ef36c5b73da68a62b09d1/69ce296b/asset_1080_8_3_00003.ts");
+
+            Assert.True(AdDetector.InAd);
+
+            AdDetector.Observe("Retrieving https://pb-fkohs8pswgk6n.akamaized.net/out/v1/abc/HLS_video_5_1234.ts");
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
         public void Discontinuities_CountAdsWhereNamesDoNot()
         {
             AdDetector.Reset();
