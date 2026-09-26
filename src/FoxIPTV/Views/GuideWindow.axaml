@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:FoxIPTV.Views"
+        x:Class="FoxIPTV.Views.GuideWindow"
+        Title="Guide - Fox IPTV"
+        Icon="/Assets/FoxIPTV.ico"
+        Width="1100" Height="640"
+        MinWidth="600" MinHeight="300">
+
+    <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="8,6">
+            <TextBlock x:Name="DateTimeLabel" Grid.Column="0" Text="Date/Time" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+            <Button x:Name="ResetViewButton" Grid.Column="1" Content="Reset View" />
+        </Grid>
+
+        <Grid ColumnDefinitions="*,Auto">
+            <views:GuideView x:Name="Guide" Grid.Column="0" />
+            <ScrollBar x:Name="GuideScrollBar" Grid.Column="1" Orientation="Vertical" AllowAutoHide="False" />
+        </Grid>
+    </DockPanel>
+</Window>

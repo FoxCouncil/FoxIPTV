@@ -1,69 +1,126 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:FoxIPTV.ViewModels"
-        xmlns:views="using:FoxIPTV.Views"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+        xmlns:vlc="using:LibVLCSharp.Avalonia"
         x:Class="FoxIPTV.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
+        Title="Fox IPTV"
         Icon="/Assets/FoxIPTV.ico"
-        Title="{Binding TitleText, FallbackValue=FoxIPTV}"
-        Width="1280" Height="720"
-        MinWidth="640" MinHeight="400"
+        Width="1008" Height="537"
+        MinWidth="240" MinHeight="240"
         WindowStartupLocation="CenterScreen"
-        Background="#121212">
+        Background="Black">
 
-    <Window.Styles>
-        <!-- Sidebar: 0 width when closed, 300 when open -->
-        <Style Selector="Border.sidebar">
-            <Setter Property="Width" Value="0" />
-        </Style>
-        <Style Selector="Border.sidebar.open">
-            <Setter Property="Width" Value="300" />
-        </Style>
-    </Window.Styles>
-
-    <Panel>
-        <!-- Main content: sidebar + video side by side -->
-        <Grid ColumnDefinitions="Auto,*">
-            <!-- Animated sidebar (pushes video) -->
-            <Border Grid.Column="0"
-                    Classes="sidebar"
-                    Classes.open="{Binding IsChannelListVisible}"
-                    ClipToBounds="True"
-                    Background="#1a1a1a"
-                    BorderBrush="#2a2a2a"
-                    BorderThickness="0,0,1,0">
-                <Border.Transitions>
-                    <Transitions>
-                        <DoubleTransition Property="Width"
-                                          Duration="0:0:0.2"
-                                          Easing="CubicEaseOut" />
-                    </Transitions>
-                </Border.Transitions>
-                <Border Width="300">
-                    <views:ChannelListView DataContext="{Binding ChannelList}" />
-                </Border>
-            </Border>
-
-            <!-- Video player -->
-            <views:VideoPlayerView Grid.Column="1"
-                                   DataContext="{Binding VideoPlayer}"
-                                   x:Name="VideoPlayerView" />
-        </Grid>
-
-        <!-- Loading overlay -->
-        <Border IsVisible="{Binding IsLoading}"
-                Background="#E0121212"
-                ZIndex="100">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-                <ProgressBar IsIndeterminate="True" Width="200"
-                             Foreground="#555555" />
-                <TextBlock Text="{Binding StatusMessage}"
-                           Foreground="#888888" FontSize="13"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
+    <DockPanel>
+        <!-- Status bar -->
+        <Border x:Name="StatusBar" Classes="statusbar" DockPanel.Dock="Bottom">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto">
+                <TextBlock x:Name="ChannelStatusLabel" Grid.Column="0" Text="Channels:" Margin="0,0,4,0" />
+                <ProgressBar x:Name="ChannelStatusProgressBar" Grid.Column="1" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="GuideStatusLabel" Grid.Column="2" Text="Guide:" Margin="0,0,4,0" />
+                <ProgressBar x:Name="GuideStatusProgressBar" Grid.Column="3" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="PlayerStatusLabel" Grid.Column="4" Text="Waiting" Width="80" FontFamily="Arial" FontWeight="Bold" Foreground="SeaGreen" />
+                <TextBlock x:Name="TraceStatusLabel" Grid.Column="5" Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                <TextBlock x:Name="CcStatusLabel" Grid.Column="6" Text="CC" Margin="0,0,4,0" />
+                <Button x:Name="CcOptionsButton" Grid.Column="7" IsVisible="False" Focusable="False" Padding="4,0" Margin="0,0,8,0" FontSize="12" VerticalAlignment="Center">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="TopEdgeAlignedRight" />
+                    </Button.Flyout>
+                </Button>
+                <ProgressBar x:Name="BufferStatusProgressBar" Grid.Column="8" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip.Tip="Buffer" />
+                <TextBlock x:Name="TimeStatusLabel" Grid.Column="9" Text="00:00" Width="44" TextAlignment="Right" />
+            </Grid>
         </Border>
-    </Panel>
+
+        <!-- The video, with the on-screen display floating over it -->
+        <vlc:VideoView x:Name="VideoView">
+            <!-- Nearly clear rather than clear, so the see-through window still takes the mouse -->
+            <Panel x:Name="OverlayPanel" Background="#01000000">
+                <Panel.ContextMenu>
+                    <ContextMenu x:Name="MainContextMenu">
+                        <MenuItem x:Name="MenuItemChannelNumber" Header="&lt;ChannelNumber&gt;" FontWeight="Bold" />
+                        <MenuItem x:Name="MenuItemChannelName" Header="&lt;ChannelName&gt;" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemChannelUp" Header="Channel Up" InputGesture="PageUp" />
+                        <MenuItem x:Name="MenuItemChannelDown" Header="Channel Down" InputGesture="PageDown" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemWindowState" Header="Show Window" ToggleType="CheckBox" InputGesture="H" />
+                        <MenuItem x:Name="MenuItemMute" Header="_Mute" ToggleType="CheckBox" InputGesture="Space" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemStatusBar" Header="_Status Bar" ToggleType="CheckBox" InputGesture="S" />
+                        <MenuItem x:Name="MenuItemClosedCaptioning" Header="_Closed Captioning" ToggleType="CheckBox" InputGesture="C" />
+                        <MenuItem x:Name="MenuItemBorders" Header="Borders" ToggleType="CheckBox" InputGesture="B" />
+                        <MenuItem x:Name="MenuItemFullscreen" Header="_Fullscreen" ToggleType="CheckBox" InputGesture="F" />
+                        <MenuItem x:Name="MenuItemAlwaysOnTop" Header="Always On Top" ToggleType="CheckBox" InputGesture="A" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemTransparency" Header="Transparency" ToggleType="CheckBox">
+                            <MenuItem Header="0%" Tag="1.0" ToggleType="Radio" />
+                            <MenuItem Header="10%" Tag=".9" ToggleType="Radio" />
+                            <MenuItem Header="20%" Tag=".8" ToggleType="Radio" />
+                            <MenuItem Header="30%" Tag=".7" ToggleType="Radio" />
+                            <MenuItem Header="40%" Tag=".6" ToggleType="Radio" />
+                            <MenuItem Header="50%" Tag=".5" ToggleType="Radio" />
+                            <MenuItem Header="60%" Tag=".4" ToggleType="Radio" />
+                            <MenuItem Header="70%" Tag=".3" ToggleType="Radio" />
+                            <MenuItem Header="80%" Tag=".2" ToggleType="Radio" />
+                            <MenuItem Header="90%" Tag=".1" ToggleType="Radio" />
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemAspectRatio" Header="Aspect Ratio">
+                            <MenuItem Header="Default" Tag="null" ToggleType="Radio" />
+                            <MenuItem Header="16:9" Tag="16:9" ToggleType="Radio" />
+                            <MenuItem Header="4:3" Tag="4:3" ToggleType="Radio" />
+                            <MenuItem Header="1:1" Tag="1:1" ToggleType="Radio" />
+                            <MenuItem Header="16:10" Tag="16:10" ToggleType="Radio" />
+                            <MenuItem Header="2.21:1" Tag="2.21:1" ToggleType="Radio" />
+                            <MenuItem Header="2.35:1" Tag="2.35:1" ToggleType="Radio" />
+                            <MenuItem Header="2.39:1" Tag="2.39:1" ToggleType="Radio" />
+                            <MenuItem Header="5:4" Tag="5:4" ToggleType="Radio" />
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemStereoMode" Header="Stereo Mode">
+                            <MenuItem Header="Surround (5.1+)" Tag="5" ToggleType="Radio" />
+                            <MenuItem Header="Headphones" Tag="6" ToggleType="Radio" />
+                            <Separator />
+                            <MenuItem Header="Stereo" Tag="1" ToggleType="Radio" />
+                            <MenuItem Header="Reverse Stereo" Tag="2" ToggleType="Radio" />
+                            <MenuItem Header="Left Channel" Tag="3" ToggleType="Radio" />
+                            <MenuItem Header="Right Channel" Tag="4" ToggleType="Radio" />
+                            <MenuItem Header="Mono" Tag="7" ToggleType="Radio" />
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemGuide" Header="Guide" ToggleType="CheckBox" InputGesture="G" />
+                        <MenuItem x:Name="MenuItemChannelEditor" Header="Channel Editor" ToggleType="CheckBox" InputGesture="T" />
+                        <MenuItem x:Name="MenuItemLibrary" Header="Library" ToggleType="CheckBox" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemSwitchProvider" Header="Switch Provider..." />
+                        <MenuItem x:Name="MenuItemAbout" Header="_About" />
+                        <MenuItem x:Name="MenuItemQuit" Header="Quit" />
+                    </ContextMenu>
+                </Panel.ContextMenu>
+
+                <!-- Channel number and the line under it -->
+                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,12,9,0" Spacing="12">
+                    <Border x:Name="ChannelLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
+                        <TextBlock x:Name="ChannelLabel" Classes="osd" FontSize="48" />
+                    </Border>
+                    <Border x:Name="ChannelNameLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
+                        <TextBlock x:Name="ChannelNameLabel" Classes="osd" FontSize="27" TextTrimming="CharacterEllipsis" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Mute, then the stream tags under it -->
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,9,0" Spacing="11">
+                    <TextBlock x:Name="MuteLabel" Classes="osd" FontSize="29" Text="MUTE" HorizontalAlignment="Right" IsVisible="False" />
+                    <StackPanel x:Name="TagPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" />
+                </StackPanel>
+
+                <!-- "(Ad)" while the stream is in an ad break -->
+                <Border x:Name="AdLabelBox" Background="Black" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="9,0,0,12" IsVisible="False">
+                    <TextBlock x:Name="AdLabel" FontFamily="Arial" FontWeight="Bold" FontSize="24" Foreground="Gold" />
+                </Border>
+
+                <!-- Loading and stream error messages -->
+                <Border x:Name="StatusMessageBox" Background="#404040" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="12,0,12,12" Padding="8" IsVisible="True">
+                    <TextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="Consolas, Menlo, monospace" FontSize="21" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" />
+                </Border>
+            </Panel>
+        </vlc:VideoView>
+    </DockPanel>
 </Window>

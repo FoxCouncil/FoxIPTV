@@ -1,0 +1,57 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:FoxIPTV.Views"
+        x:Class="FoxIPTV.Views.ChannelsWindow"
+        Title="Channel Editor - Fox IPTV"
+        Icon="/Assets/FoxIPTV.ico"
+        Width="760" Height="520"
+        MinWidth="480" MinHeight="320">
+
+    <Window.Styles>
+        <!-- Favourite channels show green and bold -->
+        <Style Selector="TextBlock.favourite">
+            <Setter Property="Foreground" Value="Lime" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="*,4,280" Margin="8">
+        <!-- All channels -->
+        <DockPanel Grid.Column="0">
+            <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,6">
+                <TextBox x:Name="SearchTextBox" Watermark="Search..." />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="Group by:" VerticalAlignment="Center" />
+                    <Button x:Name="FilterNoneButton" Content="None" Tag="None" IsEnabled="False" />
+                    <Button x:Name="FilterCountriesButton" Content="Countries" Tag="Countries" />
+                </StackPanel>
+            </StackPanel>
+
+            <ListBox x:Name="ChannelList" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="views:ChannelRow">
+                        <TextBlock Text="{Binding Text}"
+                                   Margin="{Binding Indent}"
+                                   Classes.favourite="{Binding IsFavourite}"
+                                   Classes.heading="{Binding IsHeading}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+
+        <!-- The channel playing -->
+        <HeaderedContentControl Grid.Column="2" Header="Channel Details" Margin="4,0,0,0">
+            <DockPanel Margin="0,6,0,0">
+                <Button x:Name="FavoriteButton" DockPanel.Dock="Bottom" Content="☆ Favourite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,8,0,0" />
+                <TextBlock x:Name="ChannelNameLabel" DockPanel.Dock="Bottom" FontSize="16" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+                <Image x:Name="ChannelLogo" Stretch="Uniform" Margin="8" />
+            </DockPanel>
+        </HeaderedContentControl>
+    </Grid>
+</Window>

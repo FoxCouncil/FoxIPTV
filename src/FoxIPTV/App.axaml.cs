@@ -1,82 +1,75 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
-using Avalonia.Markup.Xaml;
-using FoxIPTV.Services;
-using FoxIPTV.ViewModels;
-using FoxIPTV.Views;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
-namespace FoxIPTV;
-
-public partial class App : Application
+namespace FoxIPTV
 {
-    public static IServiceProvider Services { get; private set; } = null!;
+    using System;
+    using System.Threading.Tasks;
+    using Avalonia;
+    using Avalonia.Controls;
+    using Avalonia.Controls.ApplicationLifetimes;
+    using Avalonia.Markup.Xaml;
+    using Classes;
+    using Views;
 
-    public override void Initialize()
+    public partial class App : Application
     {
-        AvaloniaXamlLoader.Load(this);
-    }
+        /// <summary>Set when the user asked to switch provider; the application restarts after it shuts down</summary>
+        public static bool RestartRequested { get; set; }
 
-    public override void OnFrameworkInitializationCompleted()
-    {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        /// <summary>The desktop lifetime, for shutting down</summary>
+        public static IClassicDesktopStyleApplicationLifetime Desktop => Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+
+        /// <inheritdoc/>
+        public override void Initialize()
         {
-            DisableAvaloniaDataAnnotationValidation();
-
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            Services = services.BuildServiceProvider();
-
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = Services.GetRequiredService<MainWindowViewModel>()
-            };
-
-            desktop.ShutdownRequested += async (_, _) =>
-            {
-                var settings = Services.GetRequiredService<ISettingsService>();
-                await settings.SaveAsync();
-            };
+            AvaloniaXamlLoader.Load(this);
         }
 
-        base.OnFrameworkInitializationCompleted();
-    }
-
-    private static void ConfigureServices(IServiceCollection services)
-    {
-        // HTTP client for iptv-org API
-        services.AddHttpClient<IIptvService, IptvOrgService>(client =>
+        /// <inheritdoc/>
+        public override void OnFrameworkInitializationCompleted()
         {
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("FoxIPTV/3.0");
-            client.Timeout = TimeSpan.FromSeconds(30);
-        });
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        // Services
-        services.AddSingleton<ICacheService, FileCacheService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+                desktop.ShutdownRequested += (sender, args) => TvCore.Settings.Save();
 
-        // ViewModels
-        services.AddTransient<MainWindowViewModel>();
-        services.AddTransient<ChannelListViewModel>();
-        services.AddTransient<VideoPlayerViewModel>();
+                _ = StartAsync(desktop);
+            }
 
-        // Logging
-        services.AddLogging(builder =>
+            base.OnFrameworkInitializationCompleted();
+        }
+
+        /// <summary>Pick a provider, then open the main window, or quit if the user gives up</summary>
+        private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
         {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
-        });
-    }
+            if (TvCore.Services.Count == 0)
+            {
+                await Dialogs.Message(null, "No content providers could be loaded, check the log for details.", "Fox IPTV");
 
-    private static void DisableAvaloniaDataAnnotationValidation()
-    {
-        var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+                desktop.Shutdown();
 
-        foreach (var plugin in dataValidationPluginsToRemove)
+                return;
+            }
+
+            if (!await ProviderWindow.ChooseProvider())
+            {
+                desktop.Shutdown();
+
+                return;
+            }
+
+            var main = new MainWindow();
+
+            desktop.MainWindow = main;
+
+            main.Start();
+        }
+
+        /// <summary>The macOS application menu's About item</summary>
+        private void AboutMenuItem_Click(object sender, EventArgs e)
         {
-            BindingPlugins.DataValidators.Remove(plugin);
+            new AboutWindow().Show();
         }
     }
 }

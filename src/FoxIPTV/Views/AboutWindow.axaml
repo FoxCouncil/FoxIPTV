@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FoxIPTV.Views.AboutWindow"
+        Title="Fox IPTV - About"
+        Icon="/Assets/FoxIPTV.ico"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <StackPanel Margin="20" Spacing="12" MinWidth="320">
+        <TextBlock x:Name="TitleLabel" Text="Fox IPTV" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" />
+
+        <HeaderedContentControl Header="Why?">
+            <TextBlock Text="BECAUSE" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8" />
+        </HeaderedContentControl>
+
+        <Button x:Name="IconAttributionButton" Classes="link" Content="Some icons by Yusuke Kamiyamane" HorizontalAlignment="Center" />
+
+        <Button x:Name="CloseButton" Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" />
+    </StackPanel>
+</Window>
