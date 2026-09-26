@@ -102,7 +102,7 @@ namespace FoxIPTV.Views
                 _libVlc.SetUserAgent("Fox IPTV", Web.UserAgent);
                 _libVlc.SetAppId("FoxIPTV", TvCore.Version, string.Empty);
 
-                _libVlc.Log += (sender, args) => OnVlcLog(args.Message);
+                _libVlc.Log += (sender, args) => OnVlcLog(args.Message, args.Level, args.Module);
 
                 _player = new MediaPlayer(_libVlc);
 
@@ -394,14 +394,14 @@ namespace FoxIPTV.Views
 
         /// <summary>Copy LibVLC's own messages to the log and pick the ones that mark a playback stage</summary>
         /// <param name="message">The LibVLC message</param>
-        private void OnVlcLog(string message)
+        private void OnVlcLog(string message, LogLevel level = LogLevel.Debug, string module = null)
         {
             if (message == null)
             {
                 return;
             }
 
-            TvCore.LogInfo($"[Media] {message}");
+            TvCore.LogInfo(level == LogLevel.Debug ? $"[Media] {message}" : $"[Media {level}{(module == null ? string.Empty : " " + module)}] {message}");
 
             StreamFacts.Observe(message);
             AdDetector.Observe(message);
