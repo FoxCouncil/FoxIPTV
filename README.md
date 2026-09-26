@@ -9,6 +9,15 @@ The OSS LibVLC based IPTV client, for Windows, macOS and Linux.
     |____/ |_____|\____|/_/   \_\\___/ |____/ |_____|
 
 # Versions •°•═════
+## Version 3.0 (alpha)
+- Runs on Windows, macOS and Linux
+- Provider picker: Xtream, IPTV.org, Free TV Playlists, M3U, and your own JavaScript plugins
+- Program Guide as one scrollable surface
+- Channel Editor with favourites per provider
+- On-demand Library for providers that offer one
+- Stream tags, "(Ad)" readout during ad breaks, playback trace in the status bar
+- Follows the system light or dark theme
+
 ## Version 1.0 - Huskytail
 - Supports Single Server Vendor
 - Program Guide

@@ -91,6 +91,9 @@ jobs:
           cp -r /usr/lib/x86_64-linux-gnu/vlc/plugins/* vlc-collect/plugins/
           cd vlc-collect && tar -czf ../src/FoxIPTV/vlc-native.tar.gz .
 
+      - name: Test
+        run: dotnet test tests/FoxIPTV.Tests/FoxIPTV.Tests.csproj -c Release
+
       - name: Publish
         run: >
           dotnet publish ${{ env.PROJECT }}
