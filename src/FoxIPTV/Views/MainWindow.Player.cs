@@ -43,6 +43,22 @@ namespace FoxIPTV.Views
         /// <summary>Used to determine if there is Closed Captioning data available</summary>
         private volatile bool _ccDetected;
 
+        /// <summary>True while the captions come from a subtitle stream of their own (WebVTT beside the video), false when they ride inside the video</summary>
+        private volatile bool _ccFromSubtitleStream;
+
+        /// <summary>True while captions are switched off for an ad break</summary>
+        /// <remarks>
+        /// LibVLC runs a separate subtitle stream beside the video, and each stream crosses an ad join on its own, seconds apart. The first to finish resets the clock both share (PlaylistManager::doDemux, Status::Discontinuity), and the video, still emptying its queue, then fetches nothing: a minute or more of frozen picture, and the next ad never plays.
+        /// LibVLC drops a stream whose track is not selected (AbstractStream::doBufferize, "deactivating"), so with captions off through the break only the video crosses the joins. Pluto's ad pieces carry a placeholder subtitle file, so nothing is lost.
+        /// </remarks>
+        private volatile bool _ccHeldForAds;
+
+        /// <summary>When to bring captions back after a break, 0 when no return is pending; UI thread only</summary>
+        private long _ccResumeAtTicks;
+
+        /// <summary>LibVLC fetches a piece up to eight seconds before it reaches the screen, so the last ad is still showing that long after the first programme piece is fetched</summary>
+        private static readonly TimeSpan CcResumeDelay = TimeSpan.FromSeconds(8);
+
         /// <summary>1 while a thread-pool job is asking LibVLC for subtitle tracks, so the TimeChanged callback never asks itself</summary>
         private int _ccProbePending;
 
@@ -242,6 +258,9 @@ namespace FoxIPTV.Views
         private void ResetCaptions()
         {
             _ccDetected = false;
+            _ccFromSubtitleStream = false;
+            _ccHeldForAds = false;
+            _ccResumeAtTicks = 0;
             CcOptionsButton.IsVisible = false;
         }
 
@@ -373,6 +392,12 @@ namespace FoxIPTV.Views
 
             StreamFacts.Observe(message);
             AdDetector.Observe(message);
+
+            if (message.StartsWith("using spu decoder module", StringComparison.Ordinal))
+            {
+                // "webvtt" is a subtitle stream of its own, "cc" rides inside the video
+                _ccFromSubtitleStream = message.IndexOf("\"webvtt\"", StringComparison.Ordinal) >= 0;
+            }
 
             if (EncryptedSampleEntry.IsMatch(message) && Interlocked.Exchange(ref _protectedSeen, 1) == 0)
             {
@@ -684,7 +709,9 @@ namespace FoxIPTV.Views
         /// <summary>Pick the caption track the settings ask for; runs on the command thread</summary>
         private void ProcessClosedCaptioning(MediaPlayer player)
         {
-            var enabled = TvCore.Settings.CCEnabled;
+            // Off for the length of an ad break whatever the setting says: see _ccHeldForAds
+            var held = _ccHeldForAds;
+            var enabled = TvCore.Settings.CCEnabled && !held;
 
             var all = player.SpuDescription;
 
@@ -694,7 +721,7 @@ namespace FoxIPTV.Views
             }
 
             // The first entry is always "Disable"
-            var chosen = _ccIdx != 0 && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : all[Math.Min(enabled ? 1 : 0, all.Length - 1)];
+            var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : all[Math.Min(enabled ? 1 : 0, all.Length - 1)];
 
             player.SetSpu(chosen.Id);
 
@@ -729,6 +756,50 @@ namespace FoxIPTV.Views
             {
                 Ui(() => CcOptionsButton.IsVisible = false);
             }
+        }
+
+        /// <summary>Switch captions off when an ad break starts and back on once the programme is on screen again: see <see cref="_ccHeldForAds"/></summary>
+        private void TimerCaptionHold()
+        {
+            if (AdDetector.InAd)
+            {
+                _ccResumeAtTicks = 0;
+
+                if (!_ccHeldForAds && _ccFromSubtitleStream && TvCore.Settings.CCEnabled && _isPlaying)
+                {
+                    _ccHeldForAds = true;
+
+                    TvCore.LogInfo("[CC] Ad break started, captions off until it ends");
+
+                    Vlc(ProcessClosedCaptioning);
+                }
+
+                return;
+            }
+
+            if (!_ccHeldForAds)
+            {
+                return;
+            }
+
+            if (_ccResumeAtTicks == 0)
+            {
+                _ccResumeAtTicks = DateTime.UtcNow.Add(CcResumeDelay).Ticks;
+
+                return;
+            }
+
+            if (DateTime.UtcNow.Ticks < _ccResumeAtTicks)
+            {
+                return;
+            }
+
+            _ccHeldForAds = false;
+            _ccResumeAtTicks = 0;
+
+            TvCore.LogInfo("[CC] Ad break over, captions back on");
+
+            Vlc(ProcessClosedCaptioning);
         }
 
         /// <summary>Stop LibVLC, let go of it, then shut the application down</summary>

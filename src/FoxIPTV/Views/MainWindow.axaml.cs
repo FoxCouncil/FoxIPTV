@@ -560,6 +560,8 @@ namespace FoxIPTV.Views
 
             TimerAdLabel();
 
+            TimerCaptionHold();
+
             TimerUiFade();
 
             TimerKeyboardEntry();
