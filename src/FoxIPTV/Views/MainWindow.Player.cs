@@ -67,7 +67,7 @@ namespace FoxIPTV.Views
             {
                 VlcNativeManager.Initialize();
 
-                _libVlc = new LibVLC(VlcNativeManager.Options("--gain=1.8", "--adaptive-logic=highest", "--avcodec-threads=1", "--quiet"));
+                _libVlc = new LibVLC(VlcNativeManager.Options("--gain=1.8", "--adaptive-logic=highest", "--quiet"));
 
                 _libVlc.SetUserAgent("Fox IPTV", Web.UserAgent);
                 _libVlc.SetAppId("FoxIPTV", TvCore.Version, string.Empty);
@@ -651,7 +651,25 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : all[Math.Min(enabled ? 1 : 0, all.Length - 1)];
+            var inVideo = new HashSet<int>();
+
+            using (var media = player.Media)
+            {
+                foreach (var track in media?.Tracks ?? Array.Empty<MediaTrack>())
+                {
+                    var codec = track.Codec.ToFourCC().ToLowerInvariant();
+
+                    if (track.TrackType == TrackType.Text && (codec == "c608" || codec == "c708"))
+                    {
+                        inVideo.Add(track.Id);
+                    }
+                }
+            }
+
+            var choices = all.Where(x => x.Id != -1).ToList();
+            var preferred = choices.Where(x => inVideo.Contains(x.Id) || (x.Name ?? string.Empty).StartsWith("Closed captions", StringComparison.Ordinal)).Concat(choices).ToList();
+
+            var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : enabled && preferred.Count > 0 ? preferred[0] : all[0];
 
             TvCore.LogInfo($"[CC] Tracks: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; setting on {TvCore.Settings.CCEnabled}, held {held}, picked {_ccIdx}; choosing {chosen.Id}={chosen.Name}");
 
@@ -660,8 +678,7 @@ namespace FoxIPTV.Views
             if (enabled && all.Length > 2)
             {
                 var currentName = chosen.Name;
-                var subIdx = _ccIdx != 0 ? 1 : 2;
-                var tracks = all.Skip(subIdx).Where(x => x.Id != _ccIdx).Select(x => new KeyValuePair<int, string>(x.Id, x.Name)).ToList();
+                var tracks = choices.Where(x => x.Id != chosen.Id).Select(x => new KeyValuePair<int, string>(x.Id, x.Name)).ToList();
 
                 Ui(() =>
                 {
