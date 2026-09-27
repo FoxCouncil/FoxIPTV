@@ -279,7 +279,7 @@ namespace FoxIPTV.Views
 
             PlaybackTrace.Mark("play", channel.Stream.Host);
 
-            Play(channel.Stream, LiveStreamOptions(channel.Stream));
+            Play(channel.Stream, Array.Empty<string>());
         }
 
         private void Play(Uri url, string[] options)
@@ -295,16 +295,6 @@ namespace FoxIPTV.Views
                     player.Play(media);
                 }
             });
-        }
-
-        private static string[] LiveStreamOptions(Uri stream)
-        {
-            if (stream.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) || stream.AbsolutePath.EndsWith(".m3u", StringComparison.OrdinalIgnoreCase))
-            {
-                return new[] { ":network-caching=8000" };
-            }
-
-            return Array.Empty<string>();
         }
 
         private static string[] BuildVlcOptions(Dictionary<string, string> headers)
