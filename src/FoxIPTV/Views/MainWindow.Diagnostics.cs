@@ -413,7 +413,7 @@ namespace FoxIPTV.Views
 
             var progressAt = Interlocked.Read(ref _clockProgressAt);
 
-            if (progressAt == 0 || Interlocked.Read(ref _stallReportedAt) != 0)
+            if (progressAt == 0 || Interlocked.Read(ref _stallReportedAt) != 0 || Interlocked.Read(ref _lastClockMs) == 0)
             {
                 return;
             }
