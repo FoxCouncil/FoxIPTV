@@ -96,7 +96,11 @@ namespace FoxIPTV.Views
             {
                 VlcNativeManager.Initialize();
 
-                _libVlc = new LibVLC(VlcNativeManager.Options("--gain=1.8", "--adaptive-logic=highest", "--quiet"));
+                // One decoding thread. LibVLC 3.0.23 opens the decoder with a frame thread per core (10 for HEVC here), then hands decoding to the graphics card and keeps them:
+                // each holds a decode picture in flight, and for HEVC the pool is only 2 + 16 + one per thread (modules/codec/avcodec/directx_va.c). With the pool empty the decoder
+                // waits up to a second for a picture (va_surface.c, va_pool_Get), the picture freezes while audio plays, then "hardware acceleration picture allocation failed" and
+                // the clock is reset. The card needs no CPU threads, so one thread leaves the pool to reference frames and the pictures waiting to be shown
+                _libVlc = new LibVLC(VlcNativeManager.Options("--gain=1.8", "--adaptive-logic=highest", "--avcodec-threads=1", "--quiet"));
 
                 // The name is for the sound system; streams see a browser, like every other request FoxIPTV makes
                 _libVlc.SetUserAgent("Fox IPTV", Web.UserAgent);
