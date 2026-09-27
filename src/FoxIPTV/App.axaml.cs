@@ -13,19 +13,15 @@ namespace FoxIPTV
 
     public partial class App : Application
     {
-        /// <summary>Set when the user asked to switch provider; the application restarts after it shuts down</summary>
         public static bool RestartRequested { get; set; }
 
-        /// <summary>The desktop lifetime, for shutting down</summary>
         public static IClassicDesktopStyleApplicationLifetime Desktop => Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
 
-        /// <inheritdoc/>
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
         }
 
-        /// <inheritdoc/>
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -40,7 +36,6 @@ namespace FoxIPTV
             base.OnFrameworkInitializationCompleted();
         }
 
-        /// <summary>Pick a provider, then open the main window, or quit if the user gives up</summary>
         private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
         {
             if (TvCore.Services.Count == 0)
@@ -66,7 +61,6 @@ namespace FoxIPTV
             main.Start();
         }
 
-        /// <summary>The macOS application menu's About item</summary>
         private void AboutMenuItem_Click(object sender, EventArgs e)
         {
             new AboutWindow().Show();

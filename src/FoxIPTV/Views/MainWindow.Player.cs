@@ -13,11 +13,6 @@ namespace FoxIPTV.Views
     using Classes;
     using LibVLCSharp.Shared;
 
-    /// <summary>The LibVLC side of the main window</summary>
-    /// <remarks>
-    /// Every LibVLC getter and setter takes the player's locks. The video output needs the UI thread while it re-creates itself at a stream discontinuity, so a call from the UI thread at that moment deadlocks until LibVLC's watchdog gives up, a minute of frozen picture.
-    /// So nothing on the UI thread calls into LibVLC: calls go to the thread pool, and what the UI needs to know is kept in fields LibVLC's events keep up to date.
-    /// </remarks>
     public partial class MainWindow
     {
         /// <summary>The default volume</summary>
@@ -27,82 +22,53 @@ namespace FoxIPTV.Views
 
         private MediaPlayer _player;
 
-        /// <summary>Every command to LibVLC goes through this one thread, in the order the UI asked for it</summary>
-        /// <remarks>Separate pool jobs could run out of order: a Stop for the new channel landing before the Play for the old one, leaving the old channel playing under the new title.</remarks>
         private readonly BlockingCollection<Action> _vlcCommands = new BlockingCollection<Action>();
 
-        /// <summary>Bumped whenever the media changes, so a track poll for older media stops</summary>
         private int _mediaGeneration;
 
-        /// <summary>The current media's tracks, copied off the UI thread once LibVLC has them; the timer reads this, never the media</summary>
         private volatile MediaTrack[] _currentTracks;
 
-        /// <summary>The current Closed Captioning track id, 0 for the first track</summary>
         private int _ccIdx;
 
         /// <summary>Used to determine if there is Closed Captioning data available</summary>
         private volatile bool _ccDetected;
 
-        /// <summary>True while the captions come from a subtitle stream of their own (WebVTT beside the video), false when they ride inside the video</summary>
         private volatile bool _ccFromSubtitleStream;
 
-        /// <summary>True while captions are switched off for an ad break</summary>
-        /// <remarks>
-        /// LibVLC runs a separate subtitle stream beside the video, and each stream crosses an ad join on its own, seconds apart. The first to finish resets the clock both share (PlaylistManager::doDemux, Status::Discontinuity), and the video, still emptying its queue, then fetches nothing: a minute or more of frozen picture, and the next ad never plays.
-        /// LibVLC drops a stream whose track is not selected (AbstractStream::doBufferize, "deactivating"), so with captions off through the break only the video crosses the joins. Pluto's ad pieces carry a placeholder subtitle file, so nothing is lost.
-        /// </remarks>
         private volatile bool _ccHeldForAds;
 
-        /// <summary>When to bring captions back after a break, 0 when no return is pending; UI thread only</summary>
         private long _ccResumeAtTicks;
 
-        /// <summary>LibVLC fetches a piece up to eight seconds before it reaches the screen, so the last ad is still showing that long after the first programme piece is fetched</summary>
         private static readonly TimeSpan CcResumeDelay = TimeSpan.FromSeconds(8);
 
-        /// <summary>1 while a thread-pool job is asking LibVLC for subtitle tracks, so the TimeChanged callback never asks itself</summary>
         private int _ccProbePending;
 
-        /// <summary>How many times in a row a live stream ended without ever playing, drives the restart back-off</summary>
         private int _endedWithoutPlaying;
 
-        /// <summary>1 while a Play has been handed to LibVLC and it has not yet said Playing or failed, so a second Play is never stacked on it</summary>
         private int _playPending;
 
-        /// <summary>Whether LibVLC has reported Playing and not yet Stopped, Ended or Errored; read this instead of asking LibVLC from the UI thread</summary>
         private volatile bool _isPlaying;
 
-        /// <summary>True once the stream playing turned out to be copy-protected; nothing is retried until the channel changes</summary>
         private volatile bool _isProtected;
 
-        /// <summary>1 once copy protection has been seen in this stream, so it is acted on once</summary>
         private int _protectedSeen;
 
-        /// <summary>LibVLC's dump of an MP4 box tree listing an encrypted video or audio sample entry, the mark of Common Encryption (Widevine, PlayReady)</summary>
         private static readonly Regex EncryptedSampleEntry = new Regex(@"\+ enc[av] size \d+", RegexOptions.Compiled);
 
-        /// <summary>Whether the volume is zero, kept here for the same reason</summary>
         private volatile bool _muted;
 
-        /// <summary>The aspect ratio LibVLC last reported or was last given; null means source</summary>
         private volatile string _aspectRatio;
 
-        /// <summary>The audio channel mode LibVLC last reported or was last given</summary>
         private volatile int _audioChannel;
 
-        /// <summary>Start LibVLC and hook its events</summary>
         private void InitializeVlcPlayer()
         {
             try
             {
                 VlcNativeManager.Initialize();
 
-                // One decoding thread. LibVLC 3.0.23 opens the decoder with a frame thread per core (10 for HEVC here), then hands decoding to the graphics card and keeps them:
-                // each holds a decode picture in flight, and for HEVC the pool is only 2 + 16 + one per thread (modules/codec/avcodec/directx_va.c). With the pool empty the decoder
-                // waits up to a second for a picture (va_surface.c, va_pool_Get), the picture freezes while audio plays, then "hardware acceleration picture allocation failed" and
-                // the clock is reset. The card needs no CPU threads, so one thread leaves the pool to reference frames and the pictures waiting to be shown
                 _libVlc = new LibVLC(VlcNativeManager.Options("--gain=1.8", "--adaptive-logic=highest", "--avcodec-threads=1", "--quiet"));
 
-                // The name is for the sound system; streams see a browser, like every other request FoxIPTV makes
                 _libVlc.SetUserAgent("Fox IPTV", Web.UserAgent);
                 _libVlc.SetAppId("FoxIPTV", TvCore.Version, string.Empty);
 
@@ -119,7 +85,6 @@ namespace FoxIPTV.Views
                 _player.TimeChanged += VlcPlayer_TimeChanged;
                 _player.VolumeChanged += (sender, args) => Vlc(player =>
                 {
-                    // Read the volume from the command thread, never from inside LibVLC's own callback
                     var volume = player.Volume;
 
                     _muted = volume == 0;
@@ -129,7 +94,6 @@ namespace FoxIPTV.Views
 
                 _player.Vout += (sender, args) =>
                 {
-                    // Elsewhere the Direct3D line below never comes, a video output is as close as it gets
                     if (args.Count > 0 && !OperatingSystem.IsWindows())
                     {
                         PlaybackTrace.Picture("video out");
@@ -142,7 +106,6 @@ namespace FoxIPTV.Views
 
                 worker.Start();
 
-                // The video view hands LibVLC its window only once it has one, which is after the window opens
                 Opened += (sender, args) => Avalonia.Threading.Dispatcher.UIThread.Post(AttachVideo, Avalonia.Threading.DispatcherPriority.Loaded);
             }
             catch (Exception ex)
@@ -155,7 +118,6 @@ namespace FoxIPTV.Views
             PlaybackTrace.StatusChanged += status => Ui(() => TraceStatusLabel.Text = status);
         }
 
-        /// <summary>Give the player to the video view once; the one LibVLC call the UI thread makes, before anything plays</summary>
         private void AttachVideo()
         {
             if (_player != null && VideoView.MediaPlayer == null)
@@ -164,7 +126,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Run LibVLC commands one at a time, in order</summary>
         private void VlcCommandLoop()
         {
             foreach (var command in _vlcCommands.GetConsumingEnumerable())
@@ -180,10 +141,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Queue a command for LibVLC</summary>
-        /// <param name="command">What to do with the player</param>
-        /// <param name="caller">Filled in by the compiler, names the command in the log</param>
-        /// <param name="line">Filled in by the compiler, names the command in the log</param>
         private void Vlc(Action<MediaPlayer> command, [System.Runtime.CompilerServices.CallerMemberName] string caller = null, [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
         {
             var player = _player;
@@ -239,16 +196,12 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>Handler for TVCore's media changed event, on-demand playback replacing the live channel</summary>
-        /// <param name="source">The source to play</param>
-        /// <param name="title">The display title</param>
         private void TvCoreOnMediaChanged(MediaSource source, string title)
         {
             Ui(() =>
             {
                 TvCore.LogDebug($"[.NET] TvCoreOnMediaChanged({source.Url}, {title})");
 
-                // Whatever was opening is abandoned for this
                 _playPending = 0;
 
                 ResetDiagnostics();
@@ -260,8 +213,6 @@ namespace FoxIPTV.Views
                 ResetCaptions();
 
                 ReleaseMedia();
-
-                // RemoveErrorState stopped the player; the Stopped handler picks up the new media
 
                 Show();
                 Activate();
@@ -279,7 +230,6 @@ namespace FoxIPTV.Views
             CcOptionsButton.IsVisible = false;
         }
 
-        /// <summary>Let go of the media wrapper and the tracks read from it</summary>
         private void ReleaseMedia()
         {
             Interlocked.Increment(ref _mediaGeneration);
@@ -288,13 +238,11 @@ namespace FoxIPTV.Views
             _currentTvIconData = null;
         }
 
-        /// <summary>Stop LibVLC off the UI thread; the Stopped event says when it is done</summary>
         private void StopPlayer([System.Runtime.CompilerServices.CallerMemberName] string caller = null)
         {
             Vlc(player => player.Stop(), $"Stop for {caller}");
         }
 
-        /// <summary>Start LibVLC on whatever should be playing: on-demand media if chosen, otherwise the live channel</summary>
         private void PlayCurrent()
         {
             if (_player == null)
@@ -334,7 +282,6 @@ namespace FoxIPTV.Views
             Play(channel.Stream, LiveStreamOptions(channel.Stream));
         }
 
-        /// <summary>Hand a stream to LibVLC off the UI thread</summary>
         private void Play(Uri url, string[] options)
         {
             var libVlc = _libVlc;
@@ -343,7 +290,6 @@ namespace FoxIPTV.Views
 
             Vlc(player =>
             {
-                // The player keeps its own reference to the media, ours goes as soon as it is handed over
                 using (var media = new Media(libVlc, url, options))
                 {
                     player.Play(media);
@@ -351,14 +297,6 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>LibVLC media options for a live channel</summary>
-        /// <param name="stream">The channel's stream address</param>
-        /// <returns>LibVLC option strings</returns>
-        /// <remarks>
-        /// A live HLS piece cannot be fetched before it is published, so the picture must run further behind the newest piece than one piece is long, or every piece arrives late.
-        /// LibVLC starts 1 second behind and learns this the hard way: on Pluto's 5 second pieces it logged "PCR is called too late" seven times in four minutes, raising its own delay 1000, 1782, 1931, 4035, 4206, 4398, 5325 ms, each rise a reset of the clock and a hitch on screen, with dropped frames between. Once past 5 seconds the log went quiet.
-        /// Starting at 8 seconds covers 6 second pieces as well. The playlist already lists more than that when a channel opens, so the picture comes up no later.
-        /// </remarks>
         private static string[] LiveStreamOptions(Uri stream)
         {
             if (stream.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) || stream.AbsolutePath.EndsWith(".m3u", StringComparison.OrdinalIgnoreCase))
@@ -369,9 +307,6 @@ namespace FoxIPTV.Views
             return Array.Empty<string>();
         }
 
-        /// <summary>Turn HTTP headers a source needs into LibVLC media options</summary>
-        /// <param name="headers">The headers</param>
-        /// <returns>LibVLC option strings</returns>
         private static string[] BuildVlcOptions(Dictionary<string, string> headers)
         {
             var options = new List<string>();
@@ -396,8 +331,6 @@ namespace FoxIPTV.Views
             return options.ToArray();
         }
 
-        /// <summary>Copy LibVLC's own messages to the log and pick the ones that mark a playback stage</summary>
-        /// <param name="message">The LibVLC message</param>
         private void OnVlcLog(string message, LogLevel level = LogLevel.Debug, string module = null)
         {
             if (message == null)
@@ -413,7 +346,6 @@ namespace FoxIPTV.Views
 
             if (message.StartsWith("using spu decoder module", StringComparison.Ordinal))
             {
-                // "webvtt" is a subtitle stream of its own, "cc" rides inside the video
                 _ccFromSubtitleStream = message.IndexOf("\"webvtt\"", StringComparison.Ordinal) >= 0;
             }
 
@@ -451,7 +383,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The LibVLC TimeChanged event handler</summary>
         private void VlcPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
             if (_isClosing)
@@ -467,7 +398,6 @@ namespace FoxIPTV.Views
 
             if (!_ccDetected && _isPlaying && Interlocked.Exchange(ref _ccProbePending, 1) == 0)
             {
-                // Ask LibVLC about subtitle tracks from the command thread, never from inside its own callback
                 Vlc(player =>
                 {
                     try
@@ -527,7 +457,6 @@ namespace FoxIPTV.Views
                 }
             });
 
-            // Apply the audio channel and aspect ratio once per play rather than checking them ten times a second
             Vlc(p =>
             {
                 if ((int)p.Channel != TvCore.Settings.StereoMode)
@@ -550,10 +479,8 @@ namespace FoxIPTV.Views
             Ui(() => PlayerStatusLabel.Text = "Playing");
         }
 
-        /// <summary>LibVLC fills the track list a little after playback starts; poll for it off the UI thread, then hand the UI a copy</summary>
         private void PollTracks(MediaPlayer player, int generation)
         {
-            // This job's own wrapper, released here and nowhere else
             using (var media = player.Media)
             {
                 for (var attempt = 0; attempt < 60 && media != null && generation == Volatile.Read(ref _mediaGeneration) && _isPlaying; attempt++)
@@ -575,7 +502,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Forget any copy protection seen, a new stream is starting</summary>
         private void ClearProtected()
         {
             _isProtected = false;
@@ -583,7 +509,6 @@ namespace FoxIPTV.Views
             Interlocked.Exchange(ref _protectedSeen, 0);
         }
 
-        /// <summary>The stream is copy-protected: LibVLC has no keys, so it would buffer scrambled data for ever. Stop, say so, and take a live channel out of the list for good</summary>
         private void OnProtectedStream()
         {
             if (_isProtected || _isClosing)
@@ -684,7 +609,6 @@ namespace FoxIPTV.Views
             {
                 if (TvCore.CurrentMedia != null)
                 {
-                    // On-demand media has a real end, live channels are restarted
                     PlayerStatusLabel.Text = "Ended";
 
                     return;
@@ -697,7 +621,6 @@ namespace FoxIPTV.Views
 
                 PlayerStatusLabel.Text = "Buffering";
 
-                // A live stream that ends at once is broken, not finished: retry, but slower each time and not forever
                 _endedWithoutPlaying++;
 
                 if (_endedWithoutPlaying > 6)
@@ -726,10 +649,8 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>Pick the caption track the settings ask for; runs on the command thread</summary>
         private void ProcessClosedCaptioning(MediaPlayer player)
         {
-            // Off for the length of an ad break whatever the setting says: see _ccHeldForAds
             var held = _ccHeldForAds;
             var enabled = TvCore.Settings.CCEnabled && !held;
 
@@ -740,7 +661,6 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            // The first entry is always "Disable"
             var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : all[Math.Min(enabled ? 1 : 0, all.Length - 1)];
 
             TvCore.LogInfo($"[CC] Tracks: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; setting on {TvCore.Settings.CCEnabled}, held {held}, picked {_ccIdx}; choosing {chosen.Id}={chosen.Name}");
@@ -749,7 +669,6 @@ namespace FoxIPTV.Views
 
             if (enabled && all.Length > 2)
             {
-                // Read the track list here on the pool; the UI thread only gets copies
                 var currentName = chosen.Name;
                 var subIdx = _ccIdx != 0 ? 1 : 2;
                 var tracks = all.Skip(subIdx).Where(x => x.Id != _ccIdx).Select(x => new KeyValuePair<int, string>(x.Id, x.Name)).ToList();
@@ -780,7 +699,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Switch captions off when an ad break starts and back on once the programme is on screen again: see <see cref="_ccHeldForAds"/></summary>
         private void TimerCaptionHold()
         {
             if (AdDetector.InAd)
@@ -824,7 +742,6 @@ namespace FoxIPTV.Views
             Vlc(ProcessClosedCaptioning);
         }
 
-        /// <summary>Stop LibVLC, let go of it, then shut the application down</summary>
         private async void Quit()
         {
             if (_isClosing)
@@ -840,7 +757,6 @@ namespace FoxIPTV.Views
 
             var player = _player;
 
-            // No more commands; the stop runs after anything already queued, off the UI thread, see the class remarks
             _vlcCommands.CompleteAdding();
 
             await Task.Run(() =>

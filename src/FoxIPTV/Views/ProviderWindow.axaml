@@ -12,7 +12,6 @@
     <StackPanel Margin="16" Spacing="12">
         <TextBlock Text="Choose a content provider" FontSize="16" FontWeight="Bold" />
 
-        <!-- One table for the provider and its fields, so every label shares one column and every input lines up -->
         <Grid x:Name="FormGrid" ColumnDefinitions="Auto,*" RowDefinitions="Auto" ColumnSpacing="10" RowSpacing="8">
             <TextBlock x:Name="ProviderLabel" Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
             <ComboBox x:Name="ServicesComboBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">

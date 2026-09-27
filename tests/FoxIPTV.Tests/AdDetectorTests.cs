@@ -4,7 +4,6 @@ namespace FoxIPTV.Tests
 {
     using FoxIPTV.Classes;
 
-    /// <summary>AdDetector keeps static state, so these run one at a time</summary>
     [Collection("AdDetector")]
     public class AdDetectorTests
     {

@@ -8,7 +8,6 @@
         MinWidth="480" MinHeight="320">
 
     <Window.Styles>
-        <!-- Favourite channels show green and bold -->
         <Style Selector="TextBlock.favourite">
             <Setter Property="Foreground" Value="Lime" />
             <Setter Property="FontWeight" Value="Bold" />
@@ -19,7 +18,6 @@
     </Window.Styles>
 
     <Grid ColumnDefinitions="*,4,280" Margin="8">
-        <!-- All channels -->
         <DockPanel Grid.Column="0">
             <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,6">
                 <TextBox x:Name="SearchTextBox" Watermark="Search..." />
@@ -45,7 +43,6 @@
 
         <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
 
-        <!-- The channel playing -->
         <HeaderedContentControl Grid.Column="2" Header="Channel Details" Margin="4,0,0,0">
             <DockPanel Margin="0,6,0,0">
                 <Button x:Name="FavoriteButton" DockPanel.Dock="Bottom" Content="☆ Favourite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,8,0,0" />

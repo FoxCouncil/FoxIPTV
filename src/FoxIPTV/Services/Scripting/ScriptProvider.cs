@@ -16,15 +16,8 @@ namespace FoxIPTV.Services.Scripting
     using System.Linq;
     using System.Threading.Tasks;
 
-    /// <summary>A provider implemented by a JavaScript plugin file, executed by Jint</summary>
-    /// <remarks>
-    /// A plugin declares a global <c>plugin</c> object with its metadata and defines any of the functions
-    /// channels, guide, authenticate, categories, browse, search, details, episodes and resolve.
-    /// All engine access is serialized through <see cref="_lock"/> and runs off the UI thread.
-    /// </remarks>
     public class ScriptProvider : IService, ILibraryProvider
     {
-        /// <summary>The JavaScript that builds the friendly <c>host</c> object from the raw <c>__host</c> CLR object</summary>
         private const string Prelude = @"
 var host = (function () {
     function opts(o) { return o ? JSON.stringify(o) : null; }
@@ -57,44 +50,28 @@ var host = (function () {
 
         private readonly HashSet<string> _functions = new HashSet<string>(StringComparer.Ordinal);
 
-        /// <summary>Where the script came from, for error messages</summary>
         public string Origin { get; }
 
-        /// <summary>Is this one of the scripts shipped inside FoxIPTV</summary>
         public bool IsBuiltIn { get; }
 
-        /// <summary>The plugin's declared version</summary>
         public string Version { get; private set; } = "1";
 
-        /// <inheritdoc/>
         public string Id { get; private set; }
 
-        /// <inheritdoc/>
         public string Title { get; private set; }
 
-        /// <inheritdoc/>
         public string Description { get; private set; }
 
-        /// <inheritdoc/>
         public ProviderCapabilities Capabilities { get; private set; }
 
-        /// <inheritdoc/>
         public List<ProviderField> Fields { get; } = new List<ProviderField>();
 
-        /// <inheritdoc/>
         public JObject Data { get; set; }
 
-        /// <inheritdoc/>
         public bool SaveAuthentication { get; set; }
 
-        /// <inheritdoc/>
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
 
-        /// <summary>Compile a plugin</summary>
-        /// <param name="source">The JavaScript source</param>
-        /// <param name="origin">A description of where it came from</param>
-        /// <param name="isBuiltIn">Is it shipped with FoxIPTV</param>
-        /// <exception cref="ScriptException">The script failed to parse, run, or declare valid metadata</exception>
         public ScriptProvider(string source, string origin, bool isBuiltIn)
         {
             Origin = origin;
@@ -141,7 +118,6 @@ var host = (function () {
             }
         }
 
-        /// <summary>Read the global <c>plugin</c> object</summary>
         private void ReadMetadata()
         {
             var plugin = _engine.GetValue("plugin");
@@ -245,9 +221,6 @@ var host = (function () {
             }
         }
 
-        /// <summary>Read a setting the user entered, falling back to the field default</summary>
-        /// <param name="key">The field key</param>
-        /// <returns>The value or null</returns>
         public string GetSetting(string key)
         {
             var value = Data?[key]?.ToString();
@@ -260,13 +233,11 @@ var host = (function () {
             return Fields.FirstOrDefault(x => x.Key == key)?.Default;
         }
 
-        /// <summary>Call a JS callback with a single argument; only valid while the engine lock is held by the caller chain</summary>
         internal void InvokeCallback(JsValue function, object argument)
         {
             _engine.Invoke(function, argument);
         }
 
-        /// <inheritdoc/>
         public Task<bool> IsAuthenticated()
         {
             foreach (var field in Fields.Where(x => x.Required))
@@ -292,7 +263,6 @@ var host = (function () {
             });
         }
 
-        /// <inheritdoc/>
         public Task<Tuple<List<Channel>, List<Programme>>> Process()
         {
             return Run(() =>
@@ -337,25 +307,21 @@ var host = (function () {
             });
         }
 
-        /// <inheritdoc/>
         public Task<List<LibraryCategory>> GetCategories()
         {
             return Run(() => Items(Call("categories")).Where(x => x.IsObject()).Select(x => new LibraryCategory { Id = Str(x, "id"), Name = Str(x, "name") ?? Str(x, "id") }).Where(x => !string.IsNullOrWhiteSpace(x.Id)).ToList());
         }
 
-        /// <inheritdoc/>
         public Task<LibraryPage> Browse(string categoryId, int page)
         {
             return Run(() => MapPage(Call("browse", categoryId, page), page));
         }
 
-        /// <inheritdoc/>
         public Task<LibraryPage> Search(string query, int page)
         {
             return Run(() => MapPage(Call("search", query, page), page));
         }
 
-        /// <inheritdoc/>
         public Task<LibraryItem> GetDetails(string id, LibraryItemKind kind)
         {
             return Run(() =>
@@ -369,13 +335,11 @@ var host = (function () {
             });
         }
 
-        /// <inheritdoc/>
         public Task<List<LibraryItem>> GetEpisodes(string seriesId, int season)
         {
             return Run(() => Items(Call("episodes", seriesId, season)).Select(MapItem).Where(x => x != null).ToList());
         }
 
-        /// <inheritdoc/>
         public Task<List<MediaSource>> Resolve(LibraryItem item)
         {
             return Run(() =>
@@ -438,7 +402,6 @@ var host = (function () {
             });
         }
 
-        /// <summary>Run work against the engine on a worker thread, serialized, translating script errors</summary>
         private Task<T> Run<T>(Func<T> work)
         {
             return Task.Run(() =>
@@ -469,7 +432,6 @@ var host = (function () {
             });
         }
 
-        /// <summary>Invoke an optional script function, returning undefined if it is not defined</summary>
         private JsValue Call(string name, params object[] args)
         {
             if (!_functions.Contains(name))
@@ -480,13 +442,11 @@ var host = (function () {
             return _engine.Invoke(name, args);
         }
 
-        /// <summary>Turn a JSON token into a JS value via the engine's own JSON.parse</summary>
         private JsValue ToJs(JToken token)
         {
             return _engine.Invoke(_jsonParse, token.ToString(Formatting.None));
         }
 
-        /// <summary>Turn a JS value into a JSON token via the engine's own JSON.stringify</summary>
         private JToken ToJson(JsValue value)
         {
             if (value.IsUndefined() || value.IsNull())
@@ -757,7 +717,6 @@ var host = (function () {
             return DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out result) || XmltvParser.TryParseTime(text, out result);
         }
 
-        /// <summary>Enumerate a JS array, or a wrapped .NET enumerable; anything else yields nothing</summary>
         private static IEnumerable<JsValue> Items(JsValue value)
         {
             if (value == null || value.IsUndefined() || value.IsNull())
@@ -860,15 +819,12 @@ var host = (function () {
         }
     }
 
-    /// <summary>A plugin script failed to load or run</summary>
     public class ScriptException : Exception
     {
-        /// <inheritdoc/>
         public ScriptException(string message) : base(message)
         {
         }
 
-        /// <inheritdoc/>
         public ScriptException(string message, Exception inner) : base(message, inner)
         {
         }

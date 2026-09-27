@@ -8,10 +8,8 @@ namespace FoxIPTV.Classes
     using System.IO;
     using System.Xml;
 
-    /// <summary>A streaming parser for XMLTV guide documents; guides can be hundreds of megabytes so nothing is held but the result</summary>
     public static class XmltvParser
     {
-        /// <summary>The XMLTV timestamp formats seen in the wild, in order of likelihood</summary>
         private static readonly string[] TimeFormats =
         {
             "yyyyMMddHHmmss zzz",
@@ -21,10 +19,6 @@ namespace FoxIPTV.Classes
             "yyyyMMdd"
         };
 
-        /// <summary>Parse XMLTV text into programmes</summary>
-        /// <param name="text">The full XMLTV document</param>
-        /// <param name="progress">An optional percentage reporter, driven by how far through the text the reader is</param>
-        /// <returns>The programmes, in document order</returns>
         public static List<Programme> Parse(string text, IProgress<int> progress = null)
         {
             var guide = new List<Programme>();
@@ -71,7 +65,6 @@ namespace FoxIPTV.Classes
                             subtree.Read();
                             subtree.Read();
 
-                            // Reading an element's content already moves the reader to the next node, so only step when nothing was read
                             while (!subtree.EOF)
                             {
                                 if (subtree.NodeType == XmlNodeType.Element && subtree.Name == "title" && title == null)
@@ -123,10 +116,6 @@ namespace FoxIPTV.Classes
             return guide;
         }
 
-        /// <summary>Parse an XMLTV timestamp</summary>
-        /// <param name="value">The attribute text</param>
-        /// <param name="result">The parsed value; timestamps without an offset are treated as UTC</param>
-        /// <returns>True if parsed</returns>
         public static bool TryParseTime(string value, out DateTimeOffset result)
         {
             result = default;
@@ -141,12 +130,10 @@ namespace FoxIPTV.Classes
             return DateTimeOffset.TryParseExact(value, TimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out result);
         }
 
-        /// <summary>A <see cref="StringReader"/> that knows how far into the string it has read</summary>
         private class CountingStringReader : TextReader
         {
             private readonly string _text;
 
-            /// <summary>How many characters have been consumed</summary>
             public int Position { get; private set; }
 
             public CountingStringReader(string text)

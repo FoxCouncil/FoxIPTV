@@ -11,8 +11,6 @@ namespace FoxIPTV.Views
     using Avalonia.Threading;
     using Classes;
 
-    /// <summary>The main window for displaying IPTV streams</summary>
-    /// <remarks>Split over three files: this one has the window and the on-screen display, MainWindow.Player.cs talks to LibVLC, MainWindow.Menu.cs has the menus, tray icon and hot keys.</remarks>
     public partial class MainWindow : Window
     {
         private static readonly Dictionary<string, double> AspectRatioConversionTable = new Dictionary<string, double>
@@ -31,19 +29,16 @@ namespace FoxIPTV.Views
         /// <summary>The time out in 100ms chunks to wait before retrying the media stream</summary>
         private int _isErrorRetryTimeout = 100;
 
-        /// <summary>Locks the window to only allow initialization once</summary>
         private bool _isInitialized;
 
         /// <summary>Used to determine if currently in a retry error state</summary>
         private bool _isErrorState;
 
-        /// <summary>Set once Quit has started, so closing really closes</summary>
         private bool _isClosing;
 
         /// <summary>The icons for the current media loaded</summary>
         private TvIconData _currentTvIconData;
 
-        /// <summary>The time value used to wait before hiding the on-screen display, in 100ms ticks</summary>
         private int _uiFadeoutTime;
 
         /// <summary>Is the UI currently in channel entry mode</summary>
@@ -55,28 +50,20 @@ namespace FoxIPTV.Views
         /// <summary>The list of digits entered by the user</summary>
         private readonly List<int> _numberEntryDigits = new List<int>();
 
-        /// <summary>The 100ms tick that drives the on-screen display, like the WinForms timer did</summary>
         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
 
-        /// <summary>Waits for a resize to settle before snapping the window to the video's shape</summary>
         private readonly DispatcherTimer _resizeSettle = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
 
-        /// <summary>Waits for a move to settle before saving the position</summary>
         private readonly DispatcherTimer _moveSettle = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
 
-        /// <summary>The guide, current and upcoming programmes for the channels</summary>
         private GuideWindow _guideWindow;
 
-        /// <summary>The channel editor, search channels and favorite them</summary>
         private ChannelsWindow _channelsWindow;
 
-        /// <summary>The library browser, a provider's on-demand movies and series</summary>
         private LibraryWindow _libraryWindow;
 
-        /// <summary>True while the window is borderless fullscreen</summary>
         public bool IsFullscreen { get; private set; }
 
-        /// <inheritdoc/>
         public MainWindow()
         {
             TvCore.LogDebug("[.NET] MainWindow(): Starting");
@@ -137,11 +124,6 @@ namespace FoxIPTV.Views
             TvCore.LogDebug("[.NET] MainWindow(): Finished starting");
         }
 
-        /// <summary>Run on the UI thread, now if already there, queued otherwise; never blocks the caller</summary>
-        /// <remarks>
-        /// Callers are LibVLC's own threads. A blocking call from there parks that thread until the UI thread gets round to it, and while the video output is being re-created at a stream discontinuity the UI thread is what it is waiting for: the picture freezes until LibVLC's watchdog gives up a minute later.
-        /// Every caller only updates the UI, so a queued post is all that is needed.
-        /// </remarks>
         private static void Ui(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
@@ -154,7 +136,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Show the window and start the provider loading, called once by the application</summary>
         public async void Start()
         {
             Show();
@@ -194,7 +175,6 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            // Loading is over, the loading items leave the bar altogether
             ChannelStatusLabel.IsVisible = false;
             ChannelStatusProgressBar.IsVisible = false;
             GuideStatusLabel.IsVisible = false;
@@ -246,7 +226,6 @@ namespace FoxIPTV.Views
 
         private LibraryWindow LibraryWindowInstance => _libraryWindow ??= new LibraryWindow();
 
-        /// <summary>Load the window defaults from the saved user settings</summary>
         private void InitializeFormDefaults()
         {
             if (TvCore.Settings.WindowWidth > 0 && TvCore.Settings.WindowHeight > 0)
@@ -280,7 +259,6 @@ namespace FoxIPTV.Views
             };
         }
 
-        /// <summary>Wire the pointer handling of the on-screen display, which LibVLCSharp floats in a see-through window of its own over the video</summary>
         private void InitializeOverlay()
         {
             OverlayPanel.DoubleTapped += (sender, args) => FullscreenSet(!TvCore.Settings.Fullscreen);
@@ -292,11 +270,9 @@ namespace FoxIPTV.Views
                     return;
                 }
 
-                // A borderless window is dragged by the picture
                 BeginMoveDrag(args);
             };
 
-            // The overlay is its own window, so keys pressed while it has focus come here too
             OverlayPanel.AttachedToVisualTree += (sender, args) =>
             {
                 if (TopLevel.GetTopLevel(OverlayPanel) is TopLevel overlay && overlay != this)
@@ -312,7 +288,6 @@ namespace FoxIPTV.Views
             HotKey(e);
         }
 
-        /// <summary>Hide instead of closing, unless the application is quitting</summary>
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
         {
             if (_isClosing || e.CloseReason == WindowCloseReason.ApplicationShutdown || e.CloseReason == WindowCloseReason.OSShutdown)
@@ -327,7 +302,6 @@ namespace FoxIPTV.Views
             ToggleVisibility();
         }
 
-        /// <summary>Update the main window title to contain the channel number and current programme</summary>
         private void UpdateFormTitle()
         {
             if (TvCore.CurrentMedia != null)
@@ -358,7 +332,6 @@ namespace FoxIPTV.Views
             Title = $"CH: {channelObj.Index} [ {chanName} ]{currentProgramme} Fox IPTV - {ProviderLabel()}";
         }
 
-        /// <summary>The provider for the title bar, with the source picked inside it when the provider has one (Free TV Playlists / Samsung TV Plus)</summary>
         private static string ProviderLabel()
         {
             var service = TvCore.CurrentService;
@@ -373,7 +346,6 @@ namespace FoxIPTV.Views
             return string.IsNullOrWhiteSpace(source) || string.Equals(source, service.Title, StringComparison.OrdinalIgnoreCase) ? service.Title : $"{service.Title} / {source}";
         }
 
-        /// <summary>Show the on-screen display to the user</summary>
         private void GuiShow()
         {
             if (!_isInitialized)
@@ -421,7 +393,6 @@ namespace FoxIPTV.Views
             _uiFadeoutTime = 50;
         }
 
-        /// <summary>The one line under the channel number: "8:30PM - TRUE CRIME: Episode name"; the text block cuts it to fit the window</summary>
         private static string OverlayLine()
         {
             var name = (TvCore.CurrentChannel?.Name ?? string.Empty).ToUpperInvariant();
@@ -430,7 +401,6 @@ namespace FoxIPTV.Views
             return programme == null || string.IsNullOrWhiteSpace(programme.Title) ? name : $"{programme.Start.ToLocalTime():h:mmtt} - {name}: {programme.Title}";
         }
 
-        /// <summary>Hide the on-screen display from the user</summary>
         private void GuiHide()
         {
             SetOsd(ChannelLabelBox, ChannelLabel, string.Empty);
@@ -439,14 +409,12 @@ namespace FoxIPTV.Views
             TagPanel.Children.Clear();
         }
 
-        /// <summary>Set an on-screen label, hiding its black box when there is nothing to say</summary>
         private static void SetOsd(Border box, TextBlock label, string text)
         {
             label.Text = text;
             box.IsVisible = !string.IsNullOrEmpty(text);
         }
 
-        /// <summary>Add a stream tag; keys look like VS_720P or CH_STEREO and the tag shows what comes after the underscore</summary>
         private void AddTag(string iconStringKey)
         {
             if (string.IsNullOrWhiteSpace(iconStringKey))
@@ -535,7 +503,6 @@ namespace FoxIPTV.Views
             return $"Stream Error: Retrying in {_isErrorRetryTimeout / 10.0:F1} second{(_isErrorRetryTimeout != 10 ? "s" : " ")}";
         }
 
-        /// <summary>The 100ms tick</summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
             Watchdog();
@@ -568,11 +535,9 @@ namespace FoxIPTV.Views
 
             TimerKeyboardEntry();
 
-            // Nothing in this timer may call into LibVLC: see _isPlaying
             MuteLabel.IsVisible = _muted;
         }
 
-        /// <summary>Show "(Ad)" in the corner while the stream is in an ad break, "(Ad) #2" from the second ad on, and "· 1:38" left when the source declares the break length</summary>
         private void TimerAdLabel()
         {
             if (!AdDetector.InAd || !_isPlaying)
@@ -623,7 +588,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The tick method to eventually hide the on-screen display</summary>
         private void TimerUiFade()
         {
             if (_uiFadeoutTime == 1)
@@ -638,10 +602,8 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The tick method to find and display the stream tags</summary>
         private void TimerTvIcons()
         {
-            // The track list is a copy made off the UI thread; nothing here calls into LibVLC
             var tracks = _currentTracks;
 
             if (tracks == null || _uiFadeoutTime == 0)

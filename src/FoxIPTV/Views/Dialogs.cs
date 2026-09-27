@@ -7,23 +7,13 @@ namespace FoxIPTV.Views
     using Avalonia.Layout;
     using Avalonia.Media;
 
-    /// <summary>Small message boxes; Avalonia has none of its own</summary>
     public static class Dialogs
     {
-        /// <summary>Tell the user something, with an OK button</summary>
-        /// <param name="owner">The window it belongs to, or null before any window is open</param>
-        /// <param name="text">The message</param>
-        /// <param name="title">The window title</param>
         public static Task Message(Window owner, string text, string title)
         {
             return Show(owner, text, title, "OK", null);
         }
 
-        /// <summary>Ask the user a yes or no question</summary>
-        /// <param name="owner">The window it belongs to, or null before any window is open</param>
-        /// <param name="text">The question</param>
-        /// <param name="title">The window title</param>
-        /// <returns>True for yes</returns>
         public static Task<bool> YesNo(Window owner, string text, string title)
         {
             return Show(owner, text, title, "Yes", "No");

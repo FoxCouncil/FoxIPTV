@@ -11,7 +11,6 @@ namespace FoxIPTV.Classes
     using System.Runtime.InteropServices;
     using LibVLCSharp.Shared;
 
-    /// <summary>Finds LibVLC's native libraries: unpacked from the release build's embedded archive, from the NuGet package in a build folder, or from the system</summary>
     public static class VlcNativeManager
     {
         private static readonly string BaseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".foxiptv", "vlc");
@@ -21,13 +20,10 @@ namespace FoxIPTV.Classes
         [DllImport("libc", SetLastError = true)]
         private static extern int setenv(string name, string value, int overwrite);
 
-        /// <summary>The folder holding libvlc, null when the system or NuGet copy is used</summary>
         public static string LibPath { get; private set; }
 
-        /// <summary>The folder holding LibVLC's plugins, null when the system or NuGet copy is used</summary>
         public static string PluginPath { get; private set; }
 
-        /// <summary>Unpack the embedded LibVLC once per version; does nothing in a build without one</summary>
         public static void EnsureExtracted()
         {
             var assembly = typeof(VlcNativeManager).Assembly;
@@ -36,14 +32,11 @@ namespace FoxIPTV.Classes
             {
                 if (stream == null)
                 {
-                    // Build folder, LibVLC comes from NuGet or the system
                     return;
                 }
 
-                // Each version gets its own copy, the informational version carries the pre-release tag so every alpha is kept apart
                 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? assembly.GetName().Version?.ToString() ?? "dev";
 
-                // It may end in +commithash, which is no good in a path
                 var plusIdx = version.IndexOf('+');
 
                 if (plusIdx >= 0)
@@ -61,7 +54,6 @@ namespace FoxIPTV.Classes
                     return;
                 }
 
-                // Old versions go, unless one is still running
                 if (Directory.Exists(BaseDir))
                 {
                     foreach (var dir in Directory.GetDirectories(BaseDir))
@@ -77,7 +69,6 @@ namespace FoxIPTV.Classes
                         }
                         catch (Exception)
                         {
-                            // In use by another copy of FoxIPTV
                         }
                     }
                 }
@@ -95,10 +86,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>Load LibVLC's native libraries for this platform, once</summary>
-        /// <remarks>
-        /// macOS pre-loads the libraries from the unpacked copy or VLC.app and registers a resolver as a fallback, because Core.Initialize uses NativeLibrary.Load rather than DllImport.
-        /// </remarks>
         public static void Initialize()
         {
             if (_initialized)
@@ -147,8 +134,6 @@ namespace FoxIPTV.Classes
             _initialized = true;
         }
 
-        /// <summary>The command line options every LibVLC instance gets on this platform</summary>
-        /// <param name="options">The options FoxIPTV wants everywhere</param>
         public static string[] Options(params string[] options)
         {
             var args = new List<string>(options) { "--no-video-title-show" };
@@ -166,7 +151,6 @@ namespace FoxIPTV.Classes
             return args.ToArray();
         }
 
-        /// <summary>What to tell the user when LibVLC will not load</summary>
         public static string HelpMessage()
         {
             if (OperatingSystem.IsLinux())

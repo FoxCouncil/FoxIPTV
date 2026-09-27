@@ -7,53 +7,36 @@ namespace FoxIPTV.Classes
     using System.IO;
     using System.Text.RegularExpressions;
 
-    /// <summary>A single entry of an M3U playlist</summary>
     public class M3UEntry
     {
-        /// <summary>The channel number, from tvg-chno or the position in the file</summary>
         public uint Index { get; set; }
 
-        /// <summary>The guide identifier, from tvg-id</summary>
         public string Id { get; set; }
 
-        /// <summary>The display name, after the comma on the EXTINF line</summary>
         public string Name { get; set; }
 
-        /// <summary>The group, from group-title or EXTGRP</summary>
         public string Group { get; set; }
 
-        /// <summary>The logo URL, from tvg-logo</summary>
         public string Logo { get; set; }
 
-        /// <summary>The stream URL</summary>
         public string Url { get; set; }
 
-        /// <summary>Every key="value" attribute on the EXTINF line</summary>
         public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>Every EXTVLCOPT option, e.g. http-user-agent or http-referrer</summary>
         public Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
-    /// <summary>A parsed M3U playlist</summary>
     public class M3UPlaylist
     {
-        /// <summary>The guide URLs declared in the header via url-tvg or x-tvg-url</summary>
         public List<string> GuideUrls { get; set; } = new List<string>();
 
-        /// <summary>The entries, in file order</summary>
         public List<M3UEntry> Entries { get; set; } = new List<M3UEntry>();
     }
 
-    /// <summary>A tolerant parser for extended M3U playlists as used by IPTV</summary>
     public static class M3UParser
     {
-        /// <summary>Matches key="value" pairs on the EXTINF and EXTM3U lines</summary>
         private static readonly Regex AttributeRegex = new Regex("([A-Za-z0-9_\\-]+)=\"([^\"]*)\"", RegexOptions.Compiled);
 
-        /// <summary>Parse playlist text</summary>
-        /// <param name="text">The full playlist contents</param>
-        /// <returns>A parsed playlist, never null</returns>
         public static M3UPlaylist Parse(string text)
         {
             var playlist = new M3UPlaylist();
@@ -167,7 +150,6 @@ namespace FoxIPTV.Classes
                         continue;
                     }
 
-                    // Anything else is a URL for the pending entry
                     if (pending == null)
                     {
                         pending = new M3UEntry { Name = line, Group = "Uncategorized", Id = string.Empty };
@@ -191,9 +173,6 @@ namespace FoxIPTV.Classes
             return playlist;
         }
 
-        /// <summary>Find the comma that separates the EXTINF attributes from the display name, ignoring commas inside quotes</summary>
-        /// <param name="line">The EXTINF line</param>
-        /// <returns>The index of the separating comma, or -1</returns>
         private static int FindNameComma(string line)
         {
             var inQuotes = false;

@@ -37,7 +37,6 @@ namespace FoxIPTV.Tests
             var video = new MediaTrack();
             var audio = new MediaTrack();
 
-            // A struct copy each time, so build then assign
             video = SetTrack(video, TrackType.Video, "h264");
             audio = SetTrack(audio, TrackType.Audio, "mp4a");
 

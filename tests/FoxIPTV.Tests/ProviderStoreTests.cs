@@ -11,7 +11,6 @@ namespace FoxIPTV.Tests
         [Fact]
         public void SaveLoadDelete_RoundTrips()
         {
-            // A provider id no real provider uses, removed again at the end
             var id = "unit-test-" + Guid.NewGuid().ToString("N");
 
             try

@@ -14,11 +14,6 @@ namespace FoxIPTV.Views
     using Avalonia.Threading;
     using Classes;
 
-    /// <summary>The programme guide: one drawn surface that scrolls through channels and time</summary>
-    /// <remarks>
-    /// Everything is painted in one pass from the guide data, so scrolling is a repaint rather than a rebuild of hundreds of controls.
-    /// Wheel scrolls channels, Shift+wheel and Left/Right scroll time, Home comes back to now and the channel playing, click a channel to watch it.
-    /// </remarks>
     public sealed class GuideView : Control
     {
         private const double HeaderHeight = 36;
@@ -39,24 +34,20 @@ namespace FoxIPTV.Views
 
         private readonly DispatcherTimer _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
 
-        /// <summary>Programmes per channel id, sorted by start, built once per guide load</summary>
         private Dictionary<string, List<Programme>> _byChannel;
 
         private int _guideVersion = -1;
 
         private int _topChannel;
 
-        /// <summary>Left edge of the time axis in UTC, null means "now" and follows the clock</summary>
         private DateTimeOffset? _startUtc;
 
         private bool _dataLoaded;
 
         private Programme _hoverProgramme;
 
-        /// <summary>Where each drawn block sits, for hit testing</summary>
         private readonly List<Tuple<Rect, object>> _hits = new List<Tuple<Rect, object>>();
 
-        /// <summary>The scroll bar beside the guide, kept in step with the channel at the top</summary>
         public ScrollBar ScrollBar { get; set; }
 
         public GuideView()
@@ -83,7 +74,6 @@ namespace FoxIPTV.Views
 
             TvCore.ChannelChanged += channel => Dispatcher.UIThread.Post(() =>
             {
-                // Keep the channel playing in view
                 if (channel < _topChannel || channel >= _topChannel + VisibleRows)
                 {
                     _topChannel = (int)channel;
@@ -93,7 +83,6 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>Hook the scroll bar once the window has handed it over</summary>
         public void AttachScrollBar(ScrollBar scrollBar)
         {
             ScrollBar = scrollBar;
@@ -105,7 +94,6 @@ namespace FoxIPTV.Views
             };
         }
 
-        /// <summary>Back to now and the channel playing</summary>
         public void ResetView()
         {
             _startUtc = null;
@@ -127,7 +115,6 @@ namespace FoxIPTV.Views
 
         private bool IsDark => ActualThemeVariant == ThemeVariant.Dark;
 
-        // The same palette the WinForms guide was painted with
         private Color Back => IsDark ? Color.FromRgb(32, 32, 32) : Color.FromRgb(240, 240, 240);
 
         private Color Surface => IsDark ? Color.FromRgb(43, 43, 43) : Colors.White;
@@ -186,7 +173,6 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            // The scroll bar is another control, it is updated after this render rather than during it
             Dispatcher.UIThread.Post(UpdateScrollBar, DispatcherPriority.Background);
         }
 
@@ -199,7 +185,6 @@ namespace FoxIPTV.Views
             ScrollBar.ViewportSize = VisibleRows;
             ScrollBar.LargeChange = VisibleRows;
             ScrollBar.SmallChange = 1;
-            // Only when it differs by a whole row, or a thumb being dragged would jump back under the mouse
             if (Math.Abs(ScrollBar.Value - _topChannel) >= 1)
             {
                 ScrollBar.Value = _topChannel;
@@ -222,7 +207,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <inheritdoc/>
         public override void Render(DrawingContext g)
         {
             var width = Bounds.Width;
@@ -258,7 +242,6 @@ namespace FoxIPTV.Views
             var hoverBrush = new SolidColorBrush(IsDark ? Color.FromRgb(70, 110, 85) : Color.FromRgb(150, 200, 170));
             var gapBrush = new SolidColorBrush(IsDark ? Color.FromRgb(38, 38, 38) : Color.FromRgb(235, 235, 235));
 
-            // Header: the day on the left, one label per half hour across
             g.FillRectangle(headerBrush, new Rect(0, 0, width, HeaderHeight));
 
             var dayText = _startUtc == null ? "Now" : startUtc.ToLocalTime().ToString("ddd d MMM");
@@ -296,7 +279,6 @@ namespace FoxIPTV.Views
                     g.FillRectangle(currentRowBrush, new Rect(0, y, width, RowHeight));
                 }
 
-                // Number and name cells
                 DrawText(g, TvCore.ChannelIndexList[channelIndex].ToString(), 19, FontWeight.Bold, isCurrent ? Colors.Lime : Text, new Rect(0, y, NumberWidth, RowHeight), TextAlignment.Center);
 
                 var name = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2)[1].Trim() : channel.Name;
@@ -316,7 +298,6 @@ namespace FoxIPTV.Views
 
                 _hits.Add(Tuple.Create(new Rect(0, y, gridLeft, RowHeight), (object)channel));
 
-                // Programmes across the time axis
                 g.FillRectangle(gapBrush, new Rect(gridLeft, y, gridWidth, RowHeight));
 
                 if (channel.Id != null && _byChannel.TryGetValue(channel.Id, out var programmes))
@@ -356,7 +337,6 @@ namespace FoxIPTV.Views
             g.DrawLine(line, new Point(NumberWidth, HeaderHeight), new Point(NumberWidth, height));
             g.DrawLine(line, new Point(gridLeft, HeaderHeight), new Point(gridLeft, height));
 
-            // The clock, when it is on screen
             if (nowUtc >= startUtc && nowUtc < endUtc)
             {
                 var x = gridLeft + (nowUtc - startUtc).TotalMinutes * pixelsPerMinute;
@@ -365,7 +345,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
@@ -390,7 +369,6 @@ namespace FoxIPTV.Views
             e.Handled = true;
         }
 
-        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -459,13 +437,11 @@ namespace FoxIPTV.Views
                 start = earliest;
             }
 
-            // Back on the current half hour means back to following the clock
             _startUtc = start == Floor(DateTimeOffset.UtcNow, StepMinutes) ? (DateTimeOffset?)null : start;
 
             InvalidateVisual();
         }
 
-        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -495,7 +471,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <inheritdoc/>
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
@@ -532,7 +507,6 @@ namespace FoxIPTV.Views
             InvalidateVisual();
         }
 
-        /// <inheritdoc/>
         protected override void OnPointerExited(PointerEventArgs e)
         {
             base.OnPointerExited(e);
@@ -544,7 +518,6 @@ namespace FoxIPTV.Views
             InvalidateVisual();
         }
 
-        /// <inheritdoc/>
         protected override void OnSizeChanged(SizeChangedEventArgs e)
         {
             base.OnSizeChanged(e);

@@ -100,7 +100,6 @@ namespace FoxIPTV.Classes
                    string.Equals(AudioRate, other.AudioRate, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>The name shown on a codec tag for a FourCC, the common ones get their everyday name</summary>
         private static string CodecName(string fourCc)
         {
             switch ((fourCc ?? string.Empty).Trim().ToLowerInvariant())
@@ -155,7 +154,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>The name shown on the channel tag for a channel count</summary>
         private static string ChannelName(int channels)
         {
             switch (channels)
@@ -187,7 +185,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>Fill anything the track list left blank from what the decoders and the playlist told us</summary>
         private static TvIconData ApplyFacts(TvIconData data)
         {
             if (data.VideoSize == null && StreamFacts.VideoHeight > 0)
@@ -213,9 +210,7 @@ namespace FoxIPTV.Classes
             return data;
         }
 
-        /// <summary>Create a TVIconData factory, mapped from a bool for closed captioning status and LibVLC's track list</summary>
         /// <param name="closedCaptioning">The current Closed Caption state</param>
-        /// <param name="mediaTracks">The current media's tracks to map values from</param>
         /// <returns>A new instance of a TVIconData mapped from the arguments specified</returns>
         public static TvIconData CreateData(bool closedCaptioning, MediaTrack[] mediaTracks)
         {

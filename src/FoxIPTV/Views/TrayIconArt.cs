@@ -10,13 +10,10 @@ namespace FoxIPTV.Views
     using Avalonia.Platform;
     using Microsoft.Win32;
 
-    /// <summary>Keeps the notification area icon visible on both light and dark taskbars</summary>
-    /// <remarks>The shipped icon is black line art. On a dark Windows taskbar it vanishes, so the same shape is redrawn in white when Windows reports a dark system theme.</remarks>
     public static class TrayIconArt
     {
         private static readonly Uri Source = new Uri("avares://FoxIPTV/Assets/FoxIPTV.ico");
 
-        /// <summary>Whether the Windows taskbar and notification area are drawn dark</summary>
         public static bool TaskbarIsDark()
         {
             if (!OperatingSystem.IsWindows())
@@ -28,7 +25,6 @@ namespace FoxIPTV.Views
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
                 {
-                    // SystemUsesLightTheme covers the taskbar; AppsUseLightTheme covers app windows
                     return key?.GetValue("SystemUsesLightTheme") is int light && light == 0;
                 }
             }
@@ -38,7 +34,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The icon to show for the current taskbar theme</summary>
         public static WindowIcon ForTaskbar()
         {
             if (!TaskbarIsDark())
@@ -52,7 +47,6 @@ namespace FoxIPTV.Views
             return new WindowIcon(White());
         }
 
-        /// <summary>The same shape painted pure white, keeping its alpha</summary>
         private static Bitmap White()
         {
             Bitmap source;

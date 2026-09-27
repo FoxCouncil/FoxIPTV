@@ -9,7 +9,6 @@ namespace FoxIPTV.Services
     using System.Linq;
     using System.Threading.Tasks;
 
-    /// <summary>The iptv-org community database of publicly available channels, via its JSON API</summary>
     public class IPTVDotOrg : IService
     {
         private const int CacheTimeChannelsInHours = 12;
@@ -21,37 +20,27 @@ namespace FoxIPTV.Services
         private const string UrlChannels = "https://iptv-org.github.io/api/channels.json";
         private const string UrlStreams = "https://iptv-org.github.io/api/streams.json";
 
-        /// <inheritdoc/>
         public string Id => "iptv-org";
 
-        /// <inheritdoc/>
         public string Title { get; } = "IPTV.org";
 
-        /// <inheritdoc/>
         public string Description => "Every publicly listed channel in the iptv-org database, no account needed";
 
-        /// <inheritdoc/>
         public ProviderCapabilities Capabilities => ProviderCapabilities.LiveTv;
 
-        /// <inheritdoc/>
         public List<ProviderField> Fields { get; } = new List<ProviderField>();
 
-        /// <inheritdoc/>
         public JObject Data { get; set; }
 
-        /// <inheritdoc/>
         public bool SaveAuthentication { get; set; }
 
-        /// <inheritdoc/>
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
 
-        /// <inheritdoc/>
         public Task<bool> IsAuthenticated()
         {
             return Task.FromResult(true);
         }
 
-        /// <inheritdoc/>
         public async Task<Tuple<List<Channel>, List<Programme>>> Process()
         {
             var item1 = await ProcessChannels();

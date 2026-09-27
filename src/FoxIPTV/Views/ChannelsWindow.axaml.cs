@@ -13,53 +13,38 @@ namespace FoxIPTV.Views
     using Avalonia.Threading;
     using Classes;
 
-    /// <summary>One line of the channel list: a group heading or a channel</summary>
     public class ChannelRow
     {
-        /// <summary>What the line says</summary>
         public string Text { get; set; }
 
-        /// <summary>Channels under a heading sit further in</summary>
         public Thickness Indent { get; set; }
 
-        /// <summary>Is this a group heading</summary>
         public bool IsHeading { get; set; }
 
-        /// <summary>Is this channel a favourite</summary>
         public bool IsFavourite { get; set; }
 
-        /// <summary>The heading's group, null for channels</summary>
         public string Group { get; set; }
 
-        /// <summary>The channel's zero based position in <see cref="TvCore.ChannelIndexList"/>, -1 for headings</summary>
         public int ListIndex { get; set; } = -1;
     }
 
-    /// <summary>The channel editor: search the channels, group them by country, favourite the one playing</summary>
     public partial class ChannelsWindow : Window
     {
-        /// <summary>The current search text</summary>
         private string _allChannelsFilter = string.Empty;
 
-        /// <summary>How the channels are grouped: None or Countries</summary>
         private string _allChannelCategoryFilter = "None";
 
-        /// <summary>The groups the user has opened, when grouping by country</summary>
         private readonly HashSet<string> _expanded = new HashSet<string>(StringComparer.Ordinal);
 
-        /// <summary>Are we changing the selection ourselves, so it is not taken as the user picking a channel</summary>
         private bool _isChannelChanging;
 
-        /// <summary>The channel whose logo is on its way, so a slow download for a channel we have already left is dropped</summary>
         private string _logoFor;
 
-        /// <summary>Bumped on each reload so a slower, older one is dropped</summary>
         private int _generation;
 
         /// <summary>Are we filtering channels based on a search term</summary>
         private bool IsAllChannelsSearchFiltered => !string.IsNullOrWhiteSpace(_allChannelsFilter);
 
-        /// <inheritdoc/>
         public ChannelsWindow()
         {
             InitializeComponent();
@@ -80,7 +65,6 @@ namespace FoxIPTV.Views
 
             TvCore.ChannelChanged += newChannel => Dispatcher.UIThread.Post(UpdateGui);
 
-            // A copy-protected channel just left the list
             TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(LoadAll);
 
             Opened += (sender, args) => LoadAll();
@@ -92,7 +76,6 @@ namespace FoxIPTV.Views
                     return;
                 }
 
-                // Hidden, not disposed, so it opens again as it was
                 args.Cancel = true;
 
                 TvCore.Settings.ChannelEditorOpen = false;
@@ -102,13 +85,11 @@ namespace FoxIPTV.Views
             };
         }
 
-        /// <summary>Whether a channel is in the favourites list</summary>
         private static bool IsFavorite(Channel channel)
         {
             return channel != null && TvCore.ChannelFavorites.Contains(channel.Id);
         }
 
-        /// <summary>Build the rows off the UI thread, then show them</summary>
         private async void LoadAll()
         {
             if (TvCore.Channels == null)
@@ -137,7 +118,6 @@ namespace FoxIPTV.Views
             UpdateGui();
         }
 
-        /// <summary>The list as rows: all channels flat, or by the country before the colon in their names</summary>
         private static List<ChannelRow> BuildRows(string filter, string grouping, HashSet<string> expanded)
         {
             var rows = new List<ChannelRow>();
@@ -215,7 +195,6 @@ namespace FoxIPTV.Views
             return rows;
         }
 
-        /// <summary>A heading opens or closes its group and plays its first channel, a channel plays</summary>
         private void ChannelList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isChannelChanging || !(ChannelList.SelectedItem is ChannelRow row))
@@ -250,7 +229,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Rebuild after a group opens or closes; an opened group plays its first channel, as it always has</summary>
         private async Task ReloadAndPlayFirst(string group, bool opened)
         {
             var rows = await Task.Run(() => BuildRows(_allChannelsFilter, _allChannelCategoryFilter, new HashSet<string>(_expanded)));
@@ -279,7 +257,6 @@ namespace FoxIPTV.Views
             UpdateGui();
         }
 
-        /// <summary>Show the channel playing: selected in the list, with its name, logo and favourite state</summary>
         private void UpdateGui()
         {
             var channel = TvCore.CurrentChannel;
@@ -321,7 +298,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>One button: favourite the channel that is playing, or take it back out</summary>
         private void ToggleFavourite()
         {
             var channel = TvCore.CurrentChannel;
@@ -343,7 +319,6 @@ namespace FoxIPTV.Views
             LoadAll();
         }
 
-        /// <summary>A button to change how the channels are grouped</summary>
         private void ButtonFilter_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (!(sender is Button button))
@@ -359,7 +334,6 @@ namespace FoxIPTV.Views
             LoadAll();
         }
 
-        /// <summary>Fetch the channel logo through the image cache and show it trimmed of its empty margins, so it fills the box</summary>
         private async void ShowLogo(Channel channel)
         {
             _logoFor = channel.Id;
@@ -417,7 +391,6 @@ namespace FoxIPTV.Views
 
         private static Bitmap _placeholder;
 
-        /// <summary>The app icon, for channels with no logo</summary>
         private static Bitmap Placeholder()
         {
             if (_placeholder == null)
@@ -431,7 +404,6 @@ namespace FoxIPTV.Views
             return _placeholder;
         }
 
-        /// <summary>Cut the transparent (or single flat colour) margins off a logo</summary>
         private static Bitmap Trim(Bitmap source)
         {
             var size = source.PixelSize;
@@ -452,7 +424,6 @@ namespace FoxIPTV.Views
             var format = source.Format ?? PixelFormat.Bgra8888;
             var alpha = source.AlphaFormat ?? AlphaFormat.Premul;
 
-            // Four bytes a pixel with alpha last, in either colour order; the corner is the colour a flat margin would be
             byte cb = pixels[0], cg = pixels[1], cr = pixels[2], ca = pixels[3];
             var flatCorner = ca == 255 && Math.Abs(cr - cg) < 8 && Math.Abs(cg - cb) < 8;
 
@@ -465,7 +436,6 @@ namespace FoxIPTV.Views
                     var i = y * stride + x * 4;
                     var a = pixels[i + 3];
 
-                    // Empty means fully transparent, or the same flat colour as the corner
                     if (a < 16 || (flatCorner && a == ca && pixels[i] == cb && pixels[i + 1] == cg && pixels[i + 2] == cr))
                     {
                         continue;
@@ -507,7 +477,6 @@ namespace FoxIPTV.Views
             return Copy(pixels, size, box, format, alpha);
         }
 
-        /// <summary>A new bitmap from part of a pixel buffer</summary>
         private static Bitmap Copy(byte[] pixels, PixelSize size, PixelRect box, PixelFormat format, AlphaFormat alpha)
         {
             var stride = size.Width * 4;

@@ -1,17 +1,14 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Secondary text -->
     <Style Selector="TextBlock.muted">
         <Setter Property="Opacity" Value="0.65" />
     </Style>
 
-    <!-- Something went wrong but the window still works -->
     <Style Selector="TextBlock.warning">
         <Setter Property="Foreground" Value="#E0A030" />
     </Style>
 
-    <!-- A button that reads as a link -->
     <Style Selector="Button.link">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -25,7 +22,6 @@
         <Setter Property="TextBlock.TextDecorations" Value="Underline" />
     </Style>
 
-    <!-- The green on black on-screen display over the video -->
     <Style Selector="TextBlock.osd">
         <Setter Property="FontFamily" Value="Arial" />
         <Setter Property="FontWeight" Value="Bold" />
@@ -36,7 +32,6 @@
         <Setter Property="Padding" Value="6,2" />
     </Style>
 
-    <!-- A stream tag: dark rounded box, bold white text -->
     <Style Selector="Border.tag">
         <Setter Property="Background" Value="#333333" />
         <Setter Property="CornerRadius" Value="6" />
@@ -53,7 +48,6 @@
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
-    <!-- The status bar along the bottom of the main window -->
     <Style Selector="Border.statusbar">
         <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />

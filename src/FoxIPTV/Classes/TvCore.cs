@@ -30,19 +30,14 @@ namespace FoxIPTV.Classes
         /// <summary>The default filename for the applications image blacklist data</summary>
         private const string ImageServerBlacklistFilename = "ibldata";
 
-        /// <summary>The default filename for the streams found to be copy-protected, one file per provider</summary>
         private const string ProtectedChannelsFilename = "drmdata";
 
-        /// <summary>The default filename for the channels the user never wants to see, one file per provider</summary>
         private const string HiddenChannelsFilename = "hidden";
 
-        /// <summary>The stream addresses the user has hidden for the current provider</summary>
         private static readonly HashSet<string> _hiddenStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>The stream addresses found to be copy-protected for the current provider</summary>
         private static readonly HashSet<string> _protectedStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>The list position a copy-protected channel was just taken out of, while it is still the current channel; -1 otherwise</summary>
         private static int _protectedGapAt = -1;
 
         /// <summary>A non win forms timer at 100ms intervals</summary>
@@ -60,10 +55,8 @@ namespace FoxIPTV.Classes
         /// <summary>A in-memory log storage, limited to 1,000 items</summary>
         private static readonly FixedQueue<string> _logBuffer = new FixedQueue<string> { FixedSize = 1000 };
 
-        /// <summary>Lines waiting to be written; callers never touch the disk, LibVLC logs from its own download and decode threads and a flush there is a stall on screen</summary>
         private static readonly BlockingCollection<string> _logQueue = new BlockingCollection<string>();
 
-        /// <summary>The one thread that writes the log file</summary>
         private static readonly Thread _logThread = new Thread(LogWriterLoop) { IsBackground = true, Name = "Log writer" };
 
         /// <summary>The in-memory image server black list, to avoid hitting servers that return non 200 responses</summary>
@@ -72,7 +65,6 @@ namespace FoxIPTV.Classes
         /// <summary>The queue of image Uris to download</summary>
         private static Queue<Tuple<uint, string>> _imageCacheQueue;
 
-        /// <summary>The user agent string we send to the services, a current desktop Chrome; see <see cref="Web.UserAgent"/></summary>
         public const string ServiceUserAgentString = Web.UserAgent;
 
         /// <summary>The error event; any significant errors will be posted here for safe display to the user</summary>
@@ -90,19 +82,15 @@ namespace FoxIPTV.Classes
         /// <summary>A event to inform of percentage progress on guide data being loaded</summary>
         public static event Action<uint> ChannelChanged;
 
-        /// <summary>Raised when channels leave the list, after a copy-protected one is found</summary>
         public static event Action ChannelListChanged;
 
         /// <summary>A event to inform of a chance of the programme while active</summary>
         public static event Action<Programme> ProgrammeChanged;
 
-        /// <summary>An event raised when on-demand media is chosen for playback, with the source and a display title</summary>
         public static event Action<MediaSource, string> MediaChanged;
 
-        /// <summary>The on-demand media currently overriding the live channel, or null when watching live TV</summary>
         public static MediaSource CurrentMedia { get; private set; }
 
-        /// <summary>The display title of <see cref="CurrentMedia"/></summary>
         public static string CurrentMediaTitle { get; private set; }
 
         /// <summary>The current service being used</summary>
@@ -117,10 +105,8 @@ namespace FoxIPTV.Classes
         /// <summary>A readonly value of the current path of the executable file</summary>
         public static string ExePath => AppDomain.CurrentDomain.BaseDirectory;
 
-        /// <summary>The version the build was stamped with, without the source revision</summary>
         public static string Version { get; } = (Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0").Split('+')[0];
 
-        /// <summary>The full path of the log file currently being written</summary>
         public static string LogPath { get; private set; }
 
         /// <summary>The path used to store user data</summary>
@@ -132,15 +118,10 @@ namespace FoxIPTV.Classes
         /// <summary>The path to store cached data, (data that can be re-downloaded)</summary>
         public static string CachePath => Path.Combine(TempPath, "cache");
 
-        /// <summary>A read only access to the current service instance running, null if no providers loaded</summary>
         public static IService CurrentService => Services.Count == 0 ? null : Services[Math.Max(0, Math.Min(ServiceSelected, Services.Count - 1))];
 
-        /// <summary>The current service as a library provider, null if it does not offer one</summary>
         public static ILibraryProvider CurrentLibrary => CurrentService != null && CurrentService.Capabilities.HasFlag(ProviderCapabilities.Library) ? CurrentService as ILibraryProvider : null;
 
-        /// <summary>Select the current service by its id</summary>
-        /// <param name="id">The <see cref="IService.Id"/></param>
-        /// <returns>True if a matching service was found</returns>
         public static bool SelectService(string id)
         {
             var index = Services.FindIndex(x => string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -155,9 +136,6 @@ namespace FoxIPTV.Classes
             return true;
         }
 
-        /// <summary>Play on-demand media instead of the live channel</summary>
-        /// <param name="source">The resolved source</param>
-        /// <param name="title">A display title</param>
         public static void PlayMedia(MediaSource source, string title)
         {
             LogInfo($"[TVCore] PlayMedia({source.Url}, {title})");
@@ -206,7 +184,6 @@ namespace FoxIPTV.Classes
         /// <summary>The static constructor for the TVCore object</summary>
         static TvCore()
         {
-            // Create the log writer, shared so a restart can open it while the old process is still closing, and retried for the same reason
             var logPath = LogFilePath();
 
             for (var attempt = 1; ; attempt++)
@@ -260,7 +237,6 @@ namespace FoxIPTV.Classes
 
             var assembly = Assembly.GetExecutingAssembly();
 
-            // Grab all built-in IService objects, the ones written in C# with a parameterless constructor
             var types = assembly.GetTypes().Where(p => typeof(IService).IsAssignableFrom(p) && p.IsClass && !p.IsAbstract && p.GetConstructor(Type.EmptyTypes) != null);
 
             foreach (var type in types)
@@ -275,7 +251,6 @@ namespace FoxIPTV.Classes
                 }
             }
 
-            // Then every JavaScript plugin, built-in and user supplied
             foreach (var script in ScriptLoader.LoadAll())
             {
                 if (Services.Any(x => string.Equals(x.Id, script.Id, StringComparison.OrdinalIgnoreCase)))
@@ -299,7 +274,6 @@ namespace FoxIPTV.Classes
             LogMessage("[TVCore] Startup: Finished Fox IPTV TVCore Startup");
         }
 
-        /// <summary>Where the log goes: beside the executable when that folder can be written to, as it can in a build folder, otherwise the user storage folder</summary>
         private static string LogFilePath()
         {
             var besideExe = Path.Combine(ExePath, LogFilename);
@@ -322,8 +296,6 @@ namespace FoxIPTV.Classes
             return LogPath;
         }
 
-        /// <summary>Wire a service's progress reporting and add it to <see cref="Services"/></summary>
-        /// <param name="instance">The service</param>
         private static void InstallService(IService instance)
         {
             instance.ProgressUpdater = new Tuple<IProgress<int>, IProgress<int>>(new Progress<int>(percentage => ChannelLoadPercentageChanged?.Invoke(percentage)), new Progress<int>(percentage => GuideLoadPercentageChanged?.Invoke(percentage)));
@@ -360,7 +332,6 @@ namespace FoxIPTV.Classes
 
             ChangeState(TvCoreState.Starting);
 
-            // Load the user's favorite channels for this provider, if they exist
             FavoritesLoad();
 
             ProtectedLoad();
@@ -376,7 +347,6 @@ namespace FoxIPTV.Classes
             LogInfo($"[TVCore] Start(): {Channels.Count} channel(s), {Guide.Count} programme(s) from {CurrentService.Title}");
 
             // Build the zero index map to the actual channel numbers
-            // Channels found to be copy-protected on an earlier run, and channels the user hid, never show up
             var protectedCount = Channels.RemoveAll(x => x.Stream != null && _protectedStreams.Contains(x.Stream.ToString()));
             var hiddenCount = Channels.RemoveAll(x => x.Stream != null && _hiddenStreams.Contains(x.Stream.ToString()));
 
@@ -415,7 +385,6 @@ namespace FoxIPTV.Classes
 
             if (_protectedGapAt >= 0 && !Channels.Contains(CurrentChannel))
             {
-                // The current channel left the list: up is whatever took its place, down is the one before
                 var count = ChannelIndexList.Count;
                 var target = direction ? _protectedGapAt : _protectedGapAt - 1;
 
@@ -466,7 +435,6 @@ namespace FoxIPTV.Classes
                 return;
             }
 
-            // Any on-demand media is abandoned in favour of the live channel
             CurrentMedia = null;
             CurrentMediaTitle = null;
 
@@ -495,18 +463,6 @@ namespace FoxIPTV.Classes
 
             FavoritesSave();
         }
-
-        /*
-        public static void AddFavoriteChannels(IEnumerable<string> channelIds)
-        {
-            LogDebug("[TVCore] AddFavoriteChannels()");
-
-            ChannelFavorites.Clear();
-            ChannelFavorites.AddRange(channelIds);
-
-            FavoritesSave();
-        }
-        */
 
         /// <summary>Remove a favorite channel using the channel string based ID</summary>
         /// <param name="channelId">A string based key for the channel to un-favorite</param>
@@ -561,7 +517,6 @@ namespace FoxIPTV.Classes
             return contents;
         }
 
-        /// <summary>The favorites file for the current provider, channel ids are only meaningful within one provider</summary>
         private static string FavoritesFilePath => Path.Combine(UserStoragePath, CurrentService == null ? ChannelFavoritesFilename : $"{ChannelFavoritesFilename}-{CurrentService.Id}");
 
         /// <summary>Load the favorite data from the user storage location</summary>
@@ -573,7 +528,6 @@ namespace FoxIPTV.Classes
 
             if (!File.Exists(favoriteChannelsFilePath))
             {
-                // Favorites saved before providers were tracked, used until this provider saves its own
                 favoriteChannelsFilePath = Path.Combine(UserStoragePath, ChannelFavoritesFilename);
             }
 
@@ -638,20 +592,16 @@ namespace FoxIPTV.Classes
             LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} blacklist images");
         }
 
-        /// <summary>The copy-protected streams file for the current provider</summary>
         private static string ProtectedFilePath => Path.Combine(UserStoragePath, $"{ProtectedChannelsFilename}-{CurrentService?.Id ?? "none"}");
 
-        /// <summary>The hidden channels file for the current provider</summary>
         private static string HiddenFilePath => Path.Combine(UserStoragePath, $"{HiddenChannelsFilename}-{CurrentService?.Id ?? "none"}");
 
-        /// <summary>Load the copy-protected and hidden stream lists for the current provider</summary>
         private static void ProtectedLoad()
         {
             LoadStreamList(ProtectedFilePath, _protectedStreams);
             LoadStreamList(HiddenFilePath, _hiddenStreams);
         }
 
-        /// <summary>Read a saved list of stream addresses, a JSON array of strings</summary>
         private static void LoadStreamList(string path, HashSet<string> into)
         {
             into.Clear();
@@ -674,8 +624,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>A channel turned out to be copy-protected: remember it and take it out of the channel list now; the channel stays current until the user moves on</summary>
-        /// <param name="channel">The channel</param>
         public static void MarkProtected(Channel channel)
         {
             if (channel?.Stream == null || Channels == null || !_protectedStreams.Add(channel.Stream.ToString()))
@@ -704,7 +652,6 @@ namespace FoxIPTV.Classes
             Channels.RemoveAt(position);
             ChannelIndexList = Channels.Select(x => x.Index).ToList();
 
-            // Where the channel was, so channel up and down from it land on its old neighbours
             _protectedGapAt = position;
 
             if (ChannelIndexList.Count > 0)
@@ -749,13 +696,11 @@ namespace FoxIPTV.Classes
 
             AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
             {
-                // Give the writer a moment to drain what is queued so the last lines of a run are not lost
                 _logQueue.CompleteAdding();
                 _logThread.Join(TimeSpan.FromSeconds(2));
             };
         }
 
-        /// <summary>Drain the queue to the file, flushing once per batch rather than once per line</summary>
         private static void LogWriterLoop()
         {
             try
@@ -779,7 +724,6 @@ namespace FoxIPTV.Classes
             }
             catch (Exception)
             {
-                // Shutting down, the file may already be closed
             }
         }
 
@@ -806,7 +750,6 @@ namespace FoxIPTV.Classes
             }
             catch (InvalidOperationException)
             {
-                // The queue closed at process exit, a line logged after that is dropped
             }
         }
 
@@ -865,7 +808,6 @@ namespace FoxIPTV.Classes
                     }
                     catch (Exception decodeFailure)
                     {
-                        // Not a picture at all, treated like a missing one
                         throw new InvalidDataException($"404 not an image, {decodeFailure.Message}");
                     }
 

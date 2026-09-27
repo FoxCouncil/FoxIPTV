@@ -7,12 +7,10 @@ namespace FoxIPTV.Views
     using Avalonia.Threading;
     using Classes;
 
-    /// <summary>The programme guide window: a clock, a reset button and the drawn guide</summary>
     public partial class GuideWindow : Window
     {
         private readonly DispatcherTimer _clock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
 
-        /// <inheritdoc/>
         public GuideWindow()
         {
             InitializeComponent();
@@ -35,7 +33,6 @@ namespace FoxIPTV.Views
                     return;
                 }
 
-                // Hidden, not disposed, so it opens again as it was
                 args.Cancel = true;
 
                 TvCore.Settings.GuideOpen = false;

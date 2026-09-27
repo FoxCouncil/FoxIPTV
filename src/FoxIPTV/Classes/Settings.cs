@@ -10,7 +10,6 @@ namespace FoxIPTV.Classes
     /// <summary>The class that contains FoxIPTV's settings and defaults</summary>
     public class Settings
     {
-        /// <summary>Is the main window currently displaying fullscreen</summary>
         public bool Fullscreen { get; set; } = false;
 
         /// <summary>The channel we're currently on, zero indexed</summary>
@@ -19,37 +18,26 @@ namespace FoxIPTV.Classes
         /// <summary>Is Closed Captioning enabled</summary>
         public bool CCEnabled { get; set; } = false;
 
-        /// <summary>The left edge of the main window in screen pixels, null until it has been placed once</summary>
         public int? WindowLeft { get; set; }
 
-        /// <summary>The top edge of the main window in screen pixels, null until it has been placed once</summary>
         public int? WindowTop { get; set; }
 
-        /// <summary>The width of the main window's inside, 0 for the default</summary>
         public double WindowWidth { get; set; }
 
-        /// <summary>The height of the main window's inside, status bar included, 0 for the default</summary>
         public double WindowHeight { get; set; }
 
-        /// <summary>The window state to return to when coming out of fullscreen mode</summary>
         public string WindowOldState { get; set; }
 
-        /// <summary>Is the main window displaying a border</summary>
         public bool Borders { get; set; } = true;
 
-        /// <summary>Is the main window always on top of other windows</summary>
         public bool AlwaysOnTop { get; set; } = false;
 
-        /// <summary>Is the channel editor currently open (visible)</summary>
         public bool ChannelEditorOpen { get; set; } = false;
 
-        /// <summary>Is the guide currently open (visible)</summary>
         public bool GuideOpen { get; set; } = false;
 
-        /// <summary>Is the main window open (visible)</summary>
         public bool Visibility { get; set; } = true;
 
-        /// <summary>The current level of opacity for the main window</summary>
         public double Opacity { get; set; } = 1;
 
         /// <summary>The current aspect ratio for the video</summary>
@@ -58,13 +46,10 @@ namespace FoxIPTV.Classes
         /// <summary>The current LibVLC audio mode</summary>
         public int StereoMode { get; set; } = 1;
 
-        /// <summary>Is the main window status bar visible</summary>
         public bool StatusBar { get; set; } = true;
 
-        /// <summary>The id of the provider used last time, preselected in the provider picker</summary>
         public string ProviderId { get; set; } = string.Empty;
 
-        /// <summary>Is the library currently open (visible)</summary>
         public bool LibraryOpen { get; set; } = false;
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
@@ -138,7 +123,6 @@ namespace FoxIPTV.Classes
                     return;
                 }
 
-       
                 var fileContents = File.ReadAllText(_filePath);
 
                 _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(fileContents);

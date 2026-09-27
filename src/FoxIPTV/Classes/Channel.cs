@@ -20,7 +20,6 @@ namespace FoxIPTV.Classes
         /// <summary>A Uri to a resource that is the channel's logo</summary>
         public Uri Logo { get; set; }
 
-        /// <summary>The channel's logo, decoded once it has downloaded; null until then</summary>
         public Bitmap LogoImage { get; set; }
 
         /// <summary>A string key to group this and other channels by</summary>

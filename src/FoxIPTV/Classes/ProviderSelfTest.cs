@@ -11,15 +11,8 @@ namespace FoxIPTV.Classes
     using System.Text;
     using System.Threading.Tasks;
 
-    /// <summary>A headless exercise of a provider, for developing plugins without clicking through the UI</summary>
-    /// <remarks>
-    /// Usage: FoxIPTV.exe --test-provider &lt;id&gt; [Field=Value ...] [--search text]
-    /// The report is written to %TEMP%\FoxIPTV\selftest-&lt;id&gt;.txt
-    /// </remarks>
     public static class ProviderSelfTest
     {
-        /// <summary>Run the self test described by the command line</summary>
-        /// <param name="args">The full command line arguments</param>
         public static void Run(string[] args)
         {
             var id = args.Length > 1 ? args[1] : string.Empty;

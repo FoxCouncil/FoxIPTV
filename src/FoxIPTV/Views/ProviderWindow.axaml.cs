@@ -15,22 +15,16 @@ namespace FoxIPTV.Views
     using Services;
     using Services.Scripting;
 
-    /// <summary>The provider picker shown at start up; lists every provider and builds its input fields on the fly</summary>
     public partial class ProviderWindow : Window
     {
-        /// <summary>The input controls for the current provider, keyed by field key</summary>
         private readonly Dictionary<string, Control> _inputs = new Dictionary<string, Control>();
 
-        /// <summary>Completed with true once a provider is chosen and signed in, false if the window is closed first</summary>
         private readonly TaskCompletionSource<bool> _result = new TaskCompletionSource<bool>();
 
-        /// <summary>The provider the user picked</summary>
         public IService SelectedService => ServicesComboBox.SelectedItem as IService;
 
-        /// <summary>Should the field values be remembered for next time</summary>
         public bool RememberMe => RememberMeCheckBox.IsChecked == true;
 
-        /// <summary>The values the user entered, keyed by field key; defaults are filled in for blanks</summary>
         public JObject FieldValues
         {
             get
@@ -60,7 +54,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <inheritdoc/>
         public ProviderWindow()
         {
             InitializeComponent();
@@ -94,8 +87,6 @@ namespace FoxIPTV.Views
             Closed += (sender, args) => _result.TrySetResult(false);
         }
 
-        /// <summary>Show the provider picker until the user signs in to a provider or gives up</summary>
-        /// <returns>True when a provider is selected and authenticated</returns>
         public static Task<bool> ChooseProvider()
         {
             var picker = new ProviderWindow();
@@ -105,10 +96,8 @@ namespace FoxIPTV.Views
             return picker._result.Task;
         }
 
-        /// <summary>The label and input controls added for the current provider, removed again when it changes</summary>
         private readonly List<Control> _fieldControls = new List<Control>();
 
-        /// <summary>Rebuild the fields when the provider changes; they go in the same table as the provider box, one row each, with the note and the checkbox after them</summary>
         private void BuildFields()
         {
             var service = SelectedService;
@@ -192,10 +181,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Build the input control for a field</summary>
-        /// <param name="field">The field</param>
-        /// <param name="remembered">A remembered value, or null</param>
-        /// <returns>The control, pre-filled</returns>
         private static Control CreateInput(ProviderField field, string remembered)
         {
             if (field.Kind == ProviderFieldKind.Choice)
@@ -221,7 +206,6 @@ namespace FoxIPTV.Views
             return textBox;
         }
 
-        /// <summary>The text an input holds</summary>
         private static string InputText(Control control)
         {
             switch (control)
@@ -243,7 +227,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Check the fields, then sign in to the provider</summary>
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             var service = SelectedService;
@@ -333,7 +316,6 @@ namespace FoxIPTV.Views
             Close();
         }
 
-        /// <summary>Open the user's plugin folder in the system file browser</summary>
         private void PluginsLinkButton_Click(object sender, RoutedEventArgs e)
         {
             try

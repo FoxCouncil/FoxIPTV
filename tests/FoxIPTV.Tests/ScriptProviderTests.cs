@@ -88,7 +88,6 @@ function resolve(item) {
 
             var (channels, guide) = await provider.Process();
 
-            // The entry without a stream is dropped, the clashing index moves, a missing index is filled in
             Assert.Equal(new[] { "Bravo", "Charlie", "Alpha" }, channels.Select(x => x.Name));
             Assert.Equal(new uint[] { 1, 2, 5 }, channels.Select(x => x.Index));
             Assert.Equal("Uncategorized", channels[0].Group);

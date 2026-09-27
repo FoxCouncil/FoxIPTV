@@ -10,23 +10,16 @@ namespace FoxIPTV.Services.Scripting
     using System.Reflection;
     using System.Text;
 
-    /// <summary>Finds and compiles plugin scripts, both the ones shipped inside FoxIPTV and the user's own</summary>
     public static class ScriptLoader
     {
-        /// <summary>The resource name prefix for scripts embedded in the executable</summary>
         private const string ResourcePrefix = "FoxIPTV.Plugins.";
 
-        /// <summary>The folder the user drops their own .js plugins into</summary>
         public static string UserPluginPath => Path.Combine(TvCore.UserStoragePath, "plugins");
 
-        /// <summary>The folder the built-in scripts are copied to for reference; nothing is loaded from here</summary>
         public static string ExamplesPath => Path.Combine(UserPluginPath, "examples");
 
-        /// <summary>Scripts that failed to load during the last <see cref="LoadAll"/>, by origin</summary>
         public static Dictionary<string, string> Errors { get; } = new Dictionary<string, string>();
 
-        /// <summary>Load every plugin; a user script with the same filename as a built-in replaces it</summary>
-        /// <returns>The successfully compiled providers, in name order</returns>
         public static List<ScriptProvider> LoadAll()
         {
             Errors.Clear();
@@ -108,7 +101,6 @@ namespace FoxIPTV.Services.Scripting
             return providers;
         }
 
-        /// <summary>Keep a fresh copy of a built-in script where the user can read it</summary>
         private static void WriteExample(string filename, string source)
         {
             try

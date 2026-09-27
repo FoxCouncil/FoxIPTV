@@ -15,18 +15,14 @@ namespace FoxIPTV.Views
     using Classes;
     using Services;
 
-    /// <summary>One poster tile in the library list</summary>
     public class LibraryTile : INotifyPropertyChanged
     {
         private Bitmap _poster;
 
-        /// <summary>The item the tile stands for</summary>
         public LibraryItem Item { get; set; }
 
-        /// <summary>The title, with the year when known</summary>
         public string Caption => Item.ToString();
 
-        /// <summary>The poster, null until it has downloaded</summary>
         public Bitmap Poster
         {
             get => _poster;
@@ -37,44 +33,31 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    /// <summary>The on-demand library browser: categories, search, details, seasons, episodes and playback sources</summary>
     public partial class LibraryWindow : Window
     {
-        /// <summary>Posters are shrunk to this width, the tile size</summary>
         private const int ThumbnailWidth = 110;
 
-        /// <summary>The library we are browsing</summary>
         private ILibraryProvider _library;
 
-        /// <summary>Has the window been initialized</summary>
         private bool _isInitialized;
 
-        /// <summary>The page currently shown</summary>
         private LibraryPage _page;
 
-        /// <summary>The loader for the current listing mode, browse or search, taking a page number</summary>
         private Func<int, Task<LibraryPage>> _pageLoader;
 
-        /// <summary>The detailed item currently shown on the right</summary>
         private LibraryItem _details;
 
-        /// <summary>The movie or episode that Play will play</summary>
         private LibraryItem _playable;
 
-        /// <summary>The sources resolved for <see cref="_playable"/></summary>
         private List<MediaSource> _sources;
 
-        /// <summary>Bumped whenever the list changes so stale poster loads are dropped</summary>
         private int _generation;
 
-        /// <summary>Guards against re-entrant selection events while we fill controls</summary>
         private bool _filling;
 
-        /// <inheritdoc/>
         public LibraryWindow()
         {
             InitializeComponent();
@@ -152,7 +135,6 @@ namespace FoxIPTV.Views
                     return;
                 }
 
-                // Hidden, not disposed, so it opens again as it was
                 args.Cancel = true;
 
                 TvCore.Settings.LibraryOpen = false;
@@ -162,10 +144,8 @@ namespace FoxIPTV.Views
             };
         }
 
-        /// <summary>The item selected in the list, or null</summary>
         private LibraryItem SelectedItem => (ItemsList.SelectedItem as LibraryTile)?.Item;
 
-        /// <summary>Wire the window to the current provider once</summary>
         private void Initialize()
         {
             if (_isInitialized)
@@ -191,7 +171,6 @@ namespace FoxIPTV.Views
             LoadCategories();
         }
 
-        /// <summary>Fill the category box and browse the first one</summary>
         private async void LoadCategories()
         {
             SetStatus("Loading categories...");
@@ -223,8 +202,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Load and show a page of the current listing</summary>
-        /// <param name="page">A one based page number</param>
         private async void LoadPage(int page)
         {
             if (_pageLoader == null)
@@ -265,7 +242,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Fill the list from the current page</summary>
         private List<LibraryTile> FillList()
         {
             foreach (var old in (ItemsList.ItemsSource as List<LibraryTile>) ?? new List<LibraryTile>())
@@ -289,9 +265,6 @@ namespace FoxIPTV.Views
             return tiles;
         }
 
-        /// <summary>Download the posters for the visible page, a few at a time</summary>
-        /// <param name="tiles">The tiles of the page</param>
-        /// <param name="generation">The list generation these posters belong to</param>
         private async void LoadPosters(List<LibraryTile> tiles, int generation)
         {
             using (var throttle = new SemaphoreSlim(4))
@@ -340,8 +313,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Show the details of an item on the right hand side</summary>
-        /// <param name="item">The item the user clicked</param>
         private async void ShowDetails(LibraryItem item)
         {
             _details = null;
@@ -430,8 +401,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Put an item's text into the detail controls</summary>
-        /// <param name="item">The item</param>
         private void Present(LibraryItem item)
         {
             TitleLabel.Text = string.IsNullOrWhiteSpace(item.Subtitle) ? item.Title : $"{item.Subtitle} - {item.Title}";
@@ -460,7 +429,6 @@ namespace FoxIPTV.Views
             OverviewTextBox.Text = item.Overview ?? string.Empty;
         }
 
-        /// <summary>Swap the big poster, freeing the old one</summary>
         private void SetPoster(Bitmap image)
         {
             var old = PosterImage.Source as Bitmap;
@@ -473,8 +441,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Load the big poster</summary>
-        /// <param name="item">The item</param>
         private async void LoadPoster(LibraryItem item)
         {
             SetPoster(null);
@@ -515,7 +481,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Load the episodes of the selected season</summary>
         private async void LoadEpisodes()
         {
             var season = SeasonComboBox.SelectedItem as LibrarySeason;
@@ -605,7 +570,6 @@ namespace FoxIPTV.Views
             SetStatus($"Ready to play {episode.Subtitle} {episode.Title}");
         }
 
-        /// <summary>Resolve sources for the playable item, if not already done, and play the chosen one</summary>
         private async void Play()
         {
             if (_playable == null)
@@ -704,8 +668,6 @@ namespace FoxIPTV.Views
             LoadPage(1);
         }
 
-        /// <summary>Write to the status bar</summary>
-        /// <param name="text">The text</param>
         private void SetStatus(string text)
         {
             StatusLabel.Text = text;

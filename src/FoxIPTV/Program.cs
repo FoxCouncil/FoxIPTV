@@ -43,13 +43,11 @@ namespace FoxIPTV
             }
         }
 
-        /// <summary>Used by the Avalonia designer as well as Main</summary>
         public static AppBuilder BuildAvaloniaApp()
         {
             return AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
         }
 
-        /// <summary>Patches NSBundle.mainBundle.infoDictionary with CFBundleName so the macOS menu bar says "FoxIPTV" instead of "Avalonia Application"</summary>
         private static void SetMacBundleName(string name)
         {
             try
@@ -66,7 +64,6 @@ namespace FoxIPTV
             }
             catch (Exception)
             {
-                // Not fatal, the menu bar shows the default name
             }
         }
 

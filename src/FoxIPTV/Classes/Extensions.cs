@@ -112,10 +112,8 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>"Protect" some sensitive user data so only this user on this machine can read it back</summary>
         /// <param name="clearText">The <see cref="string"/> you want to encrypt</param>
         /// <returns>A base64 encoded encrypted <see cref="string"/></returns>
-        /// <remarks>Windows uses DPAPI bound to the user, the same format FoxIPTV 1.x wrote. Elsewhere there is no DPAPI, so AES-GCM with a random key kept in a file only the user can read.</remarks>
         public static string Protect(this string clearText)
         {
             if (clearText == null)
@@ -177,7 +175,6 @@ namespace FoxIPTV.Classes
             return Encoding.UTF8.GetString(clearBytes);
         }
 
-        /// <summary>The key for <see cref="Protect"/> off Windows, made on first use and readable by the user alone</summary>
         private static byte[] LocalKey()
         {
             var path = Path.Combine(TvCore.UserStoragePath, "pkey");

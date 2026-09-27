@@ -1,10 +1,5 @@
-﻿// FoxIPTV plugin: free, legal, ad-supported live TV playlists with guide data.
+﻿//
 //
-// Every source here is a public M3U kept fresh by its maintainers:
-//   Samsung TV Plus, Plex, Roku                  - github.com/BuddyChewChew/app-m3u-generator (streams via jmp2.uk, guides via i.mjh.nz)
-//   Free-TV                                      - github.com/Free-TV/IPTV (guides via epgshare01.online)
-//
-// See m3u.js for a description of the host API.
 
 var plugin = {
     id: "freetv",
@@ -27,7 +22,6 @@ var SOURCES = {
     "Free-TV":         { url: function (r) { return "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8"; }, regions: ["all"] }
 };
 
-// A saved choice no longer offered (Pluto TV was dropped) falls back to the first source
 function currentSource() {
     return SOURCES[host.setting("Source", "Samsung TV Plus")] || SOURCES["Samsung TV Plus"];
 }
@@ -68,7 +62,6 @@ function channels(progress) {
     return out;
 }
 
-// Pick the guide that matches the region when the playlist lists many (Free-TV lists one per country).
 function pickGuide(urls) {
     if (urls.length === 0) {
         return null;

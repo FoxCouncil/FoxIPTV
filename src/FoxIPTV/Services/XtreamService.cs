@@ -12,7 +12,6 @@ namespace FoxIPTV.Services
     using System.Threading.Tasks;
     using System.Web;
 
-    /// <summary>An Xtream Codes compatible IPTV panel, the de facto commercial IPTV API</summary>
     public class XtreamService : IService
     {
         private const int CacheTimeChannelsInHours = 12;

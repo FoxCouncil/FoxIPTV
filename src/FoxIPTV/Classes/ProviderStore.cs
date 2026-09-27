@@ -6,15 +6,10 @@ namespace FoxIPTV.Classes
     using System;
     using System.IO;
 
-    /// <summary>Remembers what the user typed into a provider's fields, encrypted to the Windows user with DPAPI</summary>
     public static class ProviderStore
     {
-        /// <summary>The file a provider's data lives in</summary>
         private static string PathFor(string providerId) => Path.Combine(TvCore.UserStoragePath, $"pdata-{Web.SafeFilename(providerId)}");
 
-        /// <summary>Load the remembered field values</summary>
-        /// <param name="providerId">The provider id</param>
-        /// <returns>The values, or null if nothing was remembered or it could not be read</returns>
         public static JObject Load(string providerId)
         {
             var path = PathFor(providerId);
@@ -36,9 +31,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>Remember the field values</summary>
-        /// <param name="providerId">The provider id</param>
-        /// <param name="data">The values</param>
         public static void Save(string providerId, JObject data)
         {
             var path = PathFor(providerId);
@@ -53,8 +45,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>Forget the field values</summary>
-        /// <param name="providerId">The provider id</param>
         public static void Delete(string providerId)
         {
             var path = PathFor(providerId);

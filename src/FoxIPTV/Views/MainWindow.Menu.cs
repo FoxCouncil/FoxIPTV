@@ -11,18 +11,14 @@ namespace FoxIPTV.Views
     using Classes;
     using LibVLCSharp.Shared;
 
-    /// <summary>The menus, tray icon and hot keys of the main window</summary>
     public partial class MainWindow
     {
-        /// <summary>The notification area icon</summary>
         private TrayIcon _trayIcon;
 
-        /// <summary>The tray menu's items that change with state</summary>
         private NativeMenuItem _trayWindowState;
 
         private NativeMenuItem _trayMute;
 
-        /// <summary>Wire the right click menu</summary>
         private void InitializeContextMenu()
         {
             MenuItemChannelUp.Click += (sender, args) => TvCore.ChangeChannel(true);
@@ -65,7 +61,6 @@ namespace FoxIPTV.Views
             LogMenuClicks(MainContextMenu, string.Empty);
         }
 
-        /// <summary>The notification area icon: a left click shows or hides the window, the menu has the everyday items</summary>
         private void InitializeTrayIcon()
         {
             var menu = new NativeMenu();
@@ -121,7 +116,6 @@ namespace FoxIPTV.Views
                 ToggleVisibility();
             };
 
-            // A change of the Windows theme may be a change of the taskbar colour too
             if (Avalonia.Application.Current != null)
             {
                 Avalonia.Application.Current.ActualThemeVariantChanged += (sender, args) => _trayIcon.Icon = TrayIconArt.ForTaskbar();
@@ -222,7 +216,6 @@ namespace FoxIPTV.Views
             SetOpacity(opacityVal);
         }
 
-        /// <summary>Set the window opacity and remember it</summary>
         private void SetOpacity(double opacity)
         {
             opacity = Math.Round(Math.Max(0.1, Math.Min(1, opacity)), 1);
@@ -235,7 +228,6 @@ namespace FoxIPTV.Views
             TvCore.LogDebug($"[.NET] Opacity Set {opacity}");
         }
 
-        /// <summary>The right click menu aspect ratio change handler</summary>
         private void MenuItemAspectRatio_Clicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (!(sender is MenuItem item))
@@ -279,7 +271,6 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>The hot keys, the same set FoxIPTV has always had</summary>
         private void HotKey(KeyEventArgs e)
         {
             if (e.Handled || e.KeyModifiers != KeyModifiers.None && e.KeyModifiers != KeyModifiers.Shift)
@@ -441,7 +432,6 @@ namespace FoxIPTV.Views
             e.Handled = true;
         }
 
-        /// <summary>Toggle the visibility for the library window</summary>
         private void ToggleLibraryForm()
         {
             if (TvCore.CurrentLibrary == null)
@@ -463,7 +453,6 @@ namespace FoxIPTV.Views
             TvCore.Settings.Save();
         }
 
-        /// <summary>Toggle the visibility for the channel editor</summary>
         private void ToggleChannelsForm()
         {
             if (TvCore.Channels == null || TvCore.Channels.Count == 0)
@@ -485,7 +474,6 @@ namespace FoxIPTV.Views
             TvCore.Settings.Save();
         }
 
-        /// <summary>Toggle the visibility for the guide</summary>
         private void ToggleGuideForm()
         {
             if (TvCore.Channels == null || TvCore.Channels.Count == 0)
@@ -507,7 +495,6 @@ namespace FoxIPTV.Views
             TvCore.Settings.Save();
         }
 
-        /// <summary>Go back to the provider picker by restarting the application</summary>
         private void SwitchProvider()
         {
             TvCore.LogInfo("[.NET] Switching provider, restarting");
@@ -519,7 +506,6 @@ namespace FoxIPTV.Views
             Quit();
         }
 
-        /// <summary>Toggle the visibility of the status bar</summary>
         private void ToggleStatusStrip()
         {
             StatusBar.IsVisible = !StatusBar.IsVisible;
@@ -530,7 +516,6 @@ namespace FoxIPTV.Views
             AspectRatioResizeLater();
         }
 
-        /// <summary>Toggle the window's borders</summary>
         private void ToggleBorders()
         {
             if (IsFullscreen)
@@ -547,7 +532,6 @@ namespace FoxIPTV.Views
             AspectRatioResizeLater();
         }
 
-        /// <summary>Toggle the window's Always on Top state</summary>
         private void ToggleAlwaysOnTop()
         {
             Topmost = !Topmost;
@@ -556,7 +540,6 @@ namespace FoxIPTV.Views
             TvCore.Settings.Save();
         }
 
-        /// <summary>Toggle the main window's visibility</summary>
         private void ToggleVisibility()
         {
             if (IsVisible)
@@ -577,10 +560,8 @@ namespace FoxIPTV.Views
             TvCore.Settings.Save();
         }
 
-        /// <summary>Hiding a window hides every window it owns and lets go of them, and showing it again brings none back: bring back the overlay over the video and whichever of the other windows the settings say are open</summary>
         private void RestoreOwnedWindows()
         {
-            // LibVLCSharp shows its overlay again when the video view's visibility changes
             VideoView.IsVisible = false;
             VideoView.IsVisible = true;
 
@@ -600,7 +581,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Resize to the video's shape once layout has caught up, so a status bar just shown has its height</summary>
         private void AspectRatioResizeLater()
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(AspectRatioResize, Avalonia.Threading.DispatcherPriority.Loaded);
@@ -630,7 +610,6 @@ namespace FoxIPTV.Views
         }
 
         /// <summary>Set fullscreen to a specific state</summary>
-        /// <param name="value">True for fullscreen, false for the window as it was</param>
         public void FullscreenSet(bool value)
         {
             if (value == IsFullscreen)

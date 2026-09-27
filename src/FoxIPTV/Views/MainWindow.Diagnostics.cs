@@ -10,116 +10,78 @@ namespace FoxIPTV.Views
     using Classes;
     using LibVLCSharp.Shared;
 
-    /// <summary>Everything the player does and everything LibVLC tells it, written to the log, and a watchdog for when playback goes wrong</summary>
-    /// <remarks>
-    /// Commands: every command the app sends LibVLC is logged when queued, started and finished, with timings; one still running after two seconds is reported while it runs.
-    /// Events: every event LibVLC raises is logged from its own thread, from the event arguments alone, without asking LibVLC anything back.
-    /// Clock: LibVLC keeps raising time updates while stalled, wobbling around one point, so an update arriving proves nothing. The watchdog tracks the furthest time reached and reports when it has not moved forward for three seconds, with the lowest and highest times reported meanwhile, and again when it moves.
-    /// Pieces: every piece LibVLC fetches is sorted into media, caption or playlist; no media piece for fifteen seconds, or no playlist for thirty, is reported while playing, and again when they return.
-    /// Heartbeat: every thirty seconds of playback, the piece ages and LibVLC's own counters (bytes read, pictures shown and lost, audio buffers lost), read off the UI thread.
-    /// UI: the 100ms timer falling behind by 750ms or more is reported, since that means the window was not responding.
-    /// </remarks>
     public partial class MainWindow
     {
-        /// <summary>How long the playback time may stand still while playing before the watchdog speaks</summary>
         private static readonly TimeSpan ClockStallThreshold = TimeSpan.FromSeconds(3);
 
-        /// <summary>How long no media piece may be fetched while playing before the watchdog speaks; pieces here run 2 to 10 seconds</summary>
         private static readonly TimeSpan MediaGapThreshold = TimeSpan.FromSeconds(15);
 
-        /// <summary>How long no playlist may be fetched while playing a live stream before the watchdog speaks; live playlists refresh every few seconds</summary>
         private static readonly TimeSpan PlaylistGapThreshold = TimeSpan.FromSeconds(30);
 
-        /// <summary>How long a command may run before it is reported as still running</summary>
         private static readonly TimeSpan SlowCommandThreshold = TimeSpan.FromSeconds(2);
 
-        /// <summary>How late the 100ms timer may tick before the UI thread is reported as behind</summary>
         private static readonly TimeSpan UiLateThreshold = TimeSpan.FromMilliseconds(750);
 
-        /// <summary>How far the playback time must move forward to count as moving</summary>
         private const long ClockProgressStepMs = 250;
 
-        /// <summary>Numbers commands in the log</summary>
         private int _vlcCommandId;
 
-        /// <summary>The command now running on the command thread, for the watchdog; null when idle</summary>
         private volatile string _vlcCommandRunning;
 
-        /// <summary>When the running command started, Stopwatch ticks</summary>
         private long _vlcCommandStartedAt;
 
-        /// <summary>The last time a running command was reported as slow, so it is reported every five seconds rather than every tick</summary>
         private long _vlcCommandReportedAt;
 
-        /// <summary>The playback time LibVLC last reported, milliseconds; -1 before the first report of this stream</summary>
         private long _lastClockMs = -1;
 
-        /// <summary>When LibVLC last reported the playback time, Stopwatch ticks; 0 before the first report</summary>
         private long _lastClockAt;
 
-        /// <summary>The furthest playback time reached, milliseconds; -1 before the first report</summary>
         private long _clockProgressMs = -1;
 
-        /// <summary>When the playback time last moved forward by <see cref="ClockProgressStepMs"/>, Stopwatch ticks; 0 before the first report</summary>
         private long _clockProgressAt;
 
-        /// <summary>How many time updates arrived since the clock last moved forward</summary>
         private long _clockUpdatesSinceProgress;
 
-        /// <summary>The lowest and highest times reported since the clock last moved forward</summary>
         private long _clockLowSinceProgress = long.MaxValue;
 
         private long _clockHighSinceProgress = long.MinValue;
 
-        /// <summary>When the watchdog reported the clock standing still, Stopwatch ticks; 0 while it moves</summary>
         private long _stallReportedAt;
 
-        /// <summary>When LibVLC last fetched a media piece (video or audio), a caption piece and a playlist, Stopwatch ticks; 0 for never in this stream</summary>
         private long _lastMediaPieceAt;
 
         private long _lastCaptionPieceAt;
 
         private long _lastPlaylistAt;
 
-        /// <summary>When the watchdog reported no media pieces and no playlists, Stopwatch ticks; 0 while they arrive</summary>
         private long _mediaGapReportedAt;
 
         private long _playlistGapReportedAt;
 
-        /// <summary>The last media piece fetched, for reports</summary>
         private volatile string _lastMediaPiece;
 
-        /// <summary>When a buffering run began, Stopwatch ticks; 0 when not buffering</summary>
         private long _bufferingSince;
 
-        /// <summary>The last buffering percentage, for reports</summary>
         private volatile int _lastBufferPercent = -1;
 
-        /// <summary>True between LibVLC's Paused and its next Playing, when a still clock is expected</summary>
         private volatile bool _vlcPaused;
 
-        /// <summary>When the 100ms timer last ticked, Stopwatch ticks</summary>
         private long _lastTickAt;
 
-        /// <summary>1 while a heartbeat is reading LibVLC's counters, so two never overlap</summary>
         private int _statsPending;
 
-        /// <summary>Stopwatch ticks now</summary>
         private static long Now => Stopwatch.GetTimestamp();
 
-        /// <summary>Seconds since a Stopwatch tick count, or "never" when it is 0</summary>
         private static string Ago(long at)
         {
             return at == 0 ? "never" : $"{Stopwatch.GetElapsedTime(at).TotalSeconds:0.0}s ago";
         }
 
-        /// <summary>A playback time for the log</summary>
         private static string Time(long ms)
         {
             return ms < 0 || ms == long.MaxValue || ms == long.MinValue ? "none" : TimeSpan.FromMilliseconds(ms).ToString(@"hh\:mm\:ss\.fff");
         }
 
-        /// <summary>Wrap a command for the queue so it logs itself</summary>
         private Action WrapCommand(MediaPlayer player, Action<MediaPlayer> command, string name)
         {
             var id = Interlocked.Increment(ref _vlcCommandId);
@@ -163,7 +125,6 @@ namespace FoxIPTV.Views
             };
         }
 
-        /// <summary>Log every event LibVLC raises; handlers only read their event arguments, never LibVLC itself</summary>
         private void HookDiagnostics()
         {
             var player = _player;
@@ -222,11 +183,9 @@ namespace FoxIPTV.Views
                 }
             };
 
-            // Any exception on the UI thread ends up here before anything else sees it
             Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (sender, args) => TvCore.LogError($"[UI] Unhandled: {args.Exception.GetType().Name}: {args.Exception.Message}\n{args.Exception.StackTrace}");
         }
 
-        /// <summary>LibVLC reported the playback time; called from LibVLC's thread</summary>
         private void NoteClock(long timeMs)
         {
             var now = Now;
@@ -238,7 +197,6 @@ namespace FoxIPTV.Views
             {
                 TvCore.LogInfo($"[Clock] went back from {Time(previous)} to {Time(timeMs)}");
 
-                // A reset starts the count again from where the clock now is
                 MarkProgress(timeMs, now);
 
                 return;
@@ -248,7 +206,6 @@ namespace FoxIPTV.Views
 
             if (progress >= 0 && timeMs < progress + ClockProgressStepMs)
             {
-                // An update that did not move the clock on
                 Interlocked.Increment(ref _clockUpdatesSinceProgress);
 
                 InterlockedMin(ref _clockLowSinceProgress, timeMs);
@@ -265,7 +222,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The clock moved forward: remember where to, and log the end of a reported stall</summary>
         private void MarkProgress(long timeMs, long now)
         {
             var stalledSince = Interlocked.Exchange(ref _stallReportedAt, 0);
@@ -301,7 +257,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>Every 30 seconds of playback: piece ages, and LibVLC's own counters read on the pool, never on the UI thread or inside LibVLC's callback</summary>
         private void Heartbeat(long timeMs)
         {
             var player = _player;
@@ -343,7 +298,6 @@ namespace FoxIPTV.Views
             });
         }
 
-        /// <summary>Forget the clock and piece times, a new stream is starting</summary>
         private void ResetDiagnostics()
         {
             Interlocked.Exchange(ref _lastClockMs, -1);
@@ -366,7 +320,6 @@ namespace FoxIPTV.Views
             _vlcPaused = false;
         }
 
-        /// <summary>Note what kind of piece a LibVLC "Retrieving" line fetched, and log pieces returning after a reported gap</summary>
         private void NotePiece(string message)
         {
             if (!message.StartsWith("Retrieving http", StringComparison.Ordinal))
@@ -404,7 +357,6 @@ namespace FoxIPTV.Views
             }
         }
 
-        /// <summary>The 100ms check: the UI thread keeping up, commands finishing, pieces arriving, the clock moving while playing</summary>
         private void Watchdog()
         {
             var now = Now;
@@ -440,7 +392,6 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            // No media piece for a while is the first sign of the stall where captions keep coming and the picture stops
             var mediaAt = Interlocked.Read(ref _lastMediaPieceAt);
 
             if (mediaAt != 0 && Interlocked.Read(ref _mediaGapReportedAt) == 0 && Stopwatch.GetElapsedTime(mediaAt, now) >= MediaGapThreshold)
@@ -450,7 +401,6 @@ namespace FoxIPTV.Views
                 TvCore.LogError($"[Watchdog] No media piece fetched for {Stopwatch.GetElapsedTime(mediaAt, now).TotalSeconds:0.0}s while LibVLC says playing. {State()}");
             }
 
-            // Live playlists refresh every few seconds; on-demand media fetches its playlist once, so only live channels count
             var playlistAt = Interlocked.Read(ref _lastPlaylistAt);
 
             if (TvCore.CurrentMedia == null && playlistAt != 0 && Interlocked.Read(ref _playlistGapReportedAt) == 0 && Stopwatch.GetElapsedTime(playlistAt, now) >= PlaylistGapThreshold)
@@ -480,7 +430,6 @@ namespace FoxIPTV.Views
                             $"{Interlocked.Read(ref _clockUpdatesSinceProgress)} time updates meanwhile between {Time(Interlocked.Read(ref _clockLowSinceProgress))} and {Time(Interlocked.Read(ref _clockHighSinceProgress))}, last update {Ago(Interlocked.Read(ref _lastClockAt))}. {State()}");
         }
 
-        /// <summary>What was going on, for a watchdog report</summary>
         private string State()
         {
             return $"Last media piece {Ago(Interlocked.Read(ref _lastMediaPieceAt))} ({_lastMediaPiece ?? "none"}), last caption piece {Ago(Interlocked.Read(ref _lastCaptionPieceAt))}, last playlist {Ago(Interlocked.Read(ref _lastPlaylistAt))}. " +
@@ -488,7 +437,6 @@ namespace FoxIPTV.Views
                    $"captions {(TvCore.Settings.CCEnabled ? "on" : "off")}{(_ccFromSubtitleStream ? " (own stream)" : string.Empty)}{(_ccHeldForAds ? " held for ads" : string.Empty)}, in ad {AdDetector.InAd}, window {(IsVisible ? "shown" : "hidden")}.";
         }
 
-        /// <summary>Log every click on the right-click menu, submenus included</summary>
         private static void LogMenuClicks(ItemsControl menu, string path)
         {
             foreach (var item in menu.Items.OfType<MenuItem>())
