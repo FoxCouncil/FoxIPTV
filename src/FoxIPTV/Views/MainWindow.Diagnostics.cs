@@ -161,9 +161,9 @@ namespace FoxIPTV.Views
             player.PausableChanged += (sender, args) => TvCore.LogInfo($"[VLC event] PausableChanged {args.Pausable}");
             player.ScrambledChanged += (sender, args) => TvCore.LogInfo($"[VLC event] ScrambledChanged {args.Scrambled}");
             player.Vout += (sender, args) => TvCore.LogInfo($"[VLC event] Vout, {args.Count} video output(s)");
-            player.ESAdded += (sender, args) => TvCore.LogInfo($"[VLC event] ESAdded {args.Type} id {args.Id}");
-            player.ESDeleted += (sender, args) => TvCore.LogInfo($"[VLC event] ESDeleted {args.Type} id {args.Id}");
-            player.ESSelected += (sender, args) => TvCore.LogInfo($"[VLC event] ESSelected {args.Type} id {args.Id}");
+            player.ESAdded += (sender, args) => TvCore.LogInfo($"[VLC event]{(args.Type == TrackType.Text ? " [CC]" : string.Empty)} ESAdded {args.Type} id {args.Id}");
+            player.ESDeleted += (sender, args) => TvCore.LogInfo($"[VLC event]{(args.Type == TrackType.Text ? " [CC]" : string.Empty)} ESDeleted {args.Type} id {args.Id}");
+            player.ESSelected += (sender, args) => TvCore.LogInfo($"[VLC event]{(args.Type == TrackType.Text ? " [CC]" : string.Empty)} ESSelected {args.Type} id {args.Id}");
 
             player.Buffering += (sender, args) =>
             {
@@ -271,6 +271,7 @@ namespace FoxIPTV.Views
                 try
                 {
                     var counters = "counters unavailable";
+                    var spu = player.Spu;
 
                     using (var media = player.Media)
                     {
@@ -285,7 +286,7 @@ namespace FoxIPTV.Views
                         }
                     }
 
-                    TvCore.LogInfo($"[Clock] {Time(timeMs)}, last media piece {Ago(Interlocked.Read(ref _lastMediaPieceAt))}, last caption piece {Ago(Interlocked.Read(ref _lastCaptionPieceAt))}, last playlist {Ago(Interlocked.Read(ref _lastPlaylistAt))}, buffer {_lastBufferPercent}%; {counters}");
+                    TvCore.LogInfo($"[Clock] {Time(timeMs)}, last media piece {Ago(Interlocked.Read(ref _lastMediaPieceAt))}, last caption piece {Ago(Interlocked.Read(ref _lastCaptionPieceAt))}, last playlist {Ago(Interlocked.Read(ref _lastPlaylistAt))}, buffer {_lastBufferPercent}%, caption track {spu}, captions {(TvCore.Settings.CCEnabled ? "on" : "off")}{(_ccAvailable ? string.Empty : " (none usable)")}; {counters}");
                 }
                 catch (Exception ex)
                 {
@@ -435,6 +436,16 @@ namespace FoxIPTV.Views
             return $"Last media piece {Ago(Interlocked.Read(ref _lastMediaPieceAt))} ({_lastMediaPiece ?? "none"}), last caption piece {Ago(Interlocked.Read(ref _lastCaptionPieceAt))}, last playlist {Ago(Interlocked.Read(ref _lastPlaylistAt))}. " +
                    $"Buffer {(_lastBufferPercent < 0 ? "never reported" : _lastBufferPercent + "%")}, command {(_vlcCommandRunning ?? "none running")}, {_vlcCommands.Count} queued, " +
                    $"captions {(TvCore.Settings.CCEnabled ? "on" : "off")}{(_ccFromSubtitleStream ? " (own stream)" : string.Empty)}{(_ccHeldForAds ? " held for ads" : string.Empty)}, in ad {AdDetector.InAd}, window {(IsVisible ? "shown" : "hidden")}.";
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex CaptionMessage = new System.Text.RegularExpressions.Regex(@"webvtt|\.vtt|spu|subtitle|subs|CC track|closed caption|cea.?608|cea.?708|c608|c708|cc|Restarting demuxer 1|deactivat|reactivat|sync reference|text track|teletext|dvbsub|tx3g|stpp|ttml", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        private void NoteCaptionMessage(string message)
+        {
+            if (CaptionMessage.IsMatch(message))
+            {
+                TvCore.LogInfo($"[CC VLC] {message}");
+            }
         }
 
         private static void LogMenuClicks(ItemsControl menu, string path)

@@ -35,6 +35,8 @@ namespace FoxIPTV.Views
 
         private volatile bool _ccAvailable;
 
+        private long _ccProbeAt;
+
         private volatile bool _ccFromSubtitleStream;
 
         private volatile bool _ccHeldForAds;
@@ -336,6 +338,7 @@ namespace FoxIPTV.Views
             StreamFacts.Observe(message);
             AdDetector.Observe(message);
             NotePiece(message);
+            NoteCaptionMessage(message);
 
             if (message.StartsWith("using spu decoder module", StringComparison.Ordinal))
             {
@@ -389,13 +392,19 @@ namespace FoxIPTV.Views
 
             _endedWithoutPlaying = 0;
 
-            if (!_ccDetected && _isPlaying && Interlocked.Exchange(ref _ccProbePending, 1) == 0)
+            if (!_ccDetected && _isPlaying && System.Diagnostics.Stopwatch.GetElapsedTime(Interlocked.Read(ref _ccProbeAt)) >= TimeSpan.FromSeconds(2) && Interlocked.Exchange(ref _ccProbePending, 1) == 0)
             {
+                Interlocked.Exchange(ref _ccProbeAt, System.Diagnostics.Stopwatch.GetTimestamp());
+
                 Vlc(player =>
                 {
                     try
                     {
-                        if (!_ccDetected && player.SpuCount != 0)
+                        var count = player.SpuCount;
+
+                        TvCore.LogInfo($"[CC] Probe: LibVLC lists {count} subtitle entr{(count == 1 ? "y" : "ies")}, counting Disable");
+
+                        if (!_ccDetected && count != 0)
                         {
                             _ccDetected = true;
 
@@ -674,6 +683,16 @@ namespace FoxIPTV.Views
                 }
             }
 
+            using (var media = player.Media)
+            {
+                foreach (var track in (media?.Tracks ?? Array.Empty<MediaTrack>()).Where(x => x.TrackType == TrackType.Text))
+                {
+                    var kind = inVideo.Contains(track.Id) ? "in video" : webVtt.Contains(track.Id) ? "WebVTT, ignored" : "other";
+
+                    TvCore.LogInfo($"[CC] Text track id {track.Id}: codec {track.Codec.ToFourCC()}, original {track.OriginalFourcc.ToFourCC()}, language {track.Language ?? "none"}, description {track.Description ?? "none"}, {kind}");
+                }
+            }
+
             var choices = all.Where(x => x.Id != -1 && !webVtt.Contains(x.Id)).ToList();
 
             _ccAvailable = choices.Count > 0;
@@ -682,9 +701,13 @@ namespace FoxIPTV.Views
 
             var chosen = _ccIdx != 0 && !held && choices.Any(x => x.Id == _ccIdx) ? choices.First(x => x.Id == _ccIdx) : enabled && preferred.Count > 0 ? preferred[0] : all[0];
 
-            TvCore.LogInfo($"[CC] Tracks: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; setting on {TvCore.Settings.CCEnabled}, held {held}, picked {_ccIdx}; choosing {chosen.Id}={chosen.Name}");
+            var reason = !TvCore.Settings.CCEnabled ? "captions set off" : held ? "held for an ad break" : _ccIdx != 0 && choices.Any(x => x.Id == _ccIdx) ? "picked from the menu" : preferred.Count == 0 ? "no usable captions" : inVideo.Contains(chosen.Id) || (chosen.Name ?? string.Empty).StartsWith("Closed captions", StringComparison.Ordinal) ? "in-video captions preferred" : "first usable track";
+
+            TvCore.LogInfo($"[CC] Subtitle list: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; usable: {(choices.Count == 0 ? "none" : string.Join(", ", choices.Select(x => x.Id)))}; setting on {TvCore.Settings.CCEnabled}, held {held}, menu pick {_ccIdx}; choosing {chosen.Id}={chosen.Name} ({reason}); active before {player.Spu}");
 
             player.SetSpu(chosen.Id);
+
+            TvCore.LogInfo($"[CC] Active after: {player.Spu}");
 
             if (enabled && choices.Count > 1)
             {
@@ -704,6 +727,8 @@ namespace FoxIPTV.Views
                         item.Click += (sender, args) =>
                         {
                             _ccIdx = (int)((MenuItem)sender).Tag;
+
+                            TvCore.LogInfo($"[CC] Menu pick: track {_ccIdx}");
                             _ccDetected = false;
                         };
 
