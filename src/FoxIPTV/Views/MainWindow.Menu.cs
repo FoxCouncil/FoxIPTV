@@ -165,7 +165,7 @@ namespace FoxIPTV.Views
 
             MenuItemStatusBar.IsChecked = StatusBar.IsVisible;
 
-            MenuItemClosedCaptioning.IsEnabled = _ccDetected;
+            MenuItemClosedCaptioning.IsEnabled = _ccAvailable;
             MenuItemClosedCaptioning.IsChecked = TvCore.Settings.CCEnabled;
 
             MenuItemBorders.IsEnabled = !IsFullscreen;

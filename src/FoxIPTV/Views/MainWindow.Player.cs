@@ -33,6 +33,8 @@ namespace FoxIPTV.Views
         /// <summary>Used to determine if there is Closed Captioning data available</summary>
         private volatile bool _ccDetected;
 
+        private volatile bool _ccAvailable;
+
         private volatile bool _ccFromSubtitleStream;
 
         private volatile bool _ccHeldForAds;
@@ -224,6 +226,7 @@ namespace FoxIPTV.Views
         private void ResetCaptions()
         {
             _ccDetected = false;
+            _ccAvailable = false;
             _ccFromSubtitleStream = false;
             _ccHeldForAds = false;
             _ccResumeAtTicks = 0;
@@ -396,9 +399,9 @@ namespace FoxIPTV.Views
                         {
                             _ccDetected = true;
 
-                            Ui(GuiShow);
-
                             ProcessClosedCaptioning(player);
+
+                            Ui(GuiShow);
                         }
                     }
                     finally
@@ -652,6 +655,7 @@ namespace FoxIPTV.Views
             }
 
             var inVideo = new HashSet<int>();
+            var webVtt = new HashSet<int>();
 
             using (var media = player.Media)
             {
@@ -663,19 +667,26 @@ namespace FoxIPTV.Views
                     {
                         inVideo.Add(track.Id);
                     }
+                    else if (track.TrackType == TrackType.Text && codec == "wvtt")
+                    {
+                        webVtt.Add(track.Id);
+                    }
                 }
             }
 
-            var choices = all.Where(x => x.Id != -1).ToList();
+            var choices = all.Where(x => x.Id != -1 && !webVtt.Contains(x.Id)).ToList();
+
+            _ccAvailable = choices.Count > 0;
+
             var preferred = choices.Where(x => inVideo.Contains(x.Id) || (x.Name ?? string.Empty).StartsWith("Closed captions", StringComparison.Ordinal)).Concat(choices).ToList();
 
-            var chosen = _ccIdx != 0 && !held && all.Any(x => x.Id == _ccIdx) ? all.First(x => x.Id == _ccIdx) : enabled && preferred.Count > 0 ? preferred[0] : all[0];
+            var chosen = _ccIdx != 0 && !held && choices.Any(x => x.Id == _ccIdx) ? choices.First(x => x.Id == _ccIdx) : enabled && preferred.Count > 0 ? preferred[0] : all[0];
 
             TvCore.LogInfo($"[CC] Tracks: {string.Join(", ", all.Select(x => $"{x.Id}={x.Name}"))}; setting on {TvCore.Settings.CCEnabled}, held {held}, picked {_ccIdx}; choosing {chosen.Id}={chosen.Name}");
 
             player.SetSpu(chosen.Id);
 
-            if (enabled && all.Length > 2)
+            if (enabled && choices.Count > 1)
             {
                 var currentName = chosen.Name;
                 var tracks = choices.Where(x => x.Id != chosen.Id).Select(x => new KeyValuePair<int, string>(x.Id, x.Name)).ToList();

@@ -611,7 +611,7 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var tmpTvIcons = TvIconData.CreateData(_ccDetected, tracks);
+            var tmpTvIcons = TvIconData.CreateData(_ccAvailable, tracks);
 
             if (_currentTvIconData != null && _currentTvIconData == tmpTvIcons)
             {
