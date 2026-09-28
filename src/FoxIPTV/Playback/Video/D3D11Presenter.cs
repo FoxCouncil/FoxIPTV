@@ -282,7 +282,8 @@ namespace FoxIPTV.Playback.Video
             {
                 Width = target.Size.Width,
                 Height = target.Size.Height,
-                Format = PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm
+                Format = PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm,
+                TopLeftOrigin = true
             });
 
             target.LastPresent = _surface.UpdateWithKeyedMutexAsync(target.Imported, 1, 0);

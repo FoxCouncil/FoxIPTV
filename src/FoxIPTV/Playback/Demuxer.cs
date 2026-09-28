@@ -165,6 +165,16 @@ namespace FoxIPTV.Playback
 
             var audio = ffmpeg.av_find_best_stream(_format, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, video, null, 0);
 
+            if (audio < 0)
+            {
+                audio = FirstOfType(AVMediaType.AVMEDIA_TYPE_AUDIO);
+            }
+
+            if (video < 0)
+            {
+                video = FirstOfType(AVMediaType.AVMEDIA_TYPE_VIDEO);
+            }
+
             VideoIndex = video >= 0 ? video : -1;
             AudioIndex = audio >= 0 ? audio : -1;
 
@@ -172,6 +182,22 @@ namespace FoxIPTV.Playback
             {
                 _format->streams[i]->discard = i == VideoIndex || i == AudioIndex ? AVDiscard.AVDISCARD_DEFAULT : AVDiscard.AVDISCARD_ALL;
             }
+        }
+
+        /// <summary>av_find_best_stream skips sound whose channels and rate are not known yet, which is every stream opened without a probe</summary>
+        private int FirstOfType(AVMediaType type)
+        {
+            for (var i = 0; i < _format->nb_streams; i++)
+            {
+                var stream = _format->streams[i];
+
+                if (stream->codecpar->codec_type == type && stream->codecpar->codec_id != AVCodecID.AV_CODEC_ID_NONE && (stream->disposition & ffmpeg.AV_DISPOSITION_ATTACHED_PIC) == 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public string Describe()
