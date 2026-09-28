@@ -23,7 +23,7 @@
             <StackPanel Orientation="Horizontal" Spacing="6">
                 <TextBlock Text="Group by:" VerticalAlignment="Center" />
                 <Button x:Name="FilterNoneButton" Content="None" Tag="None" IsEnabled="False" />
-                <Button x:Name="FilterCountriesButton" Content="Countries" Tag="Countries" />
+                <Button x:Name="FilterCategoriesButton" Content="Categories" Tag="Categories" />
             </StackPanel>
         </StackPanel>
 

@@ -32,22 +32,6 @@
         <Setter Property="Padding" Value="6,2" />
     </Style>
 
-    <Style Selector="Border.tag">
-        <Setter Property="Background" Value="#333333" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="7,1" />
-        <Setter Property="MinWidth" Value="56" />
-        <Setter Property="Height" Value="32" />
-    </Style>
-    <Style Selector="Border.tag > TextBlock">
-        <Setter Property="FontFamily" Value="Bahnschrift SemiBold Condensed, Bahnschrift, Arial Black, Arial" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="FontSize" Value="20" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-
     <Style Selector="Border.statusbar">
         <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />

@@ -147,7 +147,7 @@ namespace FoxIPTV.Classes
             TvCore.LogInfo($"[Trace #{id}] picture after {total}ms: {detail}");
             TvCore.LogInfo($"[Trace #{id}] summary: {summary}");
 
-            SetStatus($"{(_quality ?? detail)}, {total / 1000.0:0.0}s to picture");
+            SetStatus(string.Empty);
         }
     }
 }

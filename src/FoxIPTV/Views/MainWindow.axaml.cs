@@ -107,7 +107,7 @@ namespace FoxIPTV.Views
 
             SizeChanged += (sender, args) =>
             {
-                CaptionLabel.FontSize = Math.Max(14, Math.Min(48, args.NewSize.Height / 22));
+                CaptionLabel.FontSize = Math.Max(18, Math.Min(64, args.NewSize.Height / 18));
 
                 _resizeSettle.Stop();
                 _resizeSettle.Start();
@@ -415,11 +415,7 @@ namespace FoxIPTV.Views
             var underscore = iconStringKey.IndexOf('_');
             var text = underscore >= 0 ? iconStringKey.Substring(underscore + 1) : iconStringKey;
 
-            TagPanel.Children.Add(new Border
-            {
-                Classes = { "tag" },
-                Child = new TextBlock { Text = text.ToUpperInvariant() }
-            });
+            TagPanel.Children.Add(new StreamTag { Text = text });
         }
 
         /// <summary>Set the window size to always match the media's aspect ratio</summary>

@@ -59,7 +59,7 @@ namespace FoxIPTV.Views
             };
 
             FilterNoneButton.Click += ButtonFilter_Click;
-            FilterCountriesButton.Click += ButtonFilter_Click;
+            FilterCategoriesButton.Click += ButtonFilter_Click;
 
             ChannelList.SelectionChanged += ChannelList_SelectionChanged;
 
@@ -163,7 +163,7 @@ namespace FoxIPTV.Views
                 };
             }
 
-            if (grouping != "Countries")
+            if (grouping != "Categories")
             {
                 rows.Add(new ChannelRow { Text = $"All Channels ({tvChannels.Count})", IsHeading = true });
 
@@ -172,19 +172,10 @@ namespace FoxIPTV.Views
                 return rows;
             }
 
-            string CountryOf(Channel channel)
-            {
-                var split = channel.Name.Trim().Split(new[] { ':' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var byCategory = tvChannels.GroupBy(x => x.Group?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase).ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
+            var categories = byCategory.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x, StringComparer.CurrentCultureIgnoreCase).ToList();
 
-                var countryString = split.Length == 2 ? split[0] : string.Empty;
-
-                return countryString.Contains(" ") ? string.Empty : countryString.ToUpperInvariant();
-            }
-
-            var byCountry = tvChannels.GroupBy(CountryOf).ToDictionary(x => x.Key, x => x.ToList());
-            var countries = byCountry.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x, StringComparer.Ordinal).ToList();
-
-            rows.Add(new ChannelRow { Text = $"{grouping} ({countries.Count})", IsHeading = true });
+            rows.Add(new ChannelRow { Text = $"{grouping} ({categories.Count})", IsHeading = true });
 
             void AddGroup(string key, string title, List<Channel> channels)
             {
@@ -198,14 +189,14 @@ namespace FoxIPTV.Views
                 }
             }
 
-            foreach (var country in countries)
+            foreach (var category in categories)
             {
-                AddGroup(country, country, byCountry[country]);
+                AddGroup(category, category, byCategory[category]);
             }
 
-            if (byCountry.TryGetValue(string.Empty, out var rest) && rest.Count > 0)
+            if (byCategory.TryGetValue(string.Empty, out var rest) && rest.Count > 0)
             {
-                AddGroup("NA", "N/A", rest);
+                AddGroup(string.Empty, "N/A", rest);
             }
 
             return rows;
@@ -382,7 +373,7 @@ namespace FoxIPTV.Views
             _allChannelCategoryFilter = (string)button.Tag;
 
             FilterNoneButton.IsEnabled = _allChannelCategoryFilter != "None";
-            FilterCountriesButton.IsEnabled = _allChannelCategoryFilter != "Countries";
+            FilterCategoriesButton.IsEnabled = _allChannelCategoryFilter != "Categories";
 
             LoadAll();
         }
