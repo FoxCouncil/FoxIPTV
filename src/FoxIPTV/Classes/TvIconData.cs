@@ -24,7 +24,6 @@ namespace FoxIPTV.Classes
         /// <summary>Show or hide an icon if Closed Captioning information is available</summary>
         public bool ClosedCaptioning { get; set; }
 
-        /// <summary>Icon key of the current video codec, ie: H264, HEVC</summary>
         public string VideoCodec { get; set; }
 
         /// <summary>Icon key of the current video height in uppercase P format, ie: 720P, 1080P</summary>
@@ -33,7 +32,6 @@ namespace FoxIPTV.Classes
         /// <summary>Icon key of the current video frame rate, suffixed with capitals FPS, ie: 25FPS, 30FPS</summary>
         public string FrameRate { get; set; }
 
-        /// <summary>Icon key of the current audio codec, ie: AAC, AC3</summary>
         public string AudioCodec { get; set; }
 
         /// <summary>Icon key of the current audio channel, ie: STEREO, 5.1</summary>
@@ -188,7 +186,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <returns>A new instance of a TVIconData mapped from what the player knows about the stream</returns>
         public static TvIconData CreateData(StreamInfo info)
         {
             var data = new TvIconData { ClosedCaptioning = info?.Captions ?? false };

@@ -8,7 +8,6 @@ namespace FoxIPTV.Playback
     using SDL;
     using static SDL.SDL3;
 
-    /// <summary>Sends float sound to the default output device through SDL3 and tells the time of what is being heard</summary>
     public sealed unsafe class AudioOutput : IDisposable
     {
         public const int Rate = 48000;
@@ -189,7 +188,6 @@ namespace FoxIPTV.Playback
             return bytes <= 0 ? 0 : bytes / (double)(Rate * _channels * sizeof(float));
         }
 
-        /// <summary>Makes a session the only writer and drops whatever the last one left queued</summary>
         public int Claim(int session)
         {
             lock (_lock)
@@ -227,7 +225,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>The play time of the sound reaching the speakers now, or NaN before any sound was written</summary>
         public double Clock
         {
             get
@@ -334,7 +331,6 @@ namespace FoxIPTV.Playback
         }
     }
 
-    /// <summary>A clock for pictures without sound: runs from the first picture, stops while buffering</summary>
     public sealed class WallClock
     {
         private readonly object _lock = new object();

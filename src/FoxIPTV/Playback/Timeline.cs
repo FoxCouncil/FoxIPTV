@@ -6,7 +6,6 @@ namespace FoxIPTV.Playback
     using System.Collections.Generic;
     using Classes;
 
-    /// <summary>Maps each run of source timestamps onto one unbroken play time that starts at zero</summary>
     public sealed class Timeline
     {
         private const double BackwardJump = 1.0;
@@ -60,7 +59,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>Checks a mapped time against the last one seen on the same track and starts a new run when the source jumped</summary>
         public bool IsJump(double mapped, double last)
         {
             return !double.IsNaN(last) && (mapped < last - BackwardJump || mapped > last + ForwardJump);

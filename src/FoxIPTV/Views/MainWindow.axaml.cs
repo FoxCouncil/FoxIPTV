@@ -325,7 +325,6 @@ namespace FoxIPTV.Views
             return string.Join(" - ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
         }
 
-        /// <summary>The source a provider plays from, "Samsung TV Plus" rather than "Free TV Playlists / Samsung TV Plus"</summary>
         private static string ProviderLabel()
         {
             var service = TvCore.CurrentService;

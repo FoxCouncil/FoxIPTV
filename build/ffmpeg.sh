@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 # Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
-#
-# Builds the small LGPL FFmpeg that FoxIPTV decodes with, into native/<rid>.
-#
-#   build/ffmpeg.sh win-x64     on Ubuntu 24.04, cross-compiled with MinGW
-#   build/ffmpeg.sh linux-x64   on Ubuntu 24.04, with VAAPI; a copy of libva goes in libva/ for systems without one
-#   build/ffmpeg.sh osx-arm64   on macOS
-#
-# From Windows the first two run in a throwaway container, from the repository root:
-#   docker run --rm -v "<repository root>:/src" -w /src ubuntu:24.04 bash build/ffmpeg.sh win-x64
 
 set -euo pipefail
 

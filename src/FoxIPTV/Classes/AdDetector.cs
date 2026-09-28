@@ -53,7 +53,6 @@ namespace FoxIPTV.Classes
             _fetchedSeconds = 0;
         }
 
-        /// <summary>Called as each video piece starts playing</summary>
         public static void ObserveSegment(string address)
         {
             if (string.IsNullOrEmpty(address))
@@ -127,7 +126,6 @@ namespace FoxIPTV.Classes
             }
         }
 
-        /// <summary>Called when playback crosses a join between two runs of video, after the piece that starts it</summary>
         public static void ObserveDiscontinuity()
         {
             lock (Lock)

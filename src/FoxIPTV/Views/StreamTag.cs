@@ -8,7 +8,6 @@ namespace FoxIPTV.Views
     using Avalonia.Controls;
     using Avalonia.Media;
 
-    /// <summary>One of the little stream tags (H264, 720P, 30FPS, STEREO...): a dark rounded box with heavy white lettering</summary>
     public sealed class StreamTag : Control
     {
         public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<StreamTag, string>(nameof(Text));
@@ -21,7 +20,6 @@ namespace FoxIPTV.Views
 
         private const double Radius = 6;
 
-        /// <summary>One size for every tag, so "CC" and "SURROUND" read as the same lettering</summary>
         private const double FontPixels = 20;
 
         private static readonly Typeface Face = new Typeface(new FontFamily("Bahnschrift, Arial Black, Arial"), FontStyle.Normal, FontWeight.Bold, FontStretch.Condensed);
@@ -88,7 +86,6 @@ namespace FoxIPTV.Views
 
             var ink = geometry.Bounds;
 
-            // Centre the ink itself, not the font box: caps and digits have no descenders and would ride high
             using (context.PushTransform(Matrix.CreateTranslation((size.Width - ink.Width) / 2 - ink.X, (size.Height - ink.Height) / 2 - ink.Y)))
             {
                 context.DrawGeometry(Brushes.White, Outline, geometry);

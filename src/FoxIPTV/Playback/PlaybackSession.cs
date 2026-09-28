@@ -12,7 +12,6 @@ namespace FoxIPTV.Playback
     using FFmpeg.AutoGen;
     using Hls;
 
-    /// <summary>One play of one stream: fetches, unpacks and decodes on its own threads, and hands out pictures and sound on time</summary>
     public sealed class PlaybackSession : ISourceEvents
     {
         private const double StartAudioSeconds = 0.25;
@@ -194,7 +193,6 @@ namespace FoxIPTV.Playback
             _monitor?.Dispose();
         }
 
-        /// <summary>Waits for the threads to finish, then frees what is left; call off the UI thread</summary>
         public void Close()
         {
             Stop();
@@ -1371,7 +1369,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>Called on the UI thread for each screen refresh; returns the picture due now, or null to keep the one on screen</summary>
         public VideoFrame TakeFrame(double lead)
         {
             if (_token.IsCancellationRequested)

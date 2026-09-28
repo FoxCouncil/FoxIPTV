@@ -14,7 +14,6 @@ namespace FoxIPTV.Playback.Video
     using Classes;
     using FFmpeg.AutoGen;
 
-    /// <summary>Shows the player's pictures: straight from the GPU on Windows, from a bitmap elsewhere</summary>
     public sealed class VideoSurface : Control
     {
         private readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -79,7 +78,6 @@ namespace FoxIPTV.Playback.Video
             }
         }
 
-        /// <summary>"" follows the stream; "16:9", "4:3" and the like force a shape</summary>
         public string AspectRatio
         {
             get => _aspectRatio;
@@ -95,7 +93,6 @@ namespace FoxIPTV.Playback.Video
 
         public string Renderer { get; private set; } = "starting";
 
-        /// <summary>Raised with the picture size the first time a picture reaches the screen after Clear</summary>
         public event Action<int, int> PictureShown;
 
         private bool _announced;
@@ -301,7 +298,6 @@ namespace FoxIPTV.Playback.Video
             }
         }
 
-        /// <summary>Keeps the picture loop going; re-arms it when a refresh callback never came back, as can happen while the window is hidden</summary>
         public void Wake()
         {
             if (_updateQueued && _clock.Elapsed.TotalSeconds - _queuedAt > 1)

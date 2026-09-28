@@ -29,7 +29,6 @@ namespace FoxIPTV.Playback
 
         public string Name { get; }
 
-        /// <summary>Hands FFmpeg the D3D11 device the picture is drawn with, so decoded frames never leave the GPU</summary>
         public static HardwareDevice FromD3D11(IntPtr device)
         {
             var reference = ffmpeg.av_hwdevice_ctx_alloc(AVHWDeviceType.AV_HWDEVICE_TYPE_D3D11VA);
@@ -288,7 +287,6 @@ namespace FoxIPTV.Playback
         }
     }
 
-    /// <summary>Turns the CEA-608 bytes that ride inside the video into caption text</summary>
     public sealed unsafe class CaptionDecoder : IDisposable
     {
         private AVCodecContext* _context;
@@ -324,7 +322,6 @@ namespace FoxIPTV.Playback
             return decoder;
         }
 
-        /// <summary>Feeds one frame's caption bytes; returns the new caption text when the screen changed, or null when it did not</summary>
         public string Decode(byte* data, int size, long pts)
         {
             if (ffmpeg.av_new_packet(_packet, size) < 0)
@@ -457,7 +454,6 @@ namespace FoxIPTV.Playback
         }
     }
 
-    /// <summary>Converts any decoded sound to interleaved 32-bit float at the output rate and channel count</summary>
     public sealed unsafe class Resampler : IDisposable
     {
         private SwrContext* _swr;

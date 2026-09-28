@@ -227,7 +227,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>Adds a decoded frame, waiting while full; frames the clock has already passed are thrown away while waiting so decoding never stops for a hidden window</summary>
         public void Add(VideoFrame frame, Func<double> clock, CancellationToken token)
         {
             lock (_lock)
@@ -266,7 +265,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>Takes the newest frame due by the given time, throwing away the older due ones</summary>
         public VideoFrame TakeDue(double target)
         {
             lock (_lock)

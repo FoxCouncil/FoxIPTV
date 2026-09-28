@@ -43,7 +43,6 @@ namespace FoxIPTV.Classes
         /// <summary>The current aspect ratio for the video</summary>
         public string AspectRatio { get; set; } = string.Empty;
 
-        /// <summary>The audio channel mode, see Playback.StereoMode</summary>
         public int StereoMode { get; set; } = 1;
 
         public bool StatusBar { get; set; } = true;

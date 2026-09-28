@@ -184,7 +184,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        /// <summary>av_find_best_stream skips sound whose channels and rate are not known yet, which is every stream opened without a probe</summary>
         private int FirstOfType(AVMediaType type)
         {
             for (var i = 0; i < _format->nb_streams; i++)

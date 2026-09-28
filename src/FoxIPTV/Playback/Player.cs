@@ -7,7 +7,6 @@ namespace FoxIPTV.Playback
     using Classes;
     using FFmpeg.AutoGen;
 
-    /// <summary>The app's player: one session at a time, sound through SDL3, pictures handed to the video surface</summary>
     public sealed class Player : IDisposable
     {
         private readonly object _lock = new object();
@@ -38,10 +37,8 @@ namespace FoxIPTV.Playback
 
         public StereoMode StereoMode { get; set; } = StereoMode.Stereo;
 
-        /// <summary>Set by the video surface when it draws from system memory rather than GPU textures</summary>
         public bool WantsCpuFrames { get; set; }
 
-        /// <summary>Set by the video surface on Windows once its D3D11 device exists; elsewhere found on first use</summary>
         public HardwareDevice Hardware
         {
             get
@@ -181,7 +178,6 @@ namespace FoxIPTV.Playback
             Task.Run(session.Close);
         }
 
-        /// <summary>The picture due on screen now; called on the UI thread once per screen refresh</summary>
         public VideoFrame TakeFrame(double lead)
         {
             PlaybackSession session;

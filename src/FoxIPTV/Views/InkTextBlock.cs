@@ -8,10 +8,6 @@ namespace FoxIPTV.Views
     using Avalonia.Controls;
     using Avalonia.Media;
 
-    /// <summary>
-    /// A TextBlock that centres its capital letters in the line instead of the font box.
-    /// Avalonia centres the font box, so fonts with a deep descent, like Arial and Consolas, ride high.
-    /// </summary>
     public class InkTextBlock : TextBlock
     {
         private double _shift = double.NaN;

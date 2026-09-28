@@ -413,7 +413,6 @@ namespace FoxIPTV.Views
             return titles;
         }
 
-        /// <summary>What is on the channel now, blank when the show's name is the channel's name</summary>
         private static string OnNowFor(Channel channel, Dictionary<string, string> titles)
         {
             if (channel?.Id == null || !titles.TryGetValue(channel.Id, out var title) || string.IsNullOrWhiteSpace(title))
