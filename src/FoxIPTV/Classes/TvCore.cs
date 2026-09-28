@@ -12,6 +12,7 @@ namespace FoxIPTV.Classes
     using System.Linq;
     using System.Net;
     using System.Reflection;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Timers;
@@ -250,6 +251,8 @@ namespace FoxIPTV.Classes
                     LogError($"[TVCore] Startup: Unable to install {type.Name}: {ex.Message}");
                 }
             }
+
+            MoveFreeTvEntries(UserStoragePath);
 
             foreach (var script in ScriptLoader.LoadAll())
             {
@@ -515,6 +518,73 @@ namespace FoxIPTV.Classes
             }
 
             return contents;
+        }
+
+        private static readonly Regex SamsungChannelId = new Regex(@"^[A-Z]{2}[A-Z0-9]{8,12}$", RegexOptions.Compiled);
+
+        public static void MoveFreeTvEntries(string folder)
+        {
+            foreach (var kind in new[] { ChannelFavoritesFilename, ProtectedChannelsFilename, HiddenChannelsFilename })
+            {
+                var source = Path.Combine(folder, $"{kind}-freetv");
+
+                if (!File.Exists(source))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var entries = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(source)) ?? new List<string>();
+                    var moving = entries.Where(x => FreeTvEntryOwner(x) != null).ToList();
+
+                    if (moving.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (var group in moving.GroupBy(FreeTvEntryOwner))
+                    {
+                        var target = Path.Combine(folder, $"{kind}-{group.Key}");
+                        var existing = File.Exists(target) ? JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(target)) ?? new List<string>() : new List<string>();
+
+                        File.WriteAllText(target, JsonConvert.SerializeObject(existing.Concat(group).Distinct().ToList()));
+                    }
+
+                    File.WriteAllText(source, JsonConvert.SerializeObject(entries.Except(moving).ToList()));
+
+                    LogInfo($"[TVCore] Startup: Moved {moving.Count} {kind} entries from the combined Free TV provider to their own providers");
+                }
+                catch (Exception ex)
+                {
+                    LogError($"[TVCore] Startup: Unable to move {kind} entries out of the combined Free TV provider: {ex.Message}");
+                }
+            }
+        }
+
+        private static string FreeTvEntryOwner(string entry)
+        {
+            if (entry == null)
+            {
+                return null;
+            }
+
+            if (entry.Contains("jmp2.uk/stvp-", StringComparison.OrdinalIgnoreCase) || SamsungChannelId.IsMatch(entry))
+            {
+                return "samsungtvplus";
+            }
+
+            if (entry.Contains("jmp2.uk/rok-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "roku";
+            }
+
+            if (entry.Contains("epg.provider.plex.tv", StringComparison.OrdinalIgnoreCase))
+            {
+                return "plex";
+            }
+
+            return null;
         }
 
         private static string FavoritesFilePath => Path.Combine(UserStoragePath, CurrentService == null ? ChannelFavoritesFilename : $"{ChannelFavoritesFilename}-{CurrentService.Id}");

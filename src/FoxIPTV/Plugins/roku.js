@@ -1,15 +1,12 @@
-﻿//
-//
-
 var plugin = {
-    id: "freetv",
-    title: "Free-TV",
+    id: "roku",
+    title: "Roku",
     version: "1",
     capabilities: ["live"],
     fields: []
 };
 
-var LIST = "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8";
+var LIST = "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/roku_all.m3u";
 var CACHE = { cache: 6 };
 
 var playlist = null;

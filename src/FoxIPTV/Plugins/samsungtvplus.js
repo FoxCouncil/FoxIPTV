@@ -1,21 +1,20 @@
-﻿//
-//
-
 var plugin = {
-    id: "freetv",
-    title: "Free-TV",
+    id: "samsungtvplus",
+    title: "Samsung TV Plus",
     version: "1",
     capabilities: ["live"],
-    fields: []
+    fields: [
+        { key: "Region", kind: "choice", choices: ["us", "ca", "gb", "de", "fr", "es", "it", "at", "ch", "in", "kr", "all"], default: "us" }
+    ]
 };
 
-var LIST = "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8";
+var LIST = "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/samsungtvplus_{region}.m3u";
 var CACHE = { cache: 6 };
 
 var playlist = null;
 
 function region() {
-    return (host.setting("Region", "all") || "all").toLowerCase().trim();
+    return (host.setting("Region", "us") || "us").toLowerCase().trim();
 }
 
 function load() {

@@ -2,11 +2,13 @@
 
 namespace FoxIPTV.Tests
 {
+    using System.IO;
     using System.Linq;
     using FoxIPTV.Classes;
     using FoxIPTV.Playback;
     using FoxIPTV.Services;
     using FoxIPTV.Services.Scripting;
+    using Newtonsoft.Json;
 
     public class CoreTests
     {
@@ -27,8 +29,45 @@ namespace FoxIPTV.Tests
             var providers = ScriptLoader.LoadAll();
 
             Assert.DoesNotContain(ScriptLoader.Errors, x => x.Key.StartsWith("built-in"));
-            Assert.Contains(providers, x => x.Id == "freetv" && x.Capabilities.HasFlag(ProviderCapabilities.LiveTv));
+
+            foreach (var id in new[] { "pluto", "samsungtvplus", "plex", "roku", "freetv" })
+            {
+                Assert.Contains(providers, x => x.Id == id && x.Capabilities.HasFlag(ProviderCapabilities.LiveTv));
+            }
+
             Assert.Contains(providers, x => x.Id == "m3u");
+            Assert.DoesNotContain(providers.SelectMany(x => x.Fields), x => x.Key == "Source");
+            Assert.True(providers.Single(x => x.Id == "pluto").CanTune);
+        }
+
+        [Fact]
+        public void FreeTvEntries_MoveToTheirOwnProviders()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "foxiptv-move-" + Guid.NewGuid().ToString("N"));
+
+            Directory.CreateDirectory(folder);
+
+            try
+            {
+                File.WriteAllText(Path.Combine(folder, "fcdata-freetv"), "[\"FilmRiseForensicFiles.us\",\"KIRODT1.us\",\"USBB3200017MY\",\"USBB3200018Q6\"]");
+                File.WriteAllText(Path.Combine(folder, "hidden-freetv"), "[\"https://jmp2.uk/stvp-US1000016Q\", \"https://jmp2.uk/rok-34e2d8f442ab5fa3aed29436c2f8ed63.m3u8\", \"https://example.tv/live.m3u8\"]");
+
+                TvCore.MoveFreeTvEntries(folder);
+                TvCore.MoveFreeTvEntries(folder);
+
+                string[] Read(string name) => JsonConvert.DeserializeObject<string[]>(File.ReadAllText(Path.Combine(folder, name)));
+
+                Assert.Equal(new[] { "FilmRiseForensicFiles.us", "KIRODT1.us" }, Read("fcdata-freetv"));
+                Assert.Equal(new[] { "USBB3200017MY", "USBB3200018Q6" }, Read("fcdata-samsungtvplus"));
+                Assert.Equal(new[] { "https://example.tv/live.m3u8" }, Read("hidden-freetv"));
+                Assert.Equal(new[] { "https://jmp2.uk/stvp-US1000016Q" }, Read("hidden-samsungtvplus"));
+                Assert.Equal(new[] { "https://jmp2.uk/rok-34e2d8f442ab5fa3aed29436c2f8ed63.m3u8" }, Read("hidden-roku"));
+                Assert.False(File.Exists(Path.Combine(folder, "drmdata-samsungtvplus")));
+            }
+            finally
+            {
+                Directory.Delete(folder, true);
+            }
         }
 
         [Fact]
