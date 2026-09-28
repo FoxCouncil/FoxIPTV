@@ -110,7 +110,7 @@ namespace FoxIPTV.Classes
         public static string LogPath { get; private set; }
 
         /// <summary>The path used to store user data</summary>
-        public static string UserStoragePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FoxIPTV");
+        public static string UserStoragePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create), "FoxIPTV");
 
         /// <summary>The path to the temporary folder used by this application</summary>
         public static string TempPath => Path.Combine(Path.GetTempPath(), "FoxIPTV");
