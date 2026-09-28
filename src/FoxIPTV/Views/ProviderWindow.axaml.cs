@@ -8,12 +8,26 @@ namespace FoxIPTV.Views
     using System.Linq;
     using System.Threading.Tasks;
     using Avalonia.Controls;
+    using Avalonia.Controls.Templates;
     using Avalonia.Interactivity;
     using Avalonia.Layout;
+    using Avalonia.Media;
+    using Avalonia.Media.Imaging;
     using Classes;
     using Newtonsoft.Json.Linq;
     using Services;
     using Services.Scripting;
+
+    public class CountryChoice
+    {
+        public string Value { get; set; }
+
+        public string Name { get; set; }
+
+        public Bitmap Flag { get; set; }
+
+        public override string ToString() => Name;
+    }
 
     public partial class ProviderWindow : Window
     {
@@ -187,6 +201,21 @@ namespace FoxIPTV.Views
             {
                 var combo = new ComboBox { ItemsSource = field.Choices };
 
+                if (Countries.IsCountryList(field.Choices))
+                {
+                    combo.ItemsSource = field.Choices.Select(x => new CountryChoice { Value = x, Name = Countries.Name(x), Flag = Countries.Flag(x) }).ToList();
+                    combo.ItemTemplate = new FuncDataTemplate<CountryChoice>((choice, scope) => new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Spacing = 8,
+                        Children =
+                        {
+                            new Image { Source = choice?.Flag, Width = 28, Height = 16, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center },
+                            new TextBlock { Text = choice?.Name, VerticalAlignment = VerticalAlignment.Center }
+                        }
+                    });
+                }
+
                 var wanted = remembered ?? field.Default;
 
                 var index = wanted == null ? -1 : field.Choices.IndexOf(wanted);
@@ -212,7 +241,9 @@ namespace FoxIPTV.Views
             {
                 case ComboBox combo:
                 {
-                    return combo.SelectedItem?.ToString()?.Trim() ?? string.Empty;
+                    var selected = combo.SelectedItem is CountryChoice choice ? choice.Value : combo.SelectedItem?.ToString();
+
+                    return selected?.Trim() ?? string.Empty;
                 }
 
                 case TextBox textBox:

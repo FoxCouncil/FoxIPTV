@@ -17,38 +17,44 @@
         </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="*,4,280" Margin="8">
-        <DockPanel Grid.Column="0">
-            <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,6">
-                <TextBox x:Name="SearchTextBox" Watermark="Search..." />
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Group by:" VerticalAlignment="Center" />
-                    <Button x:Name="FilterNoneButton" Content="None" Tag="None" IsEnabled="False" />
-                    <Button x:Name="FilterCountriesButton" Content="Countries" Tag="Countries" />
-                </StackPanel>
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,6">
+            <TextBox x:Name="SearchTextBox" Watermark="Search..." />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="Group by:" VerticalAlignment="Center" />
+                <Button x:Name="FilterNoneButton" Content="None" Tag="None" IsEnabled="False" />
+                <Button x:Name="FilterCountriesButton" Content="Countries" Tag="Countries" />
             </StackPanel>
+        </StackPanel>
 
-            <ListBox x:Name="ChannelList" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="views:ChannelRow">
-                        <TextBlock Text="{Binding Text}"
-                                   Margin="{Binding Indent}"
-                                   Classes.favourite="{Binding IsFavourite}"
-                                   Classes.heading="{Binding IsHeading}"
-                                   TextTrimming="CharacterEllipsis" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </DockPanel>
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Image x:Name="ChannelLogo" Grid.Column="0" Width="96" Height="72" Stretch="Uniform" VerticalAlignment="Top" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock x:Name="ChannelNameLabel" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                    <StackPanel x:Name="ProgrammePanel" Spacing="3" IsVisible="False">
+                        <TextBlock x:Name="ProgrammeTitleLabel" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <TextBlock x:Name="ProgrammeTimeLabel" Grid.Column="0" Classes="muted" VerticalAlignment="Center" />
+                            <ProgressBar x:Name="ProgrammeProgressBar" Grid.Column="1" Minimum="0" Maximum="100" MinWidth="60" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock x:Name="ProgrammeDescriptionLabel" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </StackPanel>
+                <Button x:Name="FavoriteButton" Grid.Column="2" Content="☆ Favourite" MinWidth="130" HorizontalContentAlignment="Center" VerticalAlignment="Top" />
+            </Grid>
+        </Border>
 
-        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
-
-        <HeaderedContentControl Grid.Column="2" Header="Channel Details" Margin="4,0,0,0">
-            <DockPanel Margin="0,6,0,0">
-                <Button x:Name="FavoriteButton" DockPanel.Dock="Bottom" Content="☆ Favourite" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,8,0,0" />
-                <TextBlock x:Name="ChannelNameLabel" DockPanel.Dock="Bottom" FontSize="16" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
-                <Image x:Name="ChannelLogo" Stretch="Uniform" Margin="8" />
-            </DockPanel>
-        </HeaderedContentControl>
-    </Grid>
+        <ListBox x:Name="ChannelList" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="views:ChannelRow">
+                    <TextBlock Text="{Binding Text}"
+                               Margin="{Binding Indent}"
+                               Classes.favourite="{Binding IsFavourite}"
+                               Classes.heading="{Binding IsHeading}"
+                               TextTrimming="CharacterEllipsis" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
 </Window>

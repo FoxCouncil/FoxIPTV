@@ -42,6 +42,8 @@ namespace FoxIPTV.Views
 
         private int _generation;
 
+        private readonly DispatcherTimer _programmeClock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+
         /// <summary>Are we filtering channels based on a search term</summary>
         private bool IsAllChannelsSearchFiltered => !string.IsNullOrWhiteSpace(_allChannelsFilter);
 
@@ -65,7 +67,21 @@ namespace FoxIPTV.Views
 
             TvCore.ChannelChanged += newChannel => Dispatcher.UIThread.Post(UpdateGui);
 
+            TvCore.ProgrammeChanged += programme => Dispatcher.UIThread.Post(UpdateProgramme);
+
+            TvCore.MediaChanged += (source, title) => Dispatcher.UIThread.Post(UpdateProgramme);
+
             TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(LoadAll);
+
+            _programmeClock.Tick += (sender, args) =>
+            {
+                if (IsVisible)
+                {
+                    UpdateProgramme();
+                }
+            };
+
+            _programmeClock.Start();
 
             Opened += (sender, args) => LoadAll();
 
@@ -281,7 +297,9 @@ namespace FoxIPTV.Views
                 }
             }
 
-            ChannelNameLabel.Text = channel.Index + Environment.NewLine + channel.Name.Replace(": ", Environment.NewLine);
+            ChannelNameLabel.Text = $"{channel.Index} {channel.Name}";
+
+            UpdateProgramme();
 
             ShowLogo(channel);
 
@@ -296,6 +314,41 @@ namespace FoxIPTV.Views
             {
                 FavoriteButton.ClearValue(ForegroundProperty);
             }
+        }
+
+        private void UpdateProgramme()
+        {
+            var programme = TvCore.CurrentMedia == null ? TvCore.CurrentProgramme : null;
+
+            if (programme == null || string.IsNullOrWhiteSpace(programme.Title))
+            {
+                ProgrammePanel.IsVisible = false;
+
+                return;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var length = (programme.Stop - programme.Start).TotalSeconds;
+            var done = length <= 0 ? 0 : Math.Max(0, Math.Min(1, (now - programme.Start).TotalSeconds / length));
+            var left = programme.Stop - now;
+
+            ProgrammeTitleLabel.Text = programme.Title;
+            ProgrammeTimeLabel.Text = $"{programme.Start.ToLocalTime():t} – {programme.Stop.ToLocalTime():t}{(left > TimeSpan.Zero ? $" · {Remaining(left)} left" : string.Empty)}";
+            ProgrammeProgressBar.Value = done * 100;
+
+            ProgrammeDescriptionLabel.Text = programme.Description ?? string.Empty;
+            ProgrammeDescriptionLabel.IsVisible = !string.IsNullOrWhiteSpace(programme.Description);
+
+            ToolTip.SetTip(ProgrammeDescriptionLabel, programme.Description);
+
+            ProgrammePanel.IsVisible = true;
+        }
+
+        private static string Remaining(TimeSpan left)
+        {
+            var minutes = (int)Math.Ceiling(left.TotalMinutes);
+
+            return minutes >= 60 ? $"{minutes / 60} h {minutes % 60} min" : $"{minutes} min";
         }
 
         private void ToggleFavourite()
