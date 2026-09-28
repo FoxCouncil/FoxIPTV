@@ -4,11 +4,11 @@
 var plugin = {
     id: "freetv",
     title: "Free TV Playlists",
-    description: "Samsung TV Plus, Plex, Roku and Free-TV public playlists with guide data, no account needed",
+    description: "Pluto TV, Samsung TV Plus, Plex, Roku and Free-TV public playlists with guide data, no account needed",
     version: "1",
     capabilities: ["live"],
     fields: [
-        { key: "Source", kind: "choice", choices: ["Samsung TV Plus", "Plex", "Roku", "Free-TV"], default: "Samsung TV Plus" },
+        { key: "Source", kind: "choice", choices: ["Pluto TV", "Samsung TV Plus", "Plex", "Roku", "Free-TV"], default: "Samsung TV Plus" },
         { key: "Region", kind: "choice", choices: ["us", "ca", "gb", "au", "nz", "de", "fr", "es", "it", "at", "ch", "dk", "no", "se", "in", "kr", "mx", "br", "ar", "cl", "all"], default: "us" }
     ]
 };
@@ -16,6 +16,7 @@ var plugin = {
 var GENERATED = "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/";
 
 var SOURCES = {
+    "Pluto TV":        { url: function (r) { return GENERATED + "plutotv_" + r + ".m3u"; },        regions: ["all", "ar", "br", "ca", "cl", "de", "dk", "es", "fr", "gb", "it", "mx", "no", "se", "us"] },
     "Samsung TV Plus": { url: function (r) { return GENERATED + "samsungtvplus_" + r + ".m3u"; },  regions: ["all", "at", "ca", "ch", "de", "es", "fr", "gb", "in", "it", "kr", "us"] },
     "Plex":            { url: function (r) { return GENERATED + "plex_" + r + ".m3u"; },           regions: ["all", "au", "ca", "es", "fr", "gb", "mx", "nz", "us"] },
     "Roku":            { url: function (r) { return GENERATED + "roku_all.m3u"; },                 regions: ["all"] },
