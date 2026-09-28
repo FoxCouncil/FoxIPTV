@@ -4,6 +4,7 @@ namespace FoxIPTV.Views
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Threading.Tasks;
     using Avalonia;
@@ -13,19 +14,55 @@ namespace FoxIPTV.Views
     using Avalonia.Threading;
     using Classes;
 
-    public class ChannelRow
+    public class ChannelRow : INotifyPropertyChanged
     {
+        private bool _isFavourite;
+
+        private string _nowTitle;
+
         public string Text { get; set; }
 
         public Thickness Indent { get; set; }
 
         public bool IsHeading { get; set; }
 
-        public bool IsFavourite { get; set; }
+        public bool IsFavourite
+        {
+            get => _isFavourite;
+            set
+            {
+                _isFavourite = value;
+
+                Changed(nameof(IsFavourite));
+                Changed(nameof(Star));
+            }
+        }
+
+        public string Star => IsFavourite ? "★" : "☆";
+
+        public string NowTitle
+        {
+            get => _nowTitle;
+            set
+            {
+                _nowTitle = value;
+
+                Changed(nameof(NowTitle));
+            }
+        }
+
+        public Channel Channel { get; set; }
 
         public string Group { get; set; }
 
         public int ListIndex { get; set; } = -1;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void Changed(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
 
     public partial class ChannelsWindow : Window
@@ -63,7 +100,7 @@ namespace FoxIPTV.Views
 
             ChannelList.SelectionChanged += ChannelList_SelectionChanged;
 
-            FavoriteButton.Click += (sender, args) => ToggleFavourite();
+            ChannelList.AddHandler(Button.ClickEvent, StarButton_Click);
 
             TvCore.ChannelChanged += newChannel => Dispatcher.UIThread.Post(UpdateGui);
 
@@ -78,6 +115,7 @@ namespace FoxIPTV.Views
                 if (IsVisible)
                 {
                     UpdateProgramme();
+                    RefreshOnNow();
                 }
             };
 
@@ -145,6 +183,7 @@ namespace FoxIPTV.Views
                 tvChannels = TvCore.Channels.FindAll(x => x.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
+            var onNow = OnNowTitles();
             var indexOf = new Dictionary<uint, int>();
 
             for (var i = 0; i < TvCore.ChannelIndexList.Count; i++)
@@ -159,6 +198,8 @@ namespace FoxIPTV.Views
                     Text = $"{channel.Index} {channel.Name}",
                     Indent = new Thickness(indent, 0, 0, 0),
                     IsFavourite = IsFavorite(channel),
+                    NowTitle = OnNowFor(channel, onNow),
+                    Channel = channel,
                     ListIndex = indexOf.TryGetValue(channel.Index, out var listIndex) ? listIndex : -1
                 };
             }
@@ -167,7 +208,7 @@ namespace FoxIPTV.Views
             {
                 rows.Add(new ChannelRow { Text = $"All Channels ({tvChannels.Count})", IsHeading = true });
 
-                rows.AddRange(tvChannels.Select(channel => Row(channel, 12)));
+                rows.AddRange(tvChannels.Select(channel => Row(channel, 0)));
 
                 return rows;
             }
@@ -185,7 +226,7 @@ namespace FoxIPTV.Views
 
                 if (open)
                 {
-                    rows.AddRange(channels.Select(channel => Row(channel, 28)));
+                    rows.AddRange(channels.Select(channel => Row(channel, 16)));
                 }
             }
 
@@ -293,18 +334,6 @@ namespace FoxIPTV.Views
             UpdateProgramme();
 
             ShowLogo(channel);
-
-            var favourite = IsFavorite(channel);
-
-            FavoriteButton.Content = favourite ? "★ Unfavourite" : "☆ Favourite";
-            if (favourite)
-            {
-                FavoriteButton.Foreground = Avalonia.Media.Brushes.Lime;
-            }
-            else
-            {
-                FavoriteButton.ClearValue(ForegroundProperty);
-            }
         }
 
         private void UpdateProgramme()
@@ -342,25 +371,76 @@ namespace FoxIPTV.Views
             return minutes >= 60 ? $"{minutes / 60} h {minutes % 60} min" : $"{minutes} min";
         }
 
-        private void ToggleFavourite()
+        private void StarButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var channel = TvCore.CurrentChannel;
-
-            if (channel == null)
+            if (!(e.Source is Button button) || !button.Classes.Contains("star") || !(button.DataContext is ChannelRow row) || row.Channel == null)
             {
                 return;
             }
 
-            if (IsFavorite(channel))
+            e.Handled = true;
+
+            if (IsFavorite(row.Channel))
             {
-                TvCore.RemoveFavoriteChannel(channel.Id);
+                TvCore.RemoveFavoriteChannel(row.Channel.Id);
             }
             else
             {
-                TvCore.AddFavoriteChannel(channel.Id);
+                TvCore.AddFavoriteChannel(row.Channel.Id);
             }
 
-            LoadAll();
+            row.IsFavourite = IsFavorite(row.Channel);
+        }
+
+        private static Dictionary<string, string> OnNowTitles()
+        {
+            var now = DateTimeOffset.UtcNow;
+            var titles = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (var programme in TvCore.Guide ?? new List<Programme>())
+            {
+                if (programme.Channel != null && programme.Start <= now && programme.Stop > now && !titles.ContainsKey(programme.Channel))
+                {
+                    titles[programme.Channel] = programme.Title;
+                }
+            }
+
+            return titles;
+        }
+
+        /// <summary>What is on the channel now, blank when the show's name is the channel's name</summary>
+        private static string OnNowFor(Channel channel, Dictionary<string, string> titles)
+        {
+            if (channel?.Id == null || !titles.TryGetValue(channel.Id, out var title) || string.IsNullOrWhiteSpace(title))
+            {
+                return string.Empty;
+            }
+
+            title = title.Trim();
+
+            var name = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2)[1].Trim() : channel.Name.Trim();
+
+            return string.Equals(title, name, StringComparison.OrdinalIgnoreCase) || string.Equals(title, channel.Name.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : title;
+        }
+
+        private void RefreshOnNow()
+        {
+            if (!(ChannelList.ItemsSource is List<ChannelRow> rows))
+            {
+                return;
+            }
+
+            var titles = OnNowTitles();
+
+            foreach (var row in rows.Where(x => x.Channel != null))
+            {
+                var title = OnNowFor(row.Channel, titles);
+
+                if (row.NowTitle != title)
+                {
+                    row.NowTitle = title;
+                }
+            }
         }
 
         private void ButtonFilter_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)

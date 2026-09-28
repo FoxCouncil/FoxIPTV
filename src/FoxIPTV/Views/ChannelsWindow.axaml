@@ -15,6 +15,29 @@
         <Style Selector="TextBlock.heading">
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
+        <Style Selector="Button.star">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.star.favourite">
+            <Setter Property="Foreground" Value="Lime" />
+        </Style>
+        <Style Selector="Button.star:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="Gold" />
+        </Style>
+        <Style Selector="Button.star:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
     </Window.Styles>
 
     <DockPanel Margin="8">
@@ -28,8 +51,8 @@
         </StackPanel>
 
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" MinHeight="111">
-                <Image x:Name="ChannelLogo" Grid.Column="0" Width="96" Height="72" Stretch="Uniform" VerticalAlignment="Top" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" MinHeight="111">
+                <Image x:Name="ChannelLogo" Grid.Column="0" Width="200" MaxHeight="160" Stretch="Uniform" VerticalAlignment="Stretch" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="ChannelNameLabel" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                     <StackPanel x:Name="ProgrammePanel" Spacing="3" IsVisible="False">
@@ -41,18 +64,18 @@
                         <TextBlock x:Name="ProgrammeDescriptionLabel" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </StackPanel>
-                <Button x:Name="FavoriteButton" Grid.Column="2" Content="☆ Favourite" MinWidth="130" HorizontalContentAlignment="Center" VerticalAlignment="Top" />
             </Grid>
         </Border>
 
         <ListBox x:Name="ChannelList" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="views:ChannelRow">
-                    <TextBlock Text="{Binding Text}"
-                               Margin="{Binding Indent}"
-                               Classes.favourite="{Binding IsFavourite}"
-                               Classes.heading="{Binding IsHeading}"
-                               TextTrimming="CharacterEllipsis" />
+                    <Grid ColumnDefinitions="28,*,*" Margin="{Binding Indent}">
+                        <TextBlock Grid.ColumnSpan="3" Text="{Binding Text}" IsVisible="{Binding IsHeading}" Classes="heading" TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="0" Classes="star" Classes.favourite="{Binding IsFavourite}" Content="{Binding Star}" IsVisible="{Binding !IsHeading}" ToolTip.Tip="Favourite" />
+                        <TextBlock Grid.Column="1" Text="{Binding Text}" IsVisible="{Binding !IsHeading}" Classes.favourite="{Binding IsFavourite}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="{Binding NowTitle}" IsVisible="{Binding !IsHeading}" Classes="muted" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
