@@ -64,7 +64,7 @@ namespace FoxIPTV.Classes
 
             if (message.StartsWith(VideoDiscontinuity, StringComparison.Ordinal))
             {
-                OnDiscontinuity();
+                ObserveDiscontinuity();
 
                 return;
             }
@@ -74,7 +74,18 @@ namespace FoxIPTV.Classes
                 return;
             }
 
-            var url = Uri.UnescapeDataString(message.Substring("Retrieving ".Length).Trim());
+            ObserveSegment(message.Substring("Retrieving ".Length).Trim());
+        }
+
+        /// <summary>Called as each video piece starts playing</summary>
+        public static void ObserveSegment(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+            {
+                return;
+            }
+
+            var url = Uri.UnescapeDataString(address);
             var path = url.Split('?')[0];
 
             if (path.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".vtt", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".webvtt", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".key", StringComparison.OrdinalIgnoreCase))
@@ -140,7 +151,8 @@ namespace FoxIPTV.Classes
             }
         }
 
-        private static void OnDiscontinuity()
+        /// <summary>Called when playback crosses a join between two runs of video, after the piece that starts it</summary>
+        public static void ObserveDiscontinuity()
         {
             lock (Lock)
             {
