@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>FoxIPTV</RootNamespace>
     <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>3.0.0-alpha</Version>
@@ -18,6 +19,22 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <FFmpegRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</FFmpegRid>
+    <FFmpegRid Condition="'$(FFmpegRid)' == '' And $([MSBuild]::IsOSPlatform('Windows'))">win-x64</FFmpegRid>
+    <FFmpegRid Condition="'$(FFmpegRid)' == '' And $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</FFmpegRid>
+    <FFmpegRid Condition="'$(FFmpegRid)' == '' And $([MSBuild]::IsOSPlatform('OSX'))">osx-arm64</FFmpegRid>
+    <FFmpegDir>$(MSBuildThisFileDirectory)..\..\native\$(FFmpegRid)\</FFmpegDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(FFmpegDir)**\*" Exclude="$(FFmpegDir)**\*.txt" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" Visible="false" />
+  </ItemGroup>
+
+  <Target Name="CheckFFmpeg" BeforeTargets="Build" Condition="!Exists('$(FFmpegDir)')">
+    <Warning Text="FFmpeg is not built for $(FFmpegRid), playback will not work. Run build/ffmpeg.sh $(FFmpegRid) (see the script for the container command)." />
+  </Target>
 
   <ItemGroup>
     <EmbeddedResource Include="Plugins\*.js" LogicalName="FoxIPTV.Plugins.%(Filename)%(Extension)" />
@@ -40,6 +57,11 @@
         Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$(EmbedVlc)' != 'true'" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23"
         Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$(EmbedVlc)' != 'true'" />
+
+    <PackageReference Include="FFmpeg.AutoGen" Version="9.0.1.1" />
+    <PackageReference Include="ppy.SDL3-CS" Version="2026.722.0" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
 
     <PackageReference Include="Jint" Version="4.16.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
