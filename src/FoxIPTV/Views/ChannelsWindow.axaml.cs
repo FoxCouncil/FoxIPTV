@@ -356,6 +356,11 @@ namespace FoxIPTV.Views
             ProgrammeTimeLabel.Text = $"{programme.Start.ToLocalTime():t} – {programme.Stop.ToLocalTime():t}{(left > TimeSpan.Zero ? $" · {Remaining(left)} left" : string.Empty)}";
             ProgrammeProgressBar.Value = done * 100;
 
+            if (ProgrammeDescriptionLabel.Text != (programme.Description ?? string.Empty))
+            {
+                ProgrammeDescriptionScroll.Offset = default;
+            }
+
             ProgrammeDescriptionLabel.Text = programme.Description ?? string.Empty;
             ProgrammeDescriptionLabel.IsVisible = !string.IsNullOrWhiteSpace(programme.Description);
 

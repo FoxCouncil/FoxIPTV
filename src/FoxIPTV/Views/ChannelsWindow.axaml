@@ -51,19 +51,21 @@
         </StackPanel>
 
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0">
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" MinHeight="111">
-                <Image x:Name="ChannelLogo" Grid.Column="0" Width="200" MaxHeight="160" Stretch="Uniform" VerticalAlignment="Stretch" />
-                <StackPanel Grid.Column="1" Spacing="3">
-                    <TextBlock x:Name="ChannelNameLabel" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                    <StackPanel x:Name="ProgrammePanel" Spacing="3" IsVisible="False">
-                        <TextBlock x:Name="ProgrammeTitleLabel" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Height="160">
+                <Image x:Name="ChannelLogo" Grid.Column="0" Width="200" Stretch="Uniform" VerticalAlignment="Stretch" />
+                <DockPanel Grid.Column="1">
+                    <TextBlock x:Name="ChannelNameLabel" DockPanel.Dock="Top" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                    <DockPanel x:Name="ProgrammePanel" Margin="0,3,0,0" IsVisible="False">
+                        <TextBlock x:Name="ProgrammeTitleLabel" DockPanel.Dock="Top" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,3">
                             <TextBlock x:Name="ProgrammeTimeLabel" Grid.Column="0" Classes="muted" VerticalAlignment="Center" />
                             <ProgressBar x:Name="ProgrammeProgressBar" Grid.Column="1" Minimum="0" Maximum="100" MinWidth="60" VerticalAlignment="Center" />
                         </Grid>
-                        <TextBlock x:Name="ProgrammeDescriptionLabel" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                </StackPanel>
+                        <ScrollViewer x:Name="ProgrammeDescriptionScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="ProgrammeDescriptionLabel" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </DockPanel>
+                </DockPanel>
             </Grid>
         </Border>
 
