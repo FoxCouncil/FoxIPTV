@@ -199,6 +199,8 @@ namespace FoxIPTV.Playback.Video
 
         public void Clear(PixelSize size)
         {
+            ClearInputs();
+
             if (_lost || size.Width <= 0 || size.Height <= 0)
             {
                 return;
