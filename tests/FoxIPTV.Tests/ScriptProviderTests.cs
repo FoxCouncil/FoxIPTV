@@ -110,5 +110,31 @@ function resolve(item) {
             Assert.Equal("HD", sources[1].Name);
             Assert.Equal("https://x/", sources[1].Headers["Referer"]);
         }
+
+        [Fact]
+        public async Task Tune_GivesAFreshAddressOrNothing()
+        {
+            const string tuning = @"
+var plugin = { id: 'tuner', title: 'Tuner', description: 'For tests', version: '1', capabilities: ['live'], fields: [] };
+var calls = 0;
+function channels(progress) { return [ { index: 1, id: 'a', name: 'Alpha', stream: 'http://x/a.m3u8' } ]; }
+function tune(channel) {
+    calls++;
+    if (channel.id === 'a') { return 'https://x/fresh.m3u8?for=' + channel.name + '&call=' + calls; }
+    if (channel.id === 'bad') { return 'javascript:alert(1)'; }
+    return null;
+}
+";
+
+            var provider = new ScriptProvider(tuning, "tuner", false);
+
+            Assert.True(provider.CanTune);
+            Assert.False(Load().CanTune);
+
+            Assert.Equal("https://x/fresh.m3u8?for=Alpha&call=1", (await provider.Tune(new Channel { Id = "a", Name = "Alpha", Stream = new Uri("http://x/a.m3u8") })).ToString());
+            Assert.Equal("https://x/fresh.m3u8?for=Alpha&call=2", (await provider.Tune(new Channel { Id = "a", Name = "Alpha" })).ToString());
+            Assert.Null(await provider.Tune(new Channel { Id = "bad", Name = "Bad" }));
+            Assert.Null(await provider.Tune(new Channel { Id = "b", Name = "Bravo" }));
+        }
     }
 }

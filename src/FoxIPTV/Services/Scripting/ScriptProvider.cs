@@ -16,7 +16,7 @@ namespace FoxIPTV.Services.Scripting
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class ScriptProvider : IService, ILibraryProvider
+    public class ScriptProvider : IService, ILibraryProvider, ILiveTuner
     {
         private const string Prelude = @"
 var host = (function () {
@@ -96,7 +96,7 @@ var host = (function () {
 
                 ReadMetadata();
 
-                foreach (var name in new[] { "authenticate", "channels", "guide", "categories", "browse", "search", "details", "episodes", "resolve" })
+                foreach (var name in new[] { "authenticate", "channels", "guide", "categories", "browse", "search", "details", "episodes", "resolve", "tune" })
                 {
                     if (_engine.Evaluate($"typeof {name} === 'function'").AsBoolean())
                     {
@@ -399,6 +399,31 @@ var host = (function () {
                 }
 
                 return sources;
+            });
+        }
+
+        public bool CanTune => _functions.Contains("tune");
+
+        public Task<Uri> Tune(Channel channel)
+        {
+            return Run(() =>
+            {
+                var result = Call("tune", ToJs(new JObject { ["id"] = channel.Id, ["name"] = channel.Name, ["index"] = channel.Index, ["stream"] = channel.Stream?.ToString() }));
+                var text = result.IsString() ? result.AsString() : result.IsObject() ? Str(result, "url") : null;
+
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return null;
+                }
+
+                if (!Uri.TryCreate(text, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+                {
+                    TvCore.LogError($"[{Title}] tune() returned a non-stream URL, skipped: {text}");
+
+                    return null;
+                }
+
+                return uri;
             });
         }
 

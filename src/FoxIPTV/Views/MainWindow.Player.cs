@@ -6,6 +6,7 @@ namespace FoxIPTV.Views
     using System.Threading.Tasks;
     using Classes;
     using Playback;
+    using Services;
 
     public partial class MainWindow
     {
@@ -135,7 +136,7 @@ namespace FoxIPTV.Views
             _player.Stop();
         }
 
-        private void PlayCurrent()
+        private async void PlayCurrent()
         {
             if (_isClosing)
             {
@@ -147,6 +148,30 @@ namespace FoxIPTV.Views
             if (request == null)
             {
                 return;
+            }
+
+            var channel = TvCore.CurrentMedia == null ? TvCore.CurrentChannel : null;
+
+            if (channel != null && TvCore.CurrentService is ILiveTuner tuner && tuner.CanTune)
+            {
+                try
+                {
+                    var fresh = await tuner.Tune(channel);
+
+                    if (_isClosing || TvCore.CurrentMedia != null || !ReferenceEquals(TvCore.CurrentChannel, channel))
+                    {
+                        return;
+                    }
+
+                    if (fresh != null)
+                    {
+                        request.Uri = fresh;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TvCore.LogError($"[.NET] Tuning {channel.Name} failed, playing its stored address: {ex.Message}");
+                }
             }
 
             TvCore.LogInfo($"[.NET] Play {request.Uri}");
