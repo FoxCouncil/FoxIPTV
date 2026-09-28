@@ -183,6 +183,22 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Progressive_OnDemandWithNoLengthEndsOnce()
+        {
+            var stream = Enumerable.Range(0, 4).SelectMany(i => Clip($"low/{i}.ts")).ToArray();
+
+            _server.Serve("/movie.ts", () => new Reply { Data = stream, Chunked = true });
+
+            using var run = Play("/movie.ts", false);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 20), run.Describe());
+
+            AssertSmooth(run, 4, 160, 90);
+            Assert.Single(_server.Requests, x => x.Path == "/movie.ts");
+            AssertPolite();
+        }
+
+        [Fact]
         public void Progressive_LiveKeepsPlayingWhenTheServerHangsUp()
         {
             var stream = Enumerable.Range(0, 4).SelectMany(i => Clip($"low/{i}.ts")).ToArray();

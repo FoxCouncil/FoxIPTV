@@ -291,7 +291,7 @@ namespace FoxIPTV.Playback
 
         private bool Reconnect(string why)
         {
-            if (_token.IsCancellationRequested || _reconnects >= 5 || (Length.HasValue && !CanSeek))
+            if (_token.IsCancellationRequested || _reconnects >= 5 || (Length.HasValue && !CanSeek) || (!_request.IsLive && !CanSeek))
             {
                 TvCore.LogError($"[Player] Plain stream stopped at byte {_position}: {why}");
 
