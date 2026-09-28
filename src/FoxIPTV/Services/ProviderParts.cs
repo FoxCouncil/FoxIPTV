@@ -25,9 +25,9 @@ namespace FoxIPTV.Services
             }
         }
 
-        public static ProviderField RegionField()
+        public static ProviderField RegionField(string defaultRegion = "us")
         {
-            return ProviderField.Choice("Region", Regions, "us");
+            return ProviderField.Choice("Region", Regions, defaultRegion);
         }
 
         public static string Setting(JObject data, string key, string fallback)

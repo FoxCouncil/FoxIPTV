@@ -26,11 +26,12 @@ namespace FoxIPTV.Tests
         [Fact]
         public void Providers_KeepTheirIdsAndRegion()
         {
-            IService[] providers = { new PlutoTv(), new PlexTv(), new FreeTv(), new M3uPlaylist() };
+            IService[] providers = { new PlutoTv(), new PlexTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
 
-            Assert.Equal(new[] { "pluto", "plex", "freetv", "m3u" }, providers.Select(x => x.Id));
+            Assert.Equal(new[] { "pluto", "plex", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
             Assert.All(providers, x => Assert.True(x.Capabilities.HasFlag(ProviderCapabilities.LiveTv)));
             Assert.All(providers.Take(3), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
+            Assert.Contains(providers[4].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
             Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[3].Fields.Select(x => x.Key));
             Assert.True(((ILiveTuner)providers[0]).CanTune);
         }
@@ -41,9 +42,12 @@ namespace FoxIPTV.Tests
             var progress = Tuple.Create<IProgress<int>, IProgress<int>>(new Progress<int>(), new Progress<int>());
             var (freeTv, _) = await new FreeTv { ProgressUpdater = progress }.Process();
             var (iptvOrg, _) = await new IPTVDotOrg { ProgressUpdater = progress }.Process();
+            var (iptvOrgUk, _) = await new IPTVDotOrg { ProgressUpdater = progress, Data = new Newtonsoft.Json.Linq.JObject { ["Region"] = "gb" } }.Process();
 
             Assert.True(freeTv.Count > 1000, $"{freeTv.Count} Free-TV channels");
             Assert.True(iptvOrg.Count > 10000, $"{iptvOrg.Count} IPTV.org channels");
+            Assert.InRange(iptvOrgUk.Count, 100, 2000);
+            Assert.All(iptvOrgUk, x => Assert.StartsWith("UK: ", x.Name));
             Assert.DoesNotContain(freeTv.Concat(iptvOrg), x => x.Stream.Host.Contains("github", StringComparison.OrdinalIgnoreCase) || (x.Logo?.Host.Contains("github", StringComparison.OrdinalIgnoreCase) ?? false));
         }
 

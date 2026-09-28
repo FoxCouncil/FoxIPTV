@@ -19,7 +19,7 @@ namespace FoxIPTV.Services
 
         public ProviderCapabilities Capabilities => ProviderCapabilities.LiveTv;
 
-        public List<ProviderField> Fields { get; } = new List<ProviderField>();
+        public List<ProviderField> Fields { get; } = new List<ProviderField> { ProviderParts.RegionField("all") };
 
         public JObject Data { get; set; }
 
@@ -50,6 +50,8 @@ namespace FoxIPTV.Services
             progressPercentage.Report(0);
 
             var rows = JArray.Parse(ProviderParts.ShippedList("iptv-org.json.gz"));
+            var region = ProviderParts.Setting(Data, "Region", "all").ToUpperInvariant();
+            var country = region == "GB" ? "UK" : region;
 
             progressPercentage.Report(20);
 
@@ -67,6 +69,11 @@ namespace FoxIPTV.Services
                     await Task.Yield();
 
                     progressPercentage.Report(20 + (int)(processed / (float)totalItems * 80));
+                }
+
+                if (country != "ALL" && !string.Equals(row[2]?.ToString(), country, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
                 }
 
                 if (!Uri.TryCreate(row[4]?.ToString(), UriKind.Absolute, out var streamUri))

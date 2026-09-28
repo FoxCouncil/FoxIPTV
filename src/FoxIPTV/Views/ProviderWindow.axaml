@@ -10,8 +10,6 @@
         WindowStartupLocation="CenterScreen">
 
     <StackPanel Margin="16" Spacing="12">
-        <TextBlock Text="Choose a content provider" FontSize="16" FontWeight="Bold" />
-
         <Grid x:Name="FormGrid" ColumnDefinitions="Auto,*" RowDefinitions="Auto" ColumnSpacing="10" RowSpacing="8">
             <TextBlock x:Name="ProviderLabel" Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
             <ComboBox x:Name="ServicesComboBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">
@@ -21,11 +19,8 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBlock x:Name="NoFieldsLabel" Grid.Row="1" Grid.Column="1" Text="This provider needs no details, just press Start." Classes="muted" IsVisible="False" />
             <CheckBox x:Name="RememberMeCheckBox" Grid.Row="1" Grid.Column="1" Content="Remember these details" />
         </Grid>
-
-        <TextBlock x:Name="SigningInLabel" Classes="muted" IsVisible="False" />
 
         <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
             <Button x:Name="LoginButton" Grid.Column="1" Content="Start" Width="100" IsDefault="True" HorizontalContentAlignment="Center" />

@@ -159,15 +159,6 @@ namespace FoxIPTV.Views
                 }
             }
 
-            NoFieldsLabel.IsVisible = service != null && row == 1;
-
-            if (NoFieldsLabel.IsVisible)
-            {
-                FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-                Grid.SetRow(NoFieldsLabel, row);
-                row++;
-            }
-
             FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             Grid.SetRow(RememberMeCheckBox, row);
 
@@ -287,8 +278,6 @@ namespace FoxIPTV.Views
             TvCore.LogDebug($"[.NET] ProviderWindow: Checking authentication for {service.Title}");
 
             IsEnabled = false;
-            SigningInLabel.Text = $"Signing in to {service.Title}...";
-            SigningInLabel.IsVisible = true;
 
             bool authenticated;
 
@@ -307,7 +296,6 @@ namespace FoxIPTV.Views
             }
 
             IsEnabled = true;
-            SigningInLabel.IsVisible = false;
 
             if (!authenticated)
             {
