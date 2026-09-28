@@ -24,7 +24,7 @@ jobs:
         include:
           - os: ubuntu-latest
             rid: win-x64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             rid: linux-x64
           - os: macos-latest
             rid: osx-arm64
@@ -37,7 +37,7 @@ jobs:
         id: cache
         with:
           path: native/${{ matrix.rid }}
-          key: ffmpeg-${{ matrix.rid }}-${{ hashFiles('build/ffmpeg.sh') }}
+          key: ffmpeg-${{ matrix.rid }}-${{ matrix.os }}-${{ hashFiles('build/ffmpeg.sh') }}
 
       - name: Build FFmpeg
         if: steps.cache.outputs.cache-hit != 'true'

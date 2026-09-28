@@ -12,15 +12,32 @@ namespace FoxIPTV.Tests
     {
         private const uint Size = 128;
 
-        [Fact]
-        public unsafe void VideoProcessor_TurnsStudioRedNv12IntoRed()
+        private static Direct3D OpenGraphicsCard()
         {
             if (!OperatingSystem.IsWindows())
             {
-                return;
+                return null;
             }
 
-            using var d3d = Direct3D.Create(null);
+            try
+            {
+                return Direct3D.Create(null);
+            }
+            catch (Exception ex) when (ex is Direct3DException or PlayerException && Environment.GetEnvironmentVariable("CI") == "true")
+            {
+                return null;
+            }
+        }
+
+        [Fact]
+        public unsafe void VideoProcessor_TurnsStudioRedNv12IntoRed()
+        {
+            using var d3d = OpenGraphicsCard();
+
+            if (d3d == null)
+            {
+                return;
+            }
 
             var source = d3d.CreateTexture(Size, Size, Direct3D.FormatNv12, Direct3D.UsageDefault, Direct3D.BindDecoder, 0, 0);
             var target = d3d.CreateTexture(Size, Size, Direct3D.FormatBgra, Direct3D.UsageDefault, Direct3D.BindRenderTarget, 0, 0);
@@ -94,12 +111,12 @@ namespace FoxIPTV.Tests
         [Fact]
         public void SharedTexture_HasHandleAndKeyedMutex()
         {
-            if (!OperatingSystem.IsWindows())
+            using var d3d = OpenGraphicsCard();
+
+            if (d3d == null)
             {
                 return;
             }
-
-            using var d3d = Direct3D.Create(null);
 
             var texture = d3d.CreateTexture(64, 64, Direct3D.FormatBgra, Direct3D.UsageDefault, Direct3D.BindRenderTarget | Direct3D.BindShaderResource, 0, Direct3D.MiscSharedKeyedMutex);
             var mutex = Direct3D.KeyedMutex(texture);
@@ -138,14 +155,14 @@ namespace FoxIPTV.Tests
         [Fact]
         public unsafe void HardwareDevice_ShareOutlivesTheOriginal()
         {
-            if (!OperatingSystem.IsWindows())
+            using var d3d = OpenGraphicsCard();
+
+            if (d3d == null)
             {
                 return;
             }
 
             Assert.True(FFmpegNative.Initialize(), FFmpegNative.Failure);
-
-            using var d3d = Direct3D.Create(null);
 
             var original = HardwareDevice.FromD3D11(d3d.Device);
 
