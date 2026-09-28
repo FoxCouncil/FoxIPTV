@@ -19,6 +19,17 @@
     <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Jint" />
+    <TrimmerRootAssembly Include="Acornima" />
+  </ItemGroup>
+
   <PropertyGroup>
     <FFmpegRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</FFmpegRid>
     <FFmpegRid Condition="'$(FFmpegRid)' == '' And $([MSBuild]::IsOSPlatform('Windows'))">win-x64</FFmpegRid>
@@ -28,7 +39,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(FFmpegDir)**\*" Exclude="$(FFmpegDir)**\*.txt" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" Visible="false" />
+    <None Include="$(FFmpegDir)**\*" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" Visible="false" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.txt" Link="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Include="Assets\Fonts\VT323-OFL.txt" Link="VT323-OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <Target Name="CheckFFmpeg" BeforeTargets="Build" Condition="!Exists('$(FFmpegDir)')">
@@ -51,8 +64,6 @@
 
     <PackageReference Include="FFmpeg.AutoGen" Version="9.0.1.1" />
     <PackageReference Include="ppy.SDL3-CS" Version="2026.722.0" />
-    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
-    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
 
     <PackageReference Include="Jint" Version="4.16.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

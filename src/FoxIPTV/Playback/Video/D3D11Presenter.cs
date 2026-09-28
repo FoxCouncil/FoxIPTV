@@ -5,59 +5,34 @@ namespace FoxIPTV.Playback.Video
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using Avalonia;
     using Avalonia.Platform;
     using Avalonia.Rendering.Composition;
     using Classes;
     using FFmpeg.AutoGen;
-    using Vortice;
-    using Vortice.Direct3D;
-    using Vortice.Direct3D11;
-    using Vortice.DXGI;
-    using Vortice.Mathematics;
-    using ID3D11Device = Vortice.Direct3D11.ID3D11Device;
-    using ID3D11DeviceContext = Vortice.Direct3D11.ID3D11DeviceContext;
-    using ID3D11Texture2D = Vortice.Direct3D11.ID3D11Texture2D;
-    using ID3D11VideoContext = Vortice.Direct3D11.ID3D11VideoContext;
-    using ID3D11VideoDevice = Vortice.Direct3D11.ID3D11VideoDevice;
 
-    /// <summary>
-    /// Draws decoded frames on Windows without them leaving the GPU: the D3D11 video processor
-    /// converts, scales and deinterlaces into a shared texture that Avalonia composites directly.
-    /// </summary>
     public sealed class D3D11Presenter : IDisposable
     {
         private const int RingSize = 3;
-
-        private const int WaitTimeout = 0x102;
 
         private readonly ICompositionGpuInterop _interop;
 
         private readonly CompositionDrawingSurface _surface;
 
-        private readonly ID3D11Device _device;
+        private readonly Direct3D _d3d;
 
-        private readonly ID3D11DeviceContext _context;
-
-        private readonly ID3D11VideoDevice _videoDevice;
-
-        private readonly ID3D11VideoContext _videoContext;
-
-        private readonly ID3D11VideoContext1 _videoContext1;
-
-        private readonly Dictionary<(IntPtr Texture, int Slice), ID3D11VideoProcessorInputView> _inputs = new Dictionary<(IntPtr, int), ID3D11VideoProcessorInputView>();
+        private readonly Dictionary<(IntPtr Texture, int Slice), IntPtr> _inputs = new Dictionary<(IntPtr, int), IntPtr>();
 
         private readonly Target[] _ring = new Target[RingSize];
 
-        private ID3D11VideoProcessorEnumerator _enumerator;
+        private IntPtr _enumerator;
 
-        private ID3D11VideoProcessor _processor;
+        private IntPtr _processor;
 
-        private (uint Width, uint Height, Format Format, bool Interlaced, int OutWidth, int OutHeight) _processorKey;
+        private (uint Width, uint Height, int Format, bool Interlaced, int OutWidth, int OutHeight) _processorKey;
 
-        private ID3D11Texture2D _upload;
+        private IntPtr _upload;
 
         private (int Width, int Height) _uploadSize;
 
@@ -75,22 +50,20 @@ namespace FoxIPTV.Playback.Video
 
         private bool _loggedHandOff;
 
-        private D3D11Presenter(ICompositionGpuInterop interop, CompositionDrawingSurface surface, ID3D11Device device, ID3D11DeviceContext context, string adapter)
+        private bool _lost;
+
+        private D3D11Presenter(ICompositionGpuInterop interop, CompositionDrawingSurface surface, Direct3D d3d)
         {
             _interop = interop;
             _surface = surface;
-            _device = device;
-            _context = context;
-            _videoDevice = device.QueryInterface<ID3D11VideoDevice>();
-            _videoContext = context.QueryInterface<ID3D11VideoContext>();
-            _videoContext1 = context.QueryInterfaceOrNull<ID3D11VideoContext1>();
-
-            Adapter = adapter;
+            _d3d = d3d;
         }
 
-        public string Adapter { get; }
+        public string Adapter => _d3d.Adapter;
 
-        public IntPtr DevicePointer => _device.NativePointer;
+        public IntPtr DevicePointer => _d3d.Device;
+
+        public bool IsLost => _lost || _interop.IsLost || _d3d.IsRemoved;
 
         public static D3D11Presenter Create(ICompositionGpuInterop interop, CompositionDrawingSurface surface)
         {
@@ -101,77 +74,40 @@ namespace FoxIPTV.Playback.Video
                 return null;
             }
 
-            using (var factory = DXGI.CreateDXGIFactory1<IDXGIFactory4>())
-            {
-                IDXGIAdapter1 adapter = null;
+            var d3d = Direct3D.Create(interop.DeviceLuid);
 
-                var luid = interop.DeviceLuid;
+            TvCore.LogInfo($"[Player] D3D11 video on {d3d.Adapter} (feature level {d3d.FeatureLevel >> 12}.{(d3d.FeatureLevel >> 8) & 0xF})");
 
-                if (luid != null && luid.Length == 8)
-                {
-                    try
-                    {
-                        adapter = factory.EnumAdapterByLuid<IDXGIAdapter1>(new Luid(BitConverter.ToUInt32(luid, 0), BitConverter.ToInt32(luid, 4)));
-                    }
-                    catch (Exception ex)
-                    {
-                        TvCore.LogError($"[Player] Adapter for the window not found ({ex.Message}), using the first one");
-                    }
-                }
-
-                if (adapter == null)
-                {
-                    factory.EnumAdapters1(0, out adapter).CheckError();
-                }
-
-                using (adapter)
-                {
-                    var levels = new[] { FeatureLevel.Level_12_1, FeatureLevel.Level_12_0, FeatureLevel.Level_11_1, FeatureLevel.Level_11_0 };
-
-                    D3D11.D3D11CreateDevice(adapter, DriverType.Unknown, DeviceCreationFlags.VideoSupport | DeviceCreationFlags.BgraSupport, levels, out ID3D11Device device, out ID3D11DeviceContext context).CheckError();
-
-                    using (var multithread = context.QueryInterface<ID3D11Multithread>())
-                    {
-                        multithread.SetMultithreadProtected(true);
-                    }
-
-                    var name = adapter.Description1.Description;
-
-                    TvCore.LogInfo($"[Player] D3D11 video on {name} ({device.FeatureLevel})");
-
-                    return new D3D11Presenter(interop, surface, device, context, name);
-                }
-            }
+            return new D3D11Presenter(interop, surface, d3d);
         }
 
-        /// <summary>Draws a frame letterboxed into a texture the size of the control and hands it to the compositor</summary>
         public unsafe bool Present(VideoFrame frame, PixelSize size, double forcedAspect)
         {
-            if (size.Width <= 0 || size.Height <= 0 || frame?.Frame == null)
+            if (_lost || size.Width <= 0 || size.Height <= 0 || frame?.Frame == null)
             {
                 return false;
             }
 
             var av = frame.Frame;
 
-            ID3D11Texture2D texture;
+            IntPtr texture;
             int slice;
+            var borrowed = false;
 
             if (frame.IsHardware && (AVPixelFormat)av->format == AVPixelFormat.AV_PIX_FMT_D3D11)
             {
-                var pointer = (IntPtr)av->data[0];
-
-                Marshal.AddRef(pointer);
-
-                texture = new ID3D11Texture2D(pointer);
+                texture = (IntPtr)av->data[0];
                 slice = (int)(IntPtr)av->data[1];
+                borrowed = true;
+
+                Direct3D.AddRef(texture);
             }
             else
             {
                 texture = Upload(av);
                 slice = 0;
 
-                if (texture == null)
+                if (texture == IntPtr.Zero)
                 {
                     return false;
                 }
@@ -179,7 +115,7 @@ namespace FoxIPTV.Playback.Video
 
             try
             {
-                var description = texture.Description;
+                var description = Direct3D.Describe(texture);
                 var interlaced = (av->flags & ffmpeg.AV_FRAME_FLAG_INTERLACED) != 0;
 
                 if (!EnsureProcessor(description.Width, description.Height, description.Format, interlaced, size))
@@ -198,30 +134,39 @@ namespace FoxIPTV.Playback.Video
 
                 var input = Input(texture, slice);
 
-                if (input == null)
+                if (input == IntPtr.Zero)
                 {
                     return false;
                 }
 
-                target.OutputView ??= _videoDevice.CreateVideoProcessorOutputView(target.Texture, _enumerator, new VideoProcessorOutputViewDescription { ViewDimension = VideoProcessorOutputViewDimension.Texture2D });
+                if (target.OutputView == IntPtr.Zero)
+                {
+                    target.OutputView = _d3d.CreateOutputView(target.Texture, _enumerator);
+                }
 
-                if (!Acquire(target.Mutex, 0, 100))
+                if (!Direct3D.Acquire(target.Mutex, 0, 100))
                 {
                     return false;
                 }
+
+                int result;
 
                 try
                 {
                     Configure(av, interlaced, size, forcedAspect);
 
-                    var stream = new VideoProcessorStream { Enable = true, InputSurface = input, OutputIndex = 0, InputFrameOrField = (uint)(frame.Number & 0xFFFFFFF) };
+                    result = _d3d.Blt(_processor, target.OutputView, input, (uint)(frame.Number & 0xFFFFFFF));
 
-                    _videoContext.VideoProcessorBlt(_processor, target.OutputView, 0, 1, new[] { stream });
-                    _context.Flush();
+                    _d3d.Flush();
                 }
                 finally
                 {
-                    target.Mutex.ReleaseSync(1);
+                    Direct3D.ReleaseKey(target.Mutex, 1);
+                }
+
+                if (result < 0)
+                {
+                    throw new Direct3DException("VideoProcessorBlt", result);
                 }
 
                 Submit(target);
@@ -230,7 +175,13 @@ namespace FoxIPTV.Playback.Video
             }
             catch (Exception ex)
             {
-                if (++_failures <= 3 || _failures % 600 == 0)
+                if (ex is Direct3DException d3dFailure && d3dFailure.IsDeviceLoss || _d3d.IsRemoved)
+                {
+                    _lost = true;
+
+                    TvCore.LogError($"[Player] The graphics device was lost: {ex.Message}");
+                }
+                else if (++_failures <= 3 || _failures % 600 == 0)
                 {
                     TvCore.LogError($"[Player] D3D11 present failed ({_failures} so far): {ex.GetType().Name}: {ex.Message}");
                 }
@@ -239,41 +190,49 @@ namespace FoxIPTV.Playback.Video
             }
             finally
             {
-                if (!ReferenceEquals(texture, _upload))
+                if (borrowed)
                 {
-                    texture.Dispose();
+                    Direct3D.Release(texture);
                 }
             }
         }
 
-        /// <summary>Fills the screen with black</summary>
         public void Clear(PixelSize size)
         {
-            if (size.Width <= 0 || size.Height <= 0)
-            {
-                return;
-            }
-
-            EnsureRing(size);
-
-            var target = NextFree();
-
-            if (target == null || !Acquire(target.Mutex, 0, 100))
+            if (_lost || size.Width <= 0 || size.Height <= 0)
             {
                 return;
             }
 
             try
             {
-                _context.ClearRenderTargetView(target.RenderView, new Color4(0, 0, 0, 1));
-                _context.Flush();
-            }
-            finally
-            {
-                target.Mutex.ReleaseSync(1);
-            }
+                EnsureRing(size);
 
-            Submit(target);
+                var target = NextFree();
+
+                if (target == null || !Direct3D.Acquire(target.Mutex, 0, 100))
+                {
+                    return;
+                }
+
+                try
+                {
+                    _d3d.Clear(target.RenderView, 0, 0, 0, 1);
+                    _d3d.Flush();
+                }
+                finally
+                {
+                    Direct3D.ReleaseKey(target.Mutex, 1);
+                }
+
+                Submit(target);
+            }
+            catch (Exception ex)
+            {
+                _lost |= ex is Direct3DException failure && failure.IsDeviceLoss || _d3d.IsRemoved;
+
+                TvCore.LogError($"[Player] D3D11 clear failed: {ex.Message}");
+            }
         }
 
         private void Submit(Target target)
@@ -316,69 +275,49 @@ namespace FoxIPTV.Playback.Video
             return null;
         }
 
-        private static unsafe bool Acquire(IDXGIKeyedMutex mutex, ulong key, int milliseconds)
-        {
-            var vtable = *(IntPtr**)mutex.NativePointer;
-            var acquire = (delegate* unmanaged[Stdcall]<IntPtr, ulong, uint, int>)vtable[8];
-            var result = acquire(mutex.NativePointer, key, (uint)milliseconds);
-
-            return result == 0;
-        }
-
-        private bool EnsureProcessor(uint width, uint height, Format format, bool interlaced, PixelSize output)
+        private bool EnsureProcessor(uint width, uint height, int format, bool interlaced, PixelSize output)
         {
             var key = (width, height, format, interlaced, output.Width, output.Height);
 
-            if (_processor != null && key == _processorKey)
+            if (_processor != IntPtr.Zero && key == _processorKey)
             {
                 return true;
             }
 
-            _processor?.Dispose();
-            _enumerator?.Dispose();
+            FreeProcessor();
 
-            _processor = null;
-            _enumerator = null;
-
-            ClearInputs();
-
-            foreach (var target in _ring.Where(x => x != null))
+            var content = new Direct3D.ContentDesc
             {
-                target.OutputView?.Dispose();
-                target.OutputView = null;
-            }
-
-            var content = new VideoProcessorContentDescription
-            {
-                InputFrameFormat = interlaced ? VideoFrameFormat.InterlacedTopFieldFirst : VideoFrameFormat.Progressive,
-                InputFrameRate = new Rational(30, 1),
+                InputFrameFormat = interlaced ? Direct3D.FrameTopFieldFirst : Direct3D.FrameProgressive,
+                InputRateNumerator = 30,
+                InputRateDenominator = 1,
                 InputWidth = width,
                 InputHeight = height,
-                OutputFrameRate = new Rational(30, 1),
+                OutputRateNumerator = 30,
+                OutputRateDenominator = 1,
                 OutputWidth = (uint)output.Width,
                 OutputHeight = (uint)output.Height,
-                Usage = VideoUsage.PlaybackNormal
+                Usage = 0
             };
 
             try
             {
-                _enumerator = _videoDevice.CreateVideoProcessorEnumerator(content);
+                _enumerator = _d3d.CreateProcessorEnumerator(content);
 
-                var inputSupport = _enumerator.CheckVideoProcessorFormat(format);
-                var outputSupport = _enumerator.CheckVideoProcessorFormat(Format.B8G8R8A8_UNorm);
-
-                if ((inputSupport & VideoProcessorFormatSupport.Input) == 0 || (outputSupport & VideoProcessorFormatSupport.Output) == 0)
+                if ((Direct3D.ProcessorFormatSupport(_enumerator, format) & Direct3D.ProcessorFormatInput) == 0 || (Direct3D.ProcessorFormatSupport(_enumerator, Direct3D.FormatBgra) & Direct3D.ProcessorFormatOutput) == 0)
                 {
-                    TvCore.LogError($"[Player] The GPU's video processor can't take {format} in or BGRA out");
+                    TvCore.LogError($"[Player] The GPU's video processor can't take format {format} in or BGRA out");
+
+                    FreeProcessor();
 
                     return false;
                 }
 
-                _processor = _videoDevice.CreateVideoProcessor(_enumerator, 0);
+                _processor = _d3d.CreateProcessor(_enumerator);
 
-                _videoContext.VideoProcessorSetStreamAutoProcessingMode(_processor, 0, false);
-                _videoContext.VideoProcessorSetOutputBackgroundColor(_processor, false, new VideoColor { Rgba = new VideoColorRgba { R = 0, G = 0, B = 0, A = 1 } });
-                _videoContext1?.VideoProcessorSetOutputColorSpace1(_processor, ColorSpaceType.RgbFullG22NoneP709);
+                _d3d.SetStreamAutoProcessing(_processor, false);
+                _d3d.SetOutputBackground(_processor, 0, 0, 0);
+                _d3d.SetOutputColorSpace(_processor, Direct3D.ColorSpaceRgbFullP709);
 
                 _processorKey = key;
 
@@ -386,22 +325,39 @@ namespace FoxIPTV.Playback.Video
                 {
                     _loggedFormat = true;
 
-                    TvCore.LogInfo($"[Player] Video processor: {width}x{height} {format}{(interlaced ? " interlaced" : string.Empty)} to {output.Width}x{output.Height} BGRA");
+                    TvCore.LogInfo($"[Player] Video processor: {width}x{height} format {format}{(interlaced ? " interlaced" : string.Empty)} to {output.Width}x{output.Height} BGRA");
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                TvCore.LogError($"[Player] Video processor setup failed for {width}x{height} {format}: {ex.Message}");
+                _lost |= ex is Direct3DException failure && failure.IsDeviceLoss || _d3d.IsRemoved;
 
-                _processor?.Dispose();
-                _enumerator?.Dispose();
-                _processor = null;
-                _enumerator = null;
+                TvCore.LogError($"[Player] Video processor setup failed for {width}x{height} format {format}: {ex.Message}");
+
+                FreeProcessor();
 
                 return false;
             }
+        }
+
+        private void FreeProcessor()
+        {
+            ClearInputs();
+
+            foreach (var target in _ring.Where(x => x != null))
+            {
+                Direct3D.Release(target.OutputView);
+
+                target.OutputView = IntPtr.Zero;
+            }
+
+            Direct3D.Release(_processor);
+            Direct3D.Release(_enumerator);
+
+            _processor = IntPtr.Zero;
+            _enumerator = IntPtr.Zero;
         }
 
         private unsafe void Configure(AVFrame* frame, bool interlaced, PixelSize output, double forcedAspect)
@@ -413,33 +369,29 @@ namespace FoxIPTV.Playback.Video
             var pixelAspect = sar.num > 0 && sar.den > 0 ? sar.num / (double)sar.den : 1.0;
             var aspect = forcedAspect > 0 ? forcedAspect : width * pixelAspect / Math.Max(1, height);
 
-            var outWidth = output.Width;
-            var outHeight = output.Height;
+            var fitWidth = output.Width;
+            var fitHeight = (int)Math.Round(output.Width / aspect);
 
-            var fitWidth = outWidth;
-            var fitHeight = (int)Math.Round(outWidth / aspect);
-
-            if (fitHeight > outHeight)
+            if (fitHeight > output.Height)
             {
-                fitHeight = outHeight;
-                fitWidth = (int)Math.Round(outHeight * aspect);
+                fitHeight = output.Height;
+                fitWidth = (int)Math.Round(output.Height * aspect);
             }
 
-            var left = (outWidth - fitWidth) / 2;
-            var top = (outHeight - fitHeight) / 2;
+            var left = (output.Width - fitWidth) / 2;
+            var top = (output.Height - fitHeight) / 2;
 
-            var format = interlaced ? ((frame->flags & ffmpeg.AV_FRAME_FLAG_TOP_FIELD_FIRST) != 0 ? VideoFrameFormat.InterlacedTopFieldFirst : VideoFrameFormat.InterlacedBottomFieldFirst) : VideoFrameFormat.Progressive;
+            var format = interlaced ? ((frame->flags & ffmpeg.AV_FRAME_FLAG_TOP_FIELD_FIRST) != 0 ? Direct3D.FrameTopFieldFirst : Direct3D.FrameBottomFieldFirst) : Direct3D.FrameProgressive;
 
-            _videoContext.VideoProcessorSetStreamFrameFormat(_processor, 0, format);
-            _videoContext.VideoProcessorSetStreamOutputRate(_processor, 0, interlaced ? VideoProcessorOutputRate.Half : VideoProcessorOutputRate.Normal, false, null);
-            _videoContext.VideoProcessorSetStreamSourceRect(_processor, 0, true, new RawRect(0, 0, width, height));
-            _videoContext.VideoProcessorSetStreamDestRect(_processor, 0, true, new RawRect(left, top, left + fitWidth, top + fitHeight));
-            _videoContext.VideoProcessorSetOutputTargetRect(_processor, true, new RawRect(0, 0, outWidth, outHeight));
-
-            _videoContext1?.VideoProcessorSetStreamColorSpace1(_processor, 0, ColorSpace(frame));
+            _d3d.SetStreamFrameFormat(_processor, format);
+            _d3d.SetStreamOutputRate(_processor, interlaced ? Direct3D.OutputRateHalf : Direct3D.OutputRateNormal);
+            _d3d.SetStreamSourceRect(_processor, new Direct3D.Rect(0, 0, width, height));
+            _d3d.SetStreamDestRect(_processor, new Direct3D.Rect(left, top, left + fitWidth, top + fitHeight));
+            _d3d.SetOutputTargetRect(_processor, new Direct3D.Rect(0, 0, output.Width, output.Height));
+            _d3d.SetStreamColorSpace(_processor, ColorSpace(frame));
         }
 
-        private static unsafe ColorSpaceType ColorSpace(AVFrame* frame)
+        private static unsafe int ColorSpace(AVFrame* frame)
         {
             var full = frame->color_range == AVColorRange.AVCOL_RANGE_JPEG;
             var matrix = frame->colorspace;
@@ -455,32 +407,32 @@ namespace FoxIPTV.Playback.Video
                 {
                     case AVColorTransferCharacteristic.AVCOL_TRC_SMPTE2084:
                     {
-                        return ColorSpaceType.YcbcrStudioG2084LeftP2020;
+                        return Direct3D.ColorSpaceStudioPqP2020;
                     }
 
                     case AVColorTransferCharacteristic.AVCOL_TRC_ARIB_STD_B67:
                     {
-                        return full ? ColorSpaceType.YcbcrFullGhlgTopLeftP2020 : ColorSpaceType.YcbcrStudioGhlgTopLeftP2020;
+                        return full ? Direct3D.ColorSpaceFullHlgP2020 : Direct3D.ColorSpaceStudioHlgP2020;
                     }
 
                     default:
                     {
-                        return full ? ColorSpaceType.YcbcrFullG22LeftP2020 : ColorSpaceType.YcbcrStudioG22LeftP2020;
+                        return full ? Direct3D.ColorSpaceFullP2020 : Direct3D.ColorSpaceStudioP2020;
                     }
                 }
             }
 
             if (matrix == AVColorSpace.AVCOL_SPC_BT709)
             {
-                return full ? ColorSpaceType.YcbcrFullG22LeftP709 : ColorSpaceType.YcbcrStudioG22LeftP709;
+                return full ? Direct3D.ColorSpaceFullP709 : Direct3D.ColorSpaceStudioP709;
             }
 
-            return full ? ColorSpaceType.YcbcrFullG22LeftP601 : ColorSpaceType.YcbcrStudioG22LeftP601;
+            return full ? Direct3D.ColorSpaceFullP601 : Direct3D.ColorSpaceStudioP601;
         }
 
-        private ID3D11VideoProcessorInputView Input(ID3D11Texture2D texture, int slice)
+        private IntPtr Input(IntPtr texture, int slice)
         {
-            var key = (texture.NativePointer, slice);
+            var key = (texture, slice);
 
             if (_inputs.TryGetValue(key, out var view))
             {
@@ -494,12 +446,7 @@ namespace FoxIPTV.Playback.Video
 
             try
             {
-                view = _videoDevice.CreateVideoProcessorInputView(texture, _enumerator, new VideoProcessorInputViewDescription
-                {
-                    FourCC = 0,
-                    ViewDimension = VideoProcessorInputViewDimension.Texture2D,
-                    Texture2D = new Texture2DVideoProcessorInputView { MipSlice = 0, ArraySlice = (uint)slice }
-                });
+                view = _d3d.CreateInputView(texture, _enumerator, (uint)slice);
 
                 _inputs[key] = view;
 
@@ -507,9 +454,11 @@ namespace FoxIPTV.Playback.Video
             }
             catch (Exception ex)
             {
+                _lost |= ex is Direct3DException failure && failure.IsDeviceLoss;
+
                 TvCore.LogError($"[Player] Video processor input view failed: {ex.Message}");
 
-                return null;
+                return IntPtr.Zero;
             }
         }
 
@@ -517,41 +466,29 @@ namespace FoxIPTV.Playback.Video
         {
             foreach (var view in _inputs.Values)
             {
-                view.Dispose();
+                Direct3D.Release(view);
             }
 
             _inputs.Clear();
         }
 
-        /// <summary>Copies a frame decoded in memory into an NV12 texture the video processor can read</summary>
-        private unsafe ID3D11Texture2D Upload(AVFrame* frame)
+        private unsafe IntPtr Upload(AVFrame* frame)
         {
             var width = frame->width & ~1;
             var height = frame->height & ~1;
 
             if (width <= 0 || height <= 0)
             {
-                return null;
+                return IntPtr.Zero;
             }
 
-            if (_upload == null || _uploadSize != (width, height))
+            if (_upload == IntPtr.Zero || _uploadSize != (width, height))
             {
-                _upload?.Dispose();
-
                 ClearInputs();
 
-                _upload = _device.CreateTexture2D(new Texture2DDescription
-                {
-                    Width = (uint)width,
-                    Height = (uint)height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    Format = Format.NV12,
-                    SampleDescription = new SampleDescription(1, 0),
-                    Usage = ResourceUsage.Default,
-                    BindFlags = BindFlags.Decoder
-                });
+                Direct3D.Release(_upload);
 
+                _upload = _d3d.CreateTexture((uint)width, (uint)height, Direct3D.FormatNv12, Direct3D.UsageDefault, Direct3D.BindDecoder, 0, 0);
                 _uploadSize = (width, height);
                 _uploadBuffer = new byte[width * height * 3 / 2];
             }
@@ -560,7 +497,7 @@ namespace FoxIPTV.Playback.Video
 
             if (_uploadScaler == null)
             {
-                return null;
+                return IntPtr.Zero;
             }
 
             fixed (byte* buffer = _uploadBuffer)
@@ -572,7 +509,7 @@ namespace FoxIPTV.Playback.Video
 
                 ffmpeg.sws_scale(_uploadScaler, sources, sourceStrides, 0, frame->height, planes, strides);
 
-                _context.UpdateSubresource(_upload, 0, null, (IntPtr)buffer, (uint)width, (uint)(width * height * 3 / 2));
+                _d3d.UpdateSubresource(_upload, (IntPtr)buffer, (uint)width, (uint)(width * height * 3 / 2));
             }
 
             return _upload;
@@ -589,7 +526,7 @@ namespace FoxIPTV.Playback.Video
 
             for (var i = 0; i < RingSize; i++)
             {
-                _ring[i] = new Target(_device, size);
+                _ring[i] = new Target(_d3d, size);
             }
 
             _ringSize = size;
@@ -623,56 +560,37 @@ namespace FoxIPTV.Playback.Video
                 _uploadScaler = null;
             }
 
-            _upload?.Dispose();
-            _processor?.Dispose();
-            _enumerator?.Dispose();
-            _videoContext1?.Dispose();
-            _videoContext?.Dispose();
-            _videoDevice?.Dispose();
-            _context?.Dispose();
-            _device?.Dispose();
+            Direct3D.Release(_upload);
+
+            _upload = IntPtr.Zero;
+
+            FreeProcessor();
+
+            _d3d.Dispose();
         }
 
         private sealed class Target
         {
-            public Target(ID3D11Device device, PixelSize size)
+            public Target(Direct3D d3d, PixelSize size)
             {
                 Size = size;
-
-                Texture = device.CreateTexture2D(new Texture2DDescription
-                {
-                    Width = (uint)size.Width,
-                    Height = (uint)size.Height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    Format = Format.B8G8R8A8_UNorm,
-                    SampleDescription = new SampleDescription(1, 0),
-                    Usage = ResourceUsage.Default,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    MiscFlags = ResourceOptionFlags.SharedKeyedMutex
-                });
-
-                Mutex = Texture.QueryInterface<IDXGIKeyedMutex>();
-
-                using (var resource = Texture.QueryInterface<IDXGIResource>())
-                {
-                    SharedHandle = resource.SharedHandle;
-                }
-
-                RenderView = device.CreateRenderTargetView(Texture);
+                Texture = d3d.CreateTexture((uint)size.Width, (uint)size.Height, Direct3D.FormatBgra, Direct3D.UsageDefault, Direct3D.BindRenderTarget | Direct3D.BindShaderResource, 0, Direct3D.MiscSharedKeyedMutex);
+                Mutex = Direct3D.KeyedMutex(Texture);
+                SharedHandle = Direct3D.SharedHandle(Texture);
+                RenderView = d3d.CreateRenderTargetView(Texture);
             }
 
             public PixelSize Size { get; }
 
-            public ID3D11Texture2D Texture { get; }
+            public IntPtr Texture { get; }
 
-            public IDXGIKeyedMutex Mutex { get; }
+            public IntPtr Mutex { get; }
 
             public IntPtr SharedHandle { get; }
 
-            public ID3D11RenderTargetView RenderView { get; }
+            public IntPtr RenderView { get; }
 
-            public ID3D11VideoProcessorOutputView OutputView { get; set; }
+            public IntPtr OutputView { get; set; }
 
             public ICompositionImportedGpuImage Imported { get; set; }
 
@@ -693,13 +611,19 @@ namespace FoxIPTV.Playback.Video
 
                 if (Imported != null)
                 {
-                    await Imported.DisposeAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await Imported.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
 
-                OutputView?.Dispose();
-                RenderView.Dispose();
-                Mutex.Dispose();
-                Texture.Dispose();
+                Direct3D.Release(OutputView);
+                Direct3D.Release(RenderView);
+                Direct3D.Release(Mutex);
+                Direct3D.Release(Texture);
             }
         }
     }
