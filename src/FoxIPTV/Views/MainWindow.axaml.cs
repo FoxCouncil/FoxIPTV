@@ -294,32 +294,38 @@ namespace FoxIPTV.Views
         {
             if (TvCore.CurrentMedia != null)
             {
-                Title = $"Fox IPTV - {TvCore.CurrentMediaTitle} - {ProviderLabel()}";
+                Title = TitleOf(TvCore.CurrentMediaTitle, ProviderLabel(), "Fox IPTV");
 
                 return;
-            }
-
-            var currentProgramme = string.Empty;
-
-            if (TvCore.CurrentProgramme != null)
-            {
-                currentProgramme = $" - [ {TvCore.CurrentProgramme.Title} ]";
             }
 
             var channelObj = TvCore.CurrentChannel;
 
             if (channelObj == null)
             {
-                Title = $"Fox IPTV - {ProviderLabel()}";
+                Title = TitleOf(ProviderLabel(), "Fox IPTV");
 
                 return;
             }
 
             var chanName = channelObj.Name.Contains(':') ? channelObj.Name.Split(new[] { ':' }, 2).Skip(1).FirstOrDefault()?.TrimStart() : channelObj.Name;
+            var programme = TvCore.CurrentProgramme?.Title?.Trim();
+            var channel = $"CH: {channelObj.Index} [ {chanName} ]";
 
-            Title = $"CH: {channelObj.Index} [ {chanName} ]{currentProgramme} Fox IPTV - {ProviderLabel()}";
+            if (!string.IsNullOrEmpty(programme) && !string.Equals(programme, chanName?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                channel += $" - [ {programme} ]";
+            }
+
+            Title = TitleOf(channel, ProviderLabel(), "Fox IPTV");
         }
 
+        private static string TitleOf(params string[] parts)
+        {
+            return string.Join(" - ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
+        }
+
+        /// <summary>The source a provider plays from, "Samsung TV Plus" rather than "Free TV Playlists / Samsung TV Plus"</summary>
         private static string ProviderLabel()
         {
             var service = TvCore.CurrentService;
@@ -331,7 +337,7 @@ namespace FoxIPTV.Views
 
             var source = service.Data?["Source"]?.ToString();
 
-            return string.IsNullOrWhiteSpace(source) || string.Equals(source, service.Title, StringComparison.OrdinalIgnoreCase) ? service.Title : $"{service.Title} / {source}";
+            return string.IsNullOrWhiteSpace(source) ? service.Title : source;
         }
 
         private void GuiShow()

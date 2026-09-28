@@ -28,7 +28,7 @@
         </StackPanel>
 
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" MinHeight="111">
                 <Image x:Name="ChannelLogo" Grid.Column="0" Width="96" Height="72" Stretch="Uniform" VerticalAlignment="Top" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="ChannelNameLabel" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
