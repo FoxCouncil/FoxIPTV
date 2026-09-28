@@ -34,6 +34,8 @@ namespace FoxIPTV.Playback
 
         private float _gain = 1;
 
+        private double _speed = 1;
+
         private int _owner;
 
         public static bool Initialize()
@@ -119,6 +121,7 @@ namespace FoxIPTV.Playback
                 _paused = true;
 
                 SDL_SetAudioStreamGain(_stream, _gain);
+                SDL_SetAudioStreamFrequencyRatio(_stream, (float)_speed);
 
                 SDL_AudioSpec device;
                 var frames = 0;
@@ -151,6 +154,24 @@ namespace FoxIPTV.Playback
                         SDL_SetAudioStreamGain(_stream, value);
                     }
                 }
+            }
+        }
+
+        public void SetSpeed(int session, double speed)
+        {
+            lock (_lock)
+            {
+                if (session != _owner || speed == _speed)
+                {
+                    return;
+                }
+
+                if (_stream != null)
+                {
+                    SDL_SetAudioStreamFrequencyRatio(_stream, (float)speed);
+                }
+
+                _speed = speed;
             }
         }
 
@@ -247,7 +268,7 @@ namespace FoxIPTV.Playback
                         return raw;
                     }
 
-                    var predicted = _smoothBase + (now - _smoothAt);
+                    var predicted = _smoothBase + (now - _smoothAt) * _speed;
                     var error = raw - predicted;
 
                     if (Math.Abs(error) > 0.05)
@@ -310,8 +331,10 @@ namespace FoxIPTV.Playback
             {
                 SDL_PauseAudioStreamDevice(_stream);
                 SDL_ClearAudioStream(_stream);
+                SDL_SetAudioStreamFrequencyRatio(_stream, 1);
             }
 
+            _speed = 1;
             _paused = true;
             _endTime = double.NaN;
             _smoothBase = double.NaN;
@@ -339,13 +362,52 @@ namespace FoxIPTV.Playback
 
         private double _base = double.NaN;
 
+        private double _speed = 1;
+
         public double Now
         {
             get
             {
                 lock (_lock)
                 {
-                    return double.IsNaN(_base) ? double.NaN : _base + _watch.Elapsed.TotalSeconds;
+                    return double.IsNaN(_base) ? double.NaN : _base + _watch.Elapsed.TotalSeconds * _speed;
+                }
+            }
+        }
+
+        public double Speed
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _speed;
+                }
+            }
+            set
+            {
+                lock (_lock)
+                {
+                    if (value == _speed)
+                    {
+                        return;
+                    }
+
+                    if (!double.IsNaN(_base))
+                    {
+                        _base += _watch.Elapsed.TotalSeconds * _speed;
+
+                        if (_watch.IsRunning)
+                        {
+                            _watch.Restart();
+                        }
+                        else
+                        {
+                            _watch.Reset();
+                        }
+                    }
+
+                    _speed = value;
                 }
             }
         }

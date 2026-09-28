@@ -40,6 +40,8 @@ namespace FoxIPTV.Playback
 
         private readonly WallClock _wall = new WallClock();
 
+        private readonly DriftControl _drift = new DriftControl();
+
         private readonly List<Thread> _threads = new List<Thread>();
 
         private readonly List<Tuple<double, MediaChunk>> _pieceMarks = new List<Tuple<double, MediaChunk>>();
@@ -109,6 +111,10 @@ namespace FoxIPTV.Playback
         private int _audioSession;
 
         private int _monitoring;
+
+        private double _driftAt = double.NaN;
+
+        private double _driftLoggedAt;
 
         public PlaybackSession(Player owner, MediaRequest request, AudioOutput audio)
         {
@@ -1423,6 +1429,7 @@ namespace FoxIPTV.Playback
                 else
                 {
                     CheckBuffering();
+                    SteerDrift();
                     FireMarks();
                     CheckEnd();
                 }
@@ -1551,6 +1558,52 @@ namespace FoxIPTV.Playback
             TvCore.LogInfo($"[Player] Session {Id}: buffer refilled, playing again at {Clock:0.000}s");
 
             _owner.Report(this, PlayerState.Playing, null);
+        }
+
+        private void SteerDrift()
+        {
+            var now = _age.Elapsed.TotalSeconds;
+
+            if (!_request.IsLive || _hls != null && !_hls.IsLive || _buffering || _finished)
+            {
+                _driftAt = double.NaN;
+
+                return;
+            }
+
+            var elapsed = double.IsNaN(_driftAt) ? 0 : now - _driftAt;
+
+            _driftAt = now;
+
+            var wasHolding = _drift.IsHolding;
+            var speed = _drift.Update(elapsed, BufferedSeconds());
+
+            if (_audioClock)
+            {
+                _audio.SetSpeed(_audioSession, speed);
+            }
+            else
+            {
+                _wall.Speed = speed;
+            }
+
+            if (!_drift.IsHolding)
+            {
+                return;
+            }
+
+            if (!wasHolding)
+            {
+                _driftLoggedAt = now;
+
+                TvCore.LogInfo($"[Player] Session {Id}: holding the buffer at {_drift.Target:0.00}s against sound card clock drift");
+            }
+            else if (now - _driftLoggedAt >= 600)
+            {
+                _driftLoggedAt = now;
+
+                TvCore.LogInfo($"[Player] Session {Id}: buffer {_drift.Average:0.00}s, held at {_drift.Target:0.00}s, speed {speed:0.000000}x");
+            }
         }
 
         private void FireMarks()
