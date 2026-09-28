@@ -71,6 +71,10 @@ namespace FoxIPTV.Playback.Video
 
         private bool _loggedFormat;
 
+        private int _failures;
+
+        private bool _loggedHandOff;
+
         private D3D11Presenter(ICompositionGpuInterop interop, CompositionDrawingSurface surface, ID3D11Device device, ID3D11DeviceContext context, string adapter)
         {
             _interop = interop;
@@ -226,7 +230,10 @@ namespace FoxIPTV.Playback.Video
             }
             catch (Exception ex)
             {
-                TvCore.LogError($"[Player] D3D11 present failed: {ex.GetType().Name}: {ex.Message}");
+                if (++_failures <= 3 || _failures % 600 == 0)
+                {
+                    TvCore.LogError($"[Player] D3D11 present failed ({_failures} so far): {ex.GetType().Name}: {ex.Message}");
+                }
 
                 return false;
             }
@@ -292,6 +299,13 @@ namespace FoxIPTV.Playback.Video
 
                 if (target != null && (target.LastPresent == null || target.LastPresent.IsCompleted))
                 {
+                    if (target.LastPresent != null && target.LastPresent.IsFaulted && !_loggedHandOff)
+                    {
+                        _loggedHandOff = true;
+
+                        TvCore.LogError($"[Player] The window refused a video texture: {target.LastPresent.Exception?.GetBaseException().Message}");
+                    }
+
                     _next = index;
 
                     return target;
