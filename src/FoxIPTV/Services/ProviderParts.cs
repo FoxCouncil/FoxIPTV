@@ -4,13 +4,26 @@ namespace FoxIPTV.Services
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
     using System.Linq;
+    using System.Text;
     using Classes;
     using Newtonsoft.Json.Linq;
 
     public static class ProviderParts
     {
         public static readonly string[] Regions = { "us", "ca", "gb", "au", "nz", "de", "fr", "es", "it", "at", "ch", "dk", "no", "se", "in", "kr", "mx", "br", "ar", "cl", "all" };
+
+        public static string ShippedList(string name)
+        {
+            using (var stream = typeof(ProviderParts).Assembly.GetManifestResourceStream("FoxIPTV.Lists." + name))
+            using (var unzipped = new GZipStream(stream, CompressionMode.Decompress))
+            using (var reader = new StreamReader(unzipped, Encoding.UTF8))
+            {
+                return reader.ReadToEnd();
+            }
+        }
 
         public static ProviderField RegionField()
         {

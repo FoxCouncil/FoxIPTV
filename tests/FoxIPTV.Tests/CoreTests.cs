@@ -2,8 +2,10 @@
 
 namespace FoxIPTV.Tests
 {
+    using System;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using FoxIPTV.Classes;
     using FoxIPTV.Playback;
     using FoxIPTV.Services;
@@ -31,6 +33,18 @@ namespace FoxIPTV.Tests
             Assert.All(providers.Take(3), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
             Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[3].Fields.Select(x => x.Key));
             Assert.True(((ILiveTuner)providers[0]).CanTune);
+        }
+
+        [Fact]
+        public async Task ShippedLists_LoadWithoutGitHub()
+        {
+            var progress = Tuple.Create<IProgress<int>, IProgress<int>>(new Progress<int>(), new Progress<int>());
+            var (freeTv, _) = await new FreeTv { ProgressUpdater = progress }.Process();
+            var (iptvOrg, _) = await new IPTVDotOrg { ProgressUpdater = progress }.Process();
+
+            Assert.True(freeTv.Count > 1000, $"{freeTv.Count} Free-TV channels");
+            Assert.True(iptvOrg.Count > 10000, $"{iptvOrg.Count} IPTV.org channels");
+            Assert.DoesNotContain(freeTv.Concat(iptvOrg), x => x.Stream.Host.Contains("github", StringComparison.OrdinalIgnoreCase) || (x.Logo?.Host.Contains("github", StringComparison.OrdinalIgnoreCase) ?? false));
         }
 
         [Fact]

@@ -16,7 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns;Assets\Lists\**" />
+    <EmbeddedResource Include="Assets\Lists\*.gz" LogicalName="FoxIPTV.Lists.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">

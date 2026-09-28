@@ -11,15 +11,6 @@ namespace FoxIPTV.Services
 
     public class IPTVDotOrg : IService
     {
-        private const int CacheTimeChannelsInHours = 12;
-        private const int CacheTimeStreamsInHours = 12;
-
-        private const string CacheFilenameChannel = "iptv-cdata";
-        private const string CacheFilenameStreams = "iptv-sdata";
-
-        private const string UrlChannels = "https://iptv-org.github.io/api/channels.json";
-        private const string UrlStreams = "https://iptv-org.github.io/api/streams.json";
-
         public string Id => "iptv-org";
 
         public string Title { get; } = "IPTV.org";
@@ -58,13 +49,7 @@ namespace FoxIPTV.Services
 
             progressPercentage.Report(0);
 
-            var channelDataRaw = await TvCore.DownloadStringAndCache(UrlChannels, CacheFilenameChannel, CacheTimeChannelsInHours);
-            var channelData = JArray.Parse(channelDataRaw).ToDictionary(x => x["id"]?.ToString() ?? string.Empty, x => x);
-
-            progressPercentage.Report(10);
-
-            var streamsDataRaw = await TvCore.DownloadStringAndCache(UrlStreams, CacheFilenameStreams, CacheTimeStreamsInHours);
-            var streamsData = JArray.Parse(streamsDataRaw);
+            var rows = JArray.Parse(ProviderParts.ShippedList("iptv-org.json.gz"));
 
             progressPercentage.Report(20);
 
@@ -72,10 +57,10 @@ namespace FoxIPTV.Services
 
             var channelNumber = 0u;
 
-            var totalItems = streamsData.Count;
+            var totalItems = rows.Count;
             var processed = 0;
 
-            foreach (var stream in streamsData)
+            foreach (var row in rows)
             {
                 if (++processed % 500 == 0)
                 {
@@ -84,39 +69,17 @@ namespace FoxIPTV.Services
                     progressPercentage.Report(20 + (int)(processed / (float)totalItems * 80));
                 }
 
-                var channelName = stream["channel"]?.ToString();
-
-                if (string.IsNullOrEmpty(channelName))
+                if (!Uri.TryCreate(row[4]?.ToString(), UriKind.Absolute, out var streamUri))
                 {
                     continue;
                 }
-
-                var channelUrl = stream["url"]?.ToString();
-
-                if (string.IsNullOrEmpty(channelUrl) || channelUrl == "undefined" || !Uri.TryCreate(channelUrl, UriKind.Absolute, out var streamUri))
-                {
-                    continue;
-                }
-
-                if (!channelData.TryGetValue(channelName, out var channel))
-                {
-                    continue;
-                }
-
-                var categories = channel["categories"];
-                var category = categories != null && categories.HasValues ? categories.First().ToString() : "none";
-
-                var channelFullname = channel["name"]?.ToString();
-
-                var channelCountry = channel["country"]?.ToString();
 
                 channelList.Add(new Channel
                 {
                     Index = ++channelNumber,
-                    Id = channelName,
-                    Name = $"{channelCountry}: {channelFullname}",
-                    Group = category,
-                    Logo = Uri.TryCreate(channel["logo"]?.ToString(), UriKind.Absolute, out var result) ? result : null,
+                    Id = row[0]?.ToString(),
+                    Name = $"{row[2]}: {row[1]}",
+                    Group = row[3]?.ToString(),
                     Stream = streamUri
                 });
             }

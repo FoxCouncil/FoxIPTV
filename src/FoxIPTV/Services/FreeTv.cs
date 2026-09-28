@@ -11,8 +11,6 @@ namespace FoxIPTV.Services
 
     public class FreeTv : IService
     {
-        private const string ListAddress = "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8";
-
         private const double CacheHours = 6;
 
         private static readonly string[] OfferedRegions = { "all" };
@@ -43,7 +41,7 @@ namespace FoxIPTV.Services
             ProgressUpdater?.Item1.Report(0);
 
             var region = ProviderParts.Region(Data, OfferedRegions, Title);
-            var playlist = M3UParser.Parse(await Web.GetStringCached(ListAddress, "list-" + ListAddress.ToMD5(), CacheHours).ConfigureAwait(false));
+            var playlist = M3UParser.Parse(ProviderParts.ShippedList("freetv.m3u.gz"));
             var channels = ProviderParts.FromPlaylist(playlist);
 
             ProgressUpdater?.Item1.Report(100);
