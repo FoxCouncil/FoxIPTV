@@ -21,6 +21,8 @@ namespace FoxIPTV.Playback
 
         private bool _muted;
 
+        private MediaRequest _lastRequest;
+
         public event Action<PlayerState, string> StateChanged;
 
         public event Action<StreamInfo> InfoChanged;
@@ -64,9 +66,17 @@ namespace FoxIPTV.Playback
             }
             set
             {
+                HardwareDevice old;
+
                 lock (_lock)
                 {
+                    old = _hardware;
                     _hardware = value;
+                }
+
+                if (old != null && !ReferenceEquals(old, value))
+                {
+                    old.Dispose();
                 }
             }
         }
@@ -131,6 +141,7 @@ namespace FoxIPTV.Playback
                 old = _session;
                 session = new PlaybackSession(this, request, _audio);
                 _session = session;
+                _lastRequest = request;
             }
 
             Retire(old);
@@ -154,6 +165,7 @@ namespace FoxIPTV.Playback
             {
                 old = _session;
                 _session = null;
+                _lastRequest = null;
             }
 
             Retire(old);
@@ -164,6 +176,31 @@ namespace FoxIPTV.Playback
             CaptionChanged?.Invoke(null);
 
             SetState(PlayerState.Idle, null);
+        }
+
+        public HardwareDevice ShareHardware()
+        {
+            lock (_lock)
+            {
+                return Hardware?.Share();
+            }
+        }
+
+        public void Restart()
+        {
+            MediaRequest request;
+
+            lock (_lock)
+            {
+                request = _lastRequest;
+            }
+
+            if (request != null && State is PlayerState.Opening or PlayerState.Buffering or PlayerState.Playing)
+            {
+                TvCore.LogInfo($"[Player] Restarting {request.Label ?? request.Uri.ToString()} on the new picture path");
+
+                Play(request);
+            }
         }
 
         private static void Retire(PlaybackSession session)

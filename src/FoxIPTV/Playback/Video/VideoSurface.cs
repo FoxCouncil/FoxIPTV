@@ -4,6 +4,7 @@ namespace FoxIPTV.Playback.Video
 {
     using System;
     using System.Diagnostics;
+    using System.Threading.Tasks;
     using Avalonia;
     using Avalonia.Controls;
     using Avalonia.Media;
@@ -31,6 +32,8 @@ namespace FoxIPTV.Playback.Video
         private D3D11Presenter _d3d;
 
         private bool _initialized;
+
+        private bool _recovering;
 
         private bool _updateQueued;
 
@@ -123,7 +126,7 @@ namespace FoxIPTV.Playback.Video
         {
             base.OnAttachedToVisualTree(e);
 
-            Initialize();
+            _ = InitializeAsync();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -143,7 +146,7 @@ namespace FoxIPTV.Playback.Video
             }
         }
 
-        private async void Initialize()
+        private async Task InitializeAsync()
         {
             if (_initialized)
             {
@@ -212,6 +215,53 @@ namespace FoxIPTV.Playback.Video
             Queue();
         }
 
+        private async Task RecoverAsync()
+        {
+            _recovering = true;
+
+            TvCore.LogError("[Player] The graphics device or the window's side of the picture hand-off was lost, rebuilding the picture path");
+
+            var old = _d3d;
+
+            _d3d = null;
+
+            _pending?.Free();
+            _pending = null;
+
+            _current?.Free();
+            _current = null;
+
+            ElementComposition.SetElementChildVisual(this, null);
+
+            _surface?.Dispose();
+            _surface = null;
+            _visual = null;
+
+            try
+            {
+                old.Dispose();
+            }
+            catch (Exception ex)
+            {
+                TvCore.LogError($"[Player] Releasing the lost graphics device: {ex.Message}");
+            }
+
+            if (_player != null)
+            {
+                _player.Hardware = null;
+            }
+
+            _initialized = false;
+
+            await InitializeAsync();
+
+            _recovering = false;
+
+            _player?.Restart();
+
+            Queue();
+        }
+
         private void Queue()
         {
             if (!_initialized || _updateQueued)
@@ -236,8 +286,15 @@ namespace FoxIPTV.Playback.Video
         {
             _updateQueued = false;
 
-            if (this.GetVisualRoot() == null)
+            if (this.GetVisualRoot() == null || _recovering)
             {
+                return;
+            }
+
+            if (_d3d != null && _d3d.IsLost)
+            {
+                _ = RecoverAsync();
+
                 return;
             }
 

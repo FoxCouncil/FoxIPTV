@@ -93,6 +93,18 @@ namespace FoxIPTV.Playback
             }
         }
 
+        public HardwareDevice Share()
+        {
+            if (_reference == null)
+            {
+                return null;
+            }
+
+            var reference = ffmpeg.av_buffer_ref(_reference);
+
+            return reference == null ? null : new HardwareDevice(reference, Type, PixelFormat, Name);
+        }
+
         public void Dispose()
         {
             if (_reference != null)

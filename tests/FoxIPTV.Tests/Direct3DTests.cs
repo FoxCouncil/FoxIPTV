@@ -4,6 +4,8 @@ namespace FoxIPTV.Tests
 {
     using System;
     using System.Runtime.InteropServices;
+    using FFmpeg.AutoGen;
+    using FoxIPTV.Playback;
     using FoxIPTV.Playback.Video;
 
     public class Direct3DTests
@@ -131,6 +133,34 @@ namespace FoxIPTV.Tests
                 Direct3D.Release(mutex);
                 Direct3D.Release(texture);
             }
+        }
+
+        [Fact]
+        public unsafe void HardwareDevice_ShareOutlivesTheOriginal()
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            Assert.True(FFmpegNative.Initialize(), FFmpegNative.Failure);
+
+            using var d3d = Direct3D.Create(null);
+
+            var original = HardwareDevice.FromD3D11(d3d.Device);
+
+            Assert.NotNull(original);
+
+            using var share = original.Share();
+
+            original.Dispose();
+
+            Assert.Null(original.Share());
+
+            var context = (AVHWDeviceContext*)share.Reference->data;
+
+            Assert.Equal(AVHWDeviceType.AV_HWDEVICE_TYPE_D3D11VA, context->type);
+            Assert.Equal(d3d.Device, (IntPtr)((AVD3D11VADeviceContext*)context->hwctx)->device);
         }
     }
 }

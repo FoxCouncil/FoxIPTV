@@ -969,7 +969,7 @@ namespace FoxIPTV.Playback
 
         private unsafe VideoDecoder OpenVideo(AVCodecParameters* parameters, bool allowHardware)
         {
-            var hardware = allowHardware ? _owner.Hardware : null;
+            using var hardware = allowHardware ? _owner.ShareHardware() : null;
 
             try
             {
