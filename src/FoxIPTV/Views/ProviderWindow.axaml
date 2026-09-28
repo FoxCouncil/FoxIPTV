@@ -25,12 +25,9 @@
             <CheckBox x:Name="RememberMeCheckBox" Grid.Row="1" Grid.Column="1" Content="Remember these details" />
         </Grid>
 
-        <TextBlock x:Name="PluginErrorsLabel" Classes="warning" IsVisible="False" TextWrapping="Wrap" />
-
         <TextBlock x:Name="SigningInLabel" Classes="muted" IsVisible="False" />
 
         <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-            <Button x:Name="PluginsLinkButton" Grid.Column="0" Classes="link" Content="Open plugins folder" VerticalAlignment="Center" HorizontalAlignment="Left" />
             <Button x:Name="LoginButton" Grid.Column="1" Content="Start" Width="100" IsDefault="True" HorizontalContentAlignment="Center" />
         </Grid>
     </StackPanel>

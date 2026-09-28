@@ -38,6 +38,34 @@ namespace FoxIPTV.Classes
             return client;
         }
 
+        public static async Task<string> PostString(string url, string body, string contentType, IDictionary<string, string> headers = null)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                if (headers != null)
+                {
+                    foreach (var header in headers)
+                    {
+                        if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                        {
+                            request.Headers.Remove("User-Agent");
+                        }
+
+                        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+                }
+
+                request.Content = new StringContent(body ?? string.Empty, Encoding.UTF8, contentType ?? "application/json");
+
+                using (var response = await Client.SendAsync(request).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
+
+                    return Decode(await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false));
+                }
+            }
+        }
+
         public static async Task<byte[]> GetBytes(string url, IDictionary<string, string> headers = null)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))

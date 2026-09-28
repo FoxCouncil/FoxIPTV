@@ -4,7 +4,6 @@ namespace FoxIPTV.Classes
 {
     using Newtonsoft.Json;
     using Services;
-    using Services.Scripting;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -12,7 +11,6 @@ namespace FoxIPTV.Classes
     using System.Linq;
     using System.Net;
     using System.Reflection;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Timers;
@@ -88,12 +86,6 @@ namespace FoxIPTV.Classes
         /// <summary>A event to inform of a chance of the programme while active</summary>
         public static event Action<Programme> ProgrammeChanged;
 
-        public static event Action<MediaSource, string> MediaChanged;
-
-        public static MediaSource CurrentMedia { get; private set; }
-
-        public static string CurrentMediaTitle { get; private set; }
-
         /// <summary>The current service being used</summary>
         public static int ServiceSelected { get; set; }
 
@@ -121,8 +113,6 @@ namespace FoxIPTV.Classes
 
         public static IService CurrentService => Services.Count == 0 ? null : Services[Math.Max(0, Math.Min(ServiceSelected, Services.Count - 1))];
 
-        public static ILibraryProvider CurrentLibrary => CurrentService != null && CurrentService.Capabilities.HasFlag(ProviderCapabilities.Library) ? CurrentService as ILibraryProvider : null;
-
         public static bool SelectService(string id)
         {
             var index = Services.FindIndex(x => string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -135,16 +125,6 @@ namespace FoxIPTV.Classes
             ServiceSelected = index;
 
             return true;
-        }
-
-        public static void PlayMedia(MediaSource source, string title)
-        {
-            LogInfo($"[TVCore] PlayMedia({source.Url}, {title})");
-
-            CurrentMedia = source;
-            CurrentMediaTitle = title;
-
-            MediaChanged?.Invoke(source, title);
         }
 
 #if DEBUG
@@ -252,21 +232,7 @@ namespace FoxIPTV.Classes
                 }
             }
 
-            MoveFreeTvEntries(UserStoragePath);
-
-            foreach (var script in ScriptLoader.LoadAll())
-            {
-                if (Services.Any(x => string.Equals(x.Id, script.Id, StringComparison.OrdinalIgnoreCase)))
-                {
-                    LogError($"[TVCore] Startup: Plugin id '{script.Id}' clashes with a built-in service, skipped");
-
-                    continue;
-                }
-
-                InstallService(script);
-            }
-
-            Services.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
+            Services.Sort((a, b) => ProviderRank(a) != ProviderRank(b) ? ProviderRank(a).CompareTo(ProviderRank(b)) : string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
 
             // Load the settings from the disk, if they exist
             Settings.Load();
@@ -433,13 +399,10 @@ namespace FoxIPTV.Classes
                 channelIndex = (uint)totalChannels - 1;
             }
 
-            if (CurrentChannel != null && CurrentChannelIndex == channelIndex && CurrentMedia == null && Channels.Contains(CurrentChannel))
+            if (CurrentChannel != null && CurrentChannelIndex == channelIndex && Channels.Contains(CurrentChannel))
             {
                 return;
             }
-
-            CurrentMedia = null;
-            CurrentMediaTitle = null;
 
             LogDebug($"[TVCore] Setting channelIndex to {channelIndex}");
 
@@ -520,71 +483,13 @@ namespace FoxIPTV.Classes
             return contents;
         }
 
-        private static readonly Regex SamsungChannelId = new Regex(@"^[A-Z]{2}[A-Z0-9]{8,12}$", RegexOptions.Compiled);
+        private static readonly string[] ProviderOrder = { "pluto", "samsungtvplus", "plex", "roku", "iptv-org", "freetv", "m3u" };
 
-        public static void MoveFreeTvEntries(string folder)
+        private static int ProviderRank(IService service)
         {
-            foreach (var kind in new[] { ChannelFavoritesFilename, ProtectedChannelsFilename, HiddenChannelsFilename })
-            {
-                var source = Path.Combine(folder, $"{kind}-freetv");
+            var index = Array.FindIndex(ProviderOrder, x => string.Equals(x, service.Id, StringComparison.OrdinalIgnoreCase));
 
-                if (!File.Exists(source))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var entries = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(source)) ?? new List<string>();
-                    var moving = entries.Where(x => FreeTvEntryOwner(x) != null).ToList();
-
-                    if (moving.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    foreach (var group in moving.GroupBy(FreeTvEntryOwner))
-                    {
-                        var target = Path.Combine(folder, $"{kind}-{group.Key}");
-                        var existing = File.Exists(target) ? JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(target)) ?? new List<string>() : new List<string>();
-
-                        File.WriteAllText(target, JsonConvert.SerializeObject(existing.Concat(group).Distinct().ToList()));
-                    }
-
-                    File.WriteAllText(source, JsonConvert.SerializeObject(entries.Except(moving).ToList()));
-
-                    LogInfo($"[TVCore] Startup: Moved {moving.Count} {kind} entries from the combined Free TV provider to their own providers");
-                }
-                catch (Exception ex)
-                {
-                    LogError($"[TVCore] Startup: Unable to move {kind} entries out of the combined Free TV provider: {ex.Message}");
-                }
-            }
-        }
-
-        private static string FreeTvEntryOwner(string entry)
-        {
-            if (entry == null)
-            {
-                return null;
-            }
-
-            if (entry.Contains("jmp2.uk/stvp-", StringComparison.OrdinalIgnoreCase) || SamsungChannelId.IsMatch(entry))
-            {
-                return "samsungtvplus";
-            }
-
-            if (entry.Contains("jmp2.uk/rok-", StringComparison.OrdinalIgnoreCase))
-            {
-                return "roku";
-            }
-
-            if (entry.Contains("epg.provider.plex.tv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "plex";
-            }
-
-            return null;
+            return index < 0 ? ProviderOrder.Length : index;
         }
 
         private static string FavoritesFilePath => Path.Combine(UserStoragePath, CurrentService == null ? ChannelFavoritesFilename : $"{ChannelFavoritesFilename}-{CurrentService.Id}");

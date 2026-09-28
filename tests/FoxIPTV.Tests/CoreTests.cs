@@ -7,8 +7,6 @@ namespace FoxIPTV.Tests
     using FoxIPTV.Classes;
     using FoxIPTV.Playback;
     using FoxIPTV.Services;
-    using FoxIPTV.Services.Scripting;
-    using Newtonsoft.Json;
 
     public class CoreTests
     {
@@ -24,50 +22,15 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
-        public void BuiltInPlugins_Compile()
+        public void Providers_KeepTheirIdsAndRegion()
         {
-            var providers = ScriptLoader.LoadAll();
+            IService[] providers = { new PlutoTv(), new PlexTv(), new FreeTv(), new M3uPlaylist() };
 
-            Assert.DoesNotContain(ScriptLoader.Errors, x => x.Key.StartsWith("built-in"));
-
-            foreach (var id in new[] { "pluto", "samsungtvplus", "plex", "roku", "freetv" })
-            {
-                Assert.Contains(providers, x => x.Id == id && x.Capabilities.HasFlag(ProviderCapabilities.LiveTv));
-            }
-
-            Assert.Contains(providers, x => x.Id == "m3u");
-            Assert.DoesNotContain(providers.SelectMany(x => x.Fields), x => x.Key == "Source");
-            Assert.True(providers.Single(x => x.Id == "pluto").CanTune);
-        }
-
-        [Fact]
-        public void FreeTvEntries_MoveToTheirOwnProviders()
-        {
-            var folder = Path.Combine(Path.GetTempPath(), "foxiptv-move-" + Guid.NewGuid().ToString("N"));
-
-            Directory.CreateDirectory(folder);
-
-            try
-            {
-                File.WriteAllText(Path.Combine(folder, "fcdata-freetv"), "[\"FilmRiseForensicFiles.us\",\"KIRODT1.us\",\"USBB3200017MY\",\"USBB3200018Q6\"]");
-                File.WriteAllText(Path.Combine(folder, "hidden-freetv"), "[\"https://jmp2.uk/stvp-US1000016Q\", \"https://jmp2.uk/rok-34e2d8f442ab5fa3aed29436c2f8ed63.m3u8\", \"https://example.tv/live.m3u8\"]");
-
-                TvCore.MoveFreeTvEntries(folder);
-                TvCore.MoveFreeTvEntries(folder);
-
-                string[] Read(string name) => JsonConvert.DeserializeObject<string[]>(File.ReadAllText(Path.Combine(folder, name)));
-
-                Assert.Equal(new[] { "FilmRiseForensicFiles.us", "KIRODT1.us" }, Read("fcdata-freetv"));
-                Assert.Equal(new[] { "USBB3200017MY", "USBB3200018Q6" }, Read("fcdata-samsungtvplus"));
-                Assert.Equal(new[] { "https://example.tv/live.m3u8" }, Read("hidden-freetv"));
-                Assert.Equal(new[] { "https://jmp2.uk/stvp-US1000016Q" }, Read("hidden-samsungtvplus"));
-                Assert.Equal(new[] { "https://jmp2.uk/rok-34e2d8f442ab5fa3aed29436c2f8ed63.m3u8" }, Read("hidden-roku"));
-                Assert.False(File.Exists(Path.Combine(folder, "drmdata-samsungtvplus")));
-            }
-            finally
-            {
-                Directory.Delete(folder, true);
-            }
+            Assert.Equal(new[] { "pluto", "plex", "freetv", "m3u" }, providers.Select(x => x.Id));
+            Assert.All(providers, x => Assert.True(x.Capabilities.HasFlag(ProviderCapabilities.LiveTv)));
+            Assert.All(providers.Take(3), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
+            Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[3].Fields.Select(x => x.Key));
+            Assert.True(((ILiveTuner)providers[0]).CanTune);
         }
 
         [Fact]

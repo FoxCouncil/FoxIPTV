@@ -87,33 +87,6 @@ namespace FoxIPTV.Views
             });
         }
 
-        private void TvCoreOnMediaChanged(MediaSource source, string title)
-        {
-            Ui(() =>
-            {
-                TvCore.LogDebug($"[.NET] TvCoreOnMediaChanged({source.Url}, {title})");
-
-                PlaybackTrace.Begin($"on demand {title}");
-
-                AdDetector.Reset();
-                ResetDiagnostics();
-                ClearProtected();
-
-                RemoveErrorState();
-
-                ResetCaptions();
-
-                ReleaseMedia();
-
-                Show();
-                Activate();
-
-                GuiShow();
-
-                PlayCurrent();
-            });
-        }
-
         private void ResetCaptions()
         {
             _ccAvailable = false;
@@ -150,7 +123,7 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var channel = TvCore.CurrentMedia == null ? TvCore.CurrentChannel : null;
+            var channel = TvCore.CurrentChannel;
 
             if (channel != null && TvCore.CurrentService is ILiveTuner tuner && tuner.CanTune)
             {
@@ -158,7 +131,7 @@ namespace FoxIPTV.Views
                 {
                     var fresh = await tuner.Tune(channel);
 
-                    if (_isClosing || TvCore.CurrentMedia != null || !ReferenceEquals(TvCore.CurrentChannel, channel))
+                    if (_isClosing || !ReferenceEquals(TvCore.CurrentChannel, channel))
                     {
                         return;
                     }
@@ -187,13 +160,6 @@ namespace FoxIPTV.Views
 
         private static MediaRequest CurrentRequest()
         {
-            var media = TvCore.CurrentMedia;
-
-            if (media != null)
-            {
-                return new MediaRequest { Uri = media.Url, Headers = media.Headers, IsLive = false, Label = TvCore.CurrentMediaTitle };
-            }
-
             var channel = TvCore.CurrentChannel;
 
             if (channel?.Stream == null)
@@ -329,18 +295,13 @@ namespace FoxIPTV.Views
             _isErrorState = false;
             _isPlaying = false;
 
-            var live = TvCore.CurrentMedia == null;
-
-            TvCore.LogInfo($"[.NET] Copy-protected stream: {(live ? TvCore.CurrentChannel?.Name : TvCore.CurrentMediaTitle)}");
+            TvCore.LogInfo($"[.NET] Copy-protected stream: {TvCore.CurrentChannel?.Name}");
 
             StopPlayer();
 
-            if (live)
-            {
-                TvCore.MarkProtected(TvCore.CurrentChannel);
-            }
+            TvCore.MarkProtected(TvCore.CurrentChannel);
 
-            StatusMessage.Text = live ? "This channel is copy-protected and can't be played. It has been taken out of the channel list." : "This is copy-protected and can't be played.";
+            StatusMessage.Text = "This channel is copy-protected and can't be played. It has been taken out of the channel list.";
             StatusMessageBox.IsVisible = true;
 
             PlayerStatusLabel.Text = "Protected";
@@ -350,13 +311,6 @@ namespace FoxIPTV.Views
         private void OnEnded()
         {
             _isPlaying = false;
-
-            if (TvCore.CurrentMedia != null)
-            {
-                PlayerStatusLabel.Text = "Ended";
-
-                return;
-            }
 
             if (_isProtected)
             {

@@ -20,15 +20,6 @@ namespace FoxIPTV
                 SetMacBundleName("FoxIPTV");
             }
 
-#if DEBUG
-            if (args.Length > 0 && args[0] == "--test-provider")
-            {
-                ProviderSelfTest.Run(args);
-
-                return;
-            }
-#endif
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnExplicitShutdown);
 
             TvCore.LogInfo("[.NET] Main(): Quitting Application...");

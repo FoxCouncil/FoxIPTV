@@ -16,7 +16,6 @@ namespace FoxIPTV.Views
     using Classes;
     using Newtonsoft.Json.Linq;
     using Services;
-    using Services.Scripting;
 
     public class CountryChoice
     {
@@ -85,18 +84,7 @@ namespace FoxIPTV.Views
                 RememberMeCheckBox.IsEnabled = false;
             }
 
-            var errors = ScriptLoader.Errors;
-
-            if (errors.Count > 0)
-            {
-                PluginErrorsLabel.IsVisible = true;
-                PluginErrorsLabel.Text = errors.Count == 1 ? "1 plugin failed to load, hover for details" : $"{errors.Count} plugins failed to load, hover for details";
-
-                ToolTip.SetTip(PluginErrorsLabel, string.Join(Environment.NewLine, errors.Select(x => $"{x.Key}: {x.Value}")));
-            }
-
             LoginButton.Click += LoginButton_Click;
-            PluginsLinkButton.Click += PluginsLinkButton_Click;
 
             Closed += (sender, args) => _result.TrySetResult(false);
         }
@@ -347,16 +335,5 @@ namespace FoxIPTV.Views
             Close();
         }
 
-        private void PluginsLinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo(ScriptLoader.UserPluginPath) { UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                TvCore.LogError($"[ProviderWindow] Unable to open plugin folder: {ex.Message}");
-            }
-        }
     }
 }

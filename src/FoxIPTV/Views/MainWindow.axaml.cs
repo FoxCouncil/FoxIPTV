@@ -60,8 +60,6 @@ namespace FoxIPTV.Views
 
         private ChannelsWindow _channelsWindow;
 
-        private LibraryWindow _libraryWindow;
-
         public bool IsFullscreen { get; private set; }
 
         public MainWindow()
@@ -71,7 +69,6 @@ namespace FoxIPTV.Views
             InitializeComponent();
 
             TvCore.ChannelChanged += TvCoreOnChannelChanged;
-            TvCore.MediaChanged += TvCoreOnMediaChanged;
             TvCore.ProgrammeChanged += programme => Ui(GuiShow);
 
             InitializeContextMenu();
@@ -208,13 +205,6 @@ namespace FoxIPTV.Views
 
                 UpdateFormTitle();
             }
-
-            if (TvCore.CurrentLibrary != null && (TvCore.Settings.LibraryOpen || !hasChannels))
-            {
-                TvCore.Settings.LibraryOpen = true;
-
-                LibraryWindowInstance.Show(this);
-            }
         }
 
         private string LoadingMessage()
@@ -225,8 +215,6 @@ namespace FoxIPTV.Views
         private GuideWindow GuideWindowInstance => _guideWindow ??= new GuideWindow();
 
         private ChannelsWindow ChannelsWindowInstance => _channelsWindow ??= new ChannelsWindow();
-
-        private LibraryWindow LibraryWindowInstance => _libraryWindow ??= new LibraryWindow();
 
         private void InitializeFormDefaults()
         {
@@ -292,13 +280,6 @@ namespace FoxIPTV.Views
 
         private void UpdateFormTitle()
         {
-            if (TvCore.CurrentMedia != null)
-            {
-                Title = TitleOf(TvCore.CurrentMediaTitle, ProviderLabel(), "Fox IPTV");
-
-                return;
-            }
-
             var channelObj = TvCore.CurrentChannel;
 
             if (channelObj == null)
@@ -372,16 +353,8 @@ namespace FoxIPTV.Views
             AddTag(_currentTvIconData?.AudioChannel);
             AddTag(_currentTvIconData?.AudioRate);
 
-            if (TvCore.CurrentMedia != null)
-            {
-                SetOsd(ChannelLabelBox, ChannelLabel, string.Empty);
-                SetOsd(ChannelNameLabelBox, ChannelNameLabel, TvCore.CurrentMediaTitle);
-            }
-            else
-            {
-                SetOsd(ChannelLabelBox, ChannelLabel, TvCore.CurrentChannel?.Index.ToString() ?? string.Empty);
-                SetOsd(ChannelNameLabelBox, ChannelNameLabel, OverlayLine());
-            }
+            SetOsd(ChannelLabelBox, ChannelLabel, TvCore.CurrentChannel?.Index.ToString() ?? string.Empty);
+            SetOsd(ChannelNameLabelBox, ChannelNameLabel, OverlayLine());
 
             _uiFadeoutTime = 50;
         }

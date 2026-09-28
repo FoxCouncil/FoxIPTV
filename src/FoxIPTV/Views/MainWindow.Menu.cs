@@ -50,7 +50,6 @@ namespace FoxIPTV.Views
 
             MenuItemGuide.Click += (sender, args) => ToggleGuideForm();
             MenuItemChannelEditor.Click += (sender, args) => ToggleChannelsForm();
-            MenuItemLibrary.Click += (sender, args) => ToggleLibraryForm();
             MenuItemSwitchProvider.Click += (sender, args) => SwitchProvider();
 
             MenuItemAbout.Click += (sender, args) => new AboutWindow().ShowDialog(this);
@@ -89,7 +88,6 @@ namespace FoxIPTV.Views
             menu.Items.Add(new NativeMenuItemSeparator());
             Item("Guide", ToggleGuideForm);
             Item("Channel Editor", ToggleChannelsForm);
-            Item("Library", ToggleLibraryForm);
             menu.Items.Add(new NativeMenuItemSeparator());
             Item("Switch Provider...", SwitchProvider);
             Item("About", () => new AboutWindow().Show());
@@ -132,12 +130,7 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            if (TvCore.CurrentMedia != null)
-            {
-                MenuItemChannelNumber.Header = "On Demand";
-                MenuItemChannelName.Header = TvCore.CurrentMediaTitle;
-            }
-            else if (TvCore.CurrentChannel != null)
+            if (TvCore.CurrentChannel != null)
             {
                 MenuItemChannelNumber.Header = $"CH: {TvCore.CurrentChannel.Index}";
                 MenuItemChannelName.Header = TvCore.CurrentChannel.Name;
@@ -154,9 +147,6 @@ namespace FoxIPTV.Views
             MenuItemChannelDown.IsEnabled = hasChannels;
             MenuItemGuide.IsEnabled = hasChannels;
             MenuItemChannelEditor.IsEnabled = hasChannels;
-
-            MenuItemLibrary.IsEnabled = TvCore.CurrentLibrary != null;
-            MenuItemLibrary.IsChecked = _libraryWindow?.IsVisible ?? false;
 
             MenuItemWindowState.IsChecked = IsVisible;
             MenuItemWindowState.Header = IsVisible ? "Hide Window" : "Show Window";
@@ -427,27 +417,6 @@ namespace FoxIPTV.Views
             e.Handled = true;
         }
 
-        private void ToggleLibraryForm()
-        {
-            if (TvCore.CurrentLibrary == null)
-            {
-                return;
-            }
-
-            if (LibraryWindowInstance.IsVisible)
-            {
-                TvCore.Settings.LibraryOpen = false;
-                LibraryWindowInstance.Hide();
-            }
-            else
-            {
-                TvCore.Settings.LibraryOpen = true;
-                LibraryWindowInstance.Show(this);
-            }
-
-            TvCore.Settings.Save();
-        }
-
         private void ToggleChannelsForm()
         {
             if (TvCore.Channels == null || TvCore.Channels.Count == 0)
@@ -565,11 +534,6 @@ namespace FoxIPTV.Views
             if (_channelsWindow != null && TvCore.Settings.ChannelEditorOpen && !_channelsWindow.IsVisible)
             {
                 _channelsWindow.Show(this);
-            }
-
-            if (_libraryWindow != null && TvCore.Settings.LibraryOpen && !_libraryWindow.IsVisible)
-            {
-                _libraryWindow.Show(this);
             }
         }
 

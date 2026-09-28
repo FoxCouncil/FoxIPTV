@@ -106,8 +106,6 @@ namespace FoxIPTV.Views
 
             TvCore.ProgrammeChanged += programme => Dispatcher.UIThread.Post(UpdateProgramme);
 
-            TvCore.MediaChanged += (source, title) => Dispatcher.UIThread.Post(UpdateProgramme);
-
             TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(LoadAll);
 
             _programmeClock.Tick += (sender, args) =>
@@ -338,7 +336,7 @@ namespace FoxIPTV.Views
 
         private void UpdateProgramme()
         {
-            var programme = TvCore.CurrentMedia == null ? TvCore.CurrentProgramme : null;
+            var programme = TvCore.CurrentProgramme;
 
             if (programme == null || string.IsNullOrWhiteSpace(programme.Title))
             {

@@ -49,7 +49,6 @@ namespace FoxIPTV.Classes
 
         public string ProviderId { get; set; } = string.Empty;
 
-        public bool LibraryOpen { get; set; } = false;
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();
