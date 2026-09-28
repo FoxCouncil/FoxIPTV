@@ -16,6 +16,16 @@ namespace FoxIPTV.Classes
 
         private static readonly Regex PieceLength = new Regex(@"[?&]dur=(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        private static readonly Regex SplitBeforeBreak = new Regex(@"/split_[^/]+/[^/]+_a\.[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex SplitAfterBreak = new Regex(@"/split_[^/]+/[^/]+_b\.[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex BreakBumper = new Regex(@"/modified_bumpers/", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex ProgrammeTitle = new Regex(@"(?:^|[,;\s])pid=\d+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly TimeSpan LongestHeldBreak = TimeSpan.FromMinutes(15);
+
         private static readonly object Lock = new object();
 
         private static string _lastCreative;
@@ -27,6 +37,10 @@ namespace FoxIPTV.Classes
         private static double _breakSeconds;
 
         private static double _fetchedSeconds;
+
+        private static bool _held;
+
+        private static bool _breakNext;
 
         public static bool InAd { get; private set; }
 
@@ -51,9 +65,11 @@ namespace FoxIPTV.Classes
             _entryDiscontinuitySeen = false;
             _breakSeconds = 0;
             _fetchedSeconds = 0;
+            _held = false;
+            _breakNext = false;
         }
 
-        public static void ObserveSegment(string address)
+        public static void ObserveSegment(string address, string title = null)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -69,9 +85,38 @@ namespace FoxIPTV.Classes
             }
 
             var isAd = AdPiece.IsMatch(url);
+            var isProgramme = SplitAfterBreak.IsMatch(path) || title != null && ProgrammeTitle.IsMatch(title);
 
             lock (Lock)
             {
+                if (_held)
+                {
+                    if (!isProgramme && DateTime.UtcNow - _breakStarted < LongestHeldBreak)
+                    {
+                        return;
+                    }
+
+                    TvCore.LogInfo($"[Ads] Programme piece fetched, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s: {Short(url)}");
+
+                    Clear();
+                }
+
+                if (_breakNext || BreakBumper.IsMatch(path))
+                {
+                    var atBumper = !_breakNext;
+
+                    Clear();
+
+                    InAd = true;
+                    AdNumber = 1;
+                    _held = true;
+                    _breakStarted = DateTime.UtcNow;
+
+                    TvCore.LogInfo($"[Ads] Break started {(atBumper ? "at a bumper" : "after a split programme piece")}: {Short(url)}");
+
+                    return;
+                }
+
                 if (!isAd)
                 {
                     if (InAd)
@@ -80,6 +125,8 @@ namespace FoxIPTV.Classes
 
                         Clear();
                     }
+
+                    _breakNext = SplitBeforeBreak.IsMatch(path);
 
                     return;
                 }
@@ -130,7 +177,7 @@ namespace FoxIPTV.Classes
         {
             lock (Lock)
             {
-                if (!InAd)
+                if (!InAd || _held)
                 {
                     return;
                 }

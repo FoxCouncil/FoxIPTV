@@ -83,5 +83,82 @@ namespace FoxIPTV.Tests
 
             Assert.Equal(2, AdDetector.AdNumber);
         }
+
+        private const string SamsungHost = "https://pb-efxa6c2xgfuer.akamaized.net/live-content";
+
+        private static void Piece(string path, string title = null, bool discontinuity = false)
+        {
+            AdDetector.ObserveSegment($"{SamsungHost}/{path}", title);
+
+            if (discontinuity)
+            {
+                AdDetector.ObserveDiscontinuity();
+            }
+        }
+
+        [Fact]
+        public void Samsung_StayTunedSlateBetweenBumpersIsOneBreak()
+        {
+            AdDetector.Reset();
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/6_353.ts", "pid=260");
+
+            Assert.False(AdDetector.InAd);
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/split_202607220259/6_354_a.ts", "pid=260");
+
+            Assert.False(AdDetector.InAd);
+
+            Piece("149/modified_bumpers/149/content/XM0F3CI209SFPU/24347824/6_000.ts", null, true);
+
+            Assert.True(AdDetector.InAd);
+
+            Piece("149/content/XM0GRQO3JXT502/27129464/6_000.ts", null, true);
+            Piece("149/content/XM0GRQO3JXT502/27129464/6_001.ts");
+            Piece("149/content/XM0GRQO3JXT502/27129464/6_023.ts");
+            Piece("149/modified_bumpers/149/content/XM0KRTN9K12S8L/24347865/6_000.ts", null, true);
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(1, AdDetector.AdNumber);
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/split_202607220259/6_354_b.ts", "pid=260", true);
+
+            Assert.False(AdDetector.InAd);
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/6_355.ts", "pid=260");
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void Samsung_BreakEndsAtTheNextProgrammePieceWhenTheSplitEndIsMissing()
+        {
+            AdDetector.Reset();
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/split_202607220259/6_354_a.ts", "pid=260");
+            Piece("149/content/XM0GRQO3JXT502/27129464/6_000.ts", null, true);
+
+            Assert.True(AdDetector.InAd);
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/6_355.ts", "pid=260", true);
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void Samsung_BumperStartsABreakWithoutASplitPiece()
+        {
+            AdDetector.Reset();
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/6_353.ts", "pid=260");
+            Piece("149/modified_bumpers/149/content/XM0F3CI209SFPU/24347824/6_000.ts", null, true);
+            Piece("149/content/XM0GRQO3JXT502/27129464/6_000.ts", null, true);
+
+            Assert.True(AdDetector.InAd);
+
+            Piece("260/content/XM0BMWGHHNFFHF/22254038/6_354.ts", "pid=260", true);
+
+            Assert.False(AdDetector.InAd);
+        }
     }
 }

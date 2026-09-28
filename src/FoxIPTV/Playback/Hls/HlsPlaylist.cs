@@ -89,6 +89,8 @@ namespace FoxIPTV.Playback.Hls
 
         public double Duration { get; set; }
 
+        public string Title { get; set; }
+
         public long Sequence { get; set; }
 
         public int DiscontinuitySequence { get; set; }
@@ -157,6 +159,7 @@ namespace FoxIPTV.Playback.Hls
             var discontinuitySequence = 0;
             var discontinuity = false;
             var duration = 0.0;
+            string title = null;
             var hasDuration = false;
             long? offset = null;
             long? length = null;
@@ -206,6 +209,7 @@ namespace FoxIPTV.Playback.Hls
                         {
                             Uri = target,
                             Duration = duration,
+                            Title = title,
                             Sequence = sequence,
                             DiscontinuitySequence = discontinuitySequence,
                             Discontinuity = discontinuity,
@@ -239,6 +243,7 @@ namespace FoxIPTV.Playback.Hls
                         discontinuity = false;
                         hasDuration = false;
                         duration = 0;
+                        title = null;
                         offset = null;
                         length = null;
                         gap = false;
@@ -365,6 +370,7 @@ namespace FoxIPTV.Playback.Hls
                             var comma = value.IndexOf(',');
 
                             duration = ParseDouble(comma < 0 ? value : value.Substring(0, comma));
+                            title = comma < 0 || string.IsNullOrWhiteSpace(value.Substring(comma + 1)) ? null : value.Substring(comma + 1).Trim();
                             hasDuration = true;
                         }
                         break;

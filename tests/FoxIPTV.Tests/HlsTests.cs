@@ -164,6 +164,24 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Extinf_KeepsThePieceTitle()
+        {
+            const string text = "#EXTM3U\n" +
+                                "#EXT-X-TARGETDURATION:6\n" +
+                                "#EXTINF:6.006,pid=260\n" +
+                                "show/6_353.ts\n" +
+                                "#EXTINF:5.0,\n" +
+                                "slate/6_000.ts\n" +
+                                "#EXTINF:5.0\n" +
+                                "slate/6_001.ts\n";
+
+            var playlist = HlsPlaylist.Parse(text, Base);
+
+            Assert.Equal(new[] { "pid=260", null, null }, playlist.Segments.Select(x => x.Title).ToArray());
+            Assert.Equal(6.006, playlist.Segments[0].Duration, 3);
+        }
+
+        [Fact]
         public void Attributes_KeepCommasInsideQuotes()
         {
             var attributes = HlsPlaylist.Attributes("TYPE=AUDIO,NAME=\"a, b\",BANDWIDTH=10, CODECS=\"x,y\"");

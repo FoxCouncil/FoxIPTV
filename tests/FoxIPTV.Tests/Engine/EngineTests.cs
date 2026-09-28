@@ -74,6 +74,38 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Live_SamsungStayTunedSlateShowsAsAnAd()
+        {
+            const string show = "live-content/260/content/SHOW/1";
+            const string programme = "pid=260";
+
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts", false, $"{show}/6_000.ts", programme),
+                new LivePiece("low/1.ts", false, $"{show}/6_001.ts", programme),
+                new LivePiece("low/2.ts", false, $"{show}/6_002.ts", programme),
+                new LivePiece("low/3.ts", false, $"{show}/split_202609280000/6_003_a.ts", programme),
+                new LivePiece($"{Ad}/0.ts", true, "live-content/149/modified_bumpers/149/content/BUMPER/1/6_000.ts"),
+                new LivePiece($"{Ad}/1.ts", true, "live-content/149/content/SLATE/1/6_000.ts"),
+                new LivePiece("low/0.ts", true, $"{show}/split_202609280000/6_003_b.ts", programme),
+                new LivePiece("low/1.ts", false, $"{show}/6_004.ts", programme),
+                new LivePiece("low/2.ts", false, $"{show}/6_005.ts", programme),
+                new LivePiece("low/3.ts", false, $"{show}/6_006.ts", programme)
+            };
+
+            ServeLive(pieces, null);
+
+            using var run = Play("/live.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 30), run.Describe());
+
+            AssertSmooth(run, 9, 160, 90);
+            Assert.True(run.AdSeen, "the slate was not shown as an ad");
+            Assert.False(AdDetector.InAd, "the break did not end when the programme came back");
+            AssertPolite();
+        }
+
+        [Fact]
         public void Live_SkipsAMissingPiece()
         {
             var pieces = new[]
@@ -264,7 +296,7 @@ namespace FoxIPTV.Tests.Engine
         private void ServeLive(IReadOnlyList<LivePiece> pieces, int? missing)
         {
             var started = double.NaN;
-            var paths = pieces.Select((piece, i) => piece.Clip.StartsWith(Ad, StringComparison.Ordinal) ? $"live/{Ad}/{i}.ts" : $"live/{i}.ts").ToList();
+            var paths = pieces.Select((piece, i) => piece.Path ?? (piece.Clip.StartsWith(Ad, StringComparison.Ordinal) ? $"live/{Ad}/{i}.ts" : $"live/{i}.ts")).ToList();
 
             for (var i = 0; i < pieces.Count; i++)
             {
@@ -295,7 +327,7 @@ namespace FoxIPTV.Tests.Engine
                         text.Append("#EXT-X-DISCONTINUITY\n");
                     }
 
-                    text.Append("#EXTINF:1.000,\n").Append(paths[i]).Append('\n');
+                    text.Append("#EXTINF:1.000,").Append(pieces[i].Title).Append('\n').Append(paths[i]).Append('\n');
                 }
 
                 if (available == pieces.Count)
@@ -359,6 +391,6 @@ namespace FoxIPTV.Tests.Engine
             }
         }
 
-        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false);
+        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null);
     }
 }

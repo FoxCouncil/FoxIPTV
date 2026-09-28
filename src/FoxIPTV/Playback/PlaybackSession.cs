@@ -1631,7 +1631,7 @@ namespace FoxIPTV.Playback
             {
                 foreach (var piece in pieces)
                 {
-                    AdDetector.ObserveSegment(piece.Url);
+                    AdDetector.ObserveSegment(piece.Url, piece.Title);
 
                     if (piece.StartsDiscontinuity)
                     {
