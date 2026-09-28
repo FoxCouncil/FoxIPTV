@@ -160,6 +160,10 @@ namespace FoxIPTV.Playback
 
         public long Number { get; set; }
 
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
         public void Free()
         {
             var frame = Frame;

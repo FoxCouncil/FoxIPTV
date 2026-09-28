@@ -113,8 +113,9 @@ namespace FoxIPTV.Playback
 
             AVDictionary* options = null;
 
-            ffmpeg.av_dict_set(&options, "probesize", probe ? "5000000" : "1000000", 0);
-            ffmpeg.av_dict_set(&options, "analyzeduration", probe ? "3000000" : "1000000", 0);
+            ffmpeg.av_dict_set(&options, "probesize", probe ? "2000000" : "1000000", 0);
+            ffmpeg.av_dict_set(&options, "analyzeduration", probe ? "1500000" : "1000000", 0);
+            ffmpeg.av_dict_set(&options, "fpsprobesize", "0", 0);
             ffmpeg.av_dict_set(&options, "merge_pmt_versions", "1", 0);
 
             if (url != null)

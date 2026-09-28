@@ -4,9 +4,9 @@ namespace FoxIPTV.Tests
 {
     using System.Linq;
     using FoxIPTV.Classes;
+    using FoxIPTV.Playback;
     using FoxIPTV.Services;
     using FoxIPTV.Services.Scripting;
-    using LibVLCSharp.Shared;
 
     public class CoreTests
     {
@@ -32,31 +32,23 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
-        public void TvIconData_ReadsTracks()
+        public void TvIconData_ReadsStreamInfo()
         {
-            var video = new MediaTrack();
-            var audio = new MediaTrack();
-
-            video = SetTrack(video, TrackType.Video, "h264");
-            audio = SetTrack(audio, TrackType.Audio, "mp4a");
-
-            var data = TvIconData.CreateData(true, new[] { video, audio });
+            var data = TvIconData.CreateData(new StreamInfo { Captions = true, VideoCodec = "h264", Height = 1080, FrameRate = 29.97, AudioCodec = "aac", AudioChannels = 2, AudioRate = 48000 });
 
             Assert.True(data.ClosedCaptioning);
             Assert.Equal("VC_H264", data.VideoCodec);
-            Assert.Equal("AC_MP4A", data.AudioCodec);
+            Assert.Equal("VS_1080P", data.VideoSize);
+            Assert.Equal("FR_30FPS", data.FrameRate);
+            Assert.Equal("AC_AAC", data.AudioCodec);
+            Assert.Equal("CH_STEREO", data.AudioChannel);
+            Assert.Equal("AR_48KHZ", data.AudioRate);
         }
 
-        private static MediaTrack SetTrack(MediaTrack track, TrackType type, string fourCc)
+        [Fact]
+        public void CaptionText_StripsAssMarkup()
         {
-            var boxed = (object)track;
-            var trackType = typeof(MediaTrack).GetField("TrackType") ?? typeof(MediaTrack).GetField("<TrackType>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var codec = typeof(MediaTrack).GetField("Codec") ?? typeof(MediaTrack).GetField("<Codec>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            trackType.SetValue(boxed, type);
-            codec.SetValue(boxed, (uint)(fourCc[0] | fourCc[1] << 8 | fourCc[2] << 16 | fourCc[3] << 24));
-
-            return (MediaTrack)boxed;
+            Assert.Equal("HELLO THERE\nFRIEND", CaptionDecoder.StripAss("0,0,Default,,0,0,0,,{\\an7}HELLO THERE\\NFRIEND"));
         }
     }
 }

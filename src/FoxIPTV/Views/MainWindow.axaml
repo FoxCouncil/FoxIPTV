@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vlc="using:LibVLCSharp.Avalonia"
+        xmlns:video="using:FoxIPTV.Playback.Video"
         x:Class="FoxIPTV.Views.MainWindow"
         Title="Fox IPTV"
         Icon="/Assets/FoxIPTV.ico"
@@ -29,7 +29,9 @@
             </Grid>
         </Border>
 
-        <vlc:VideoView x:Name="VideoView">
+        <Panel>
+            <video:VideoSurface x:Name="VideoView" />
+
             <Panel x:Name="OverlayPanel" Background="#01000000">
                 <Panel.ContextMenu>
                     <ContextMenu x:Name="MainContextMenu">
@@ -106,6 +108,10 @@
                     <StackPanel x:Name="TagPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" />
                 </StackPanel>
 
+                <Border x:Name="CaptionBox" Background="#C0000000" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,48" IsVisible="False">
+                    <TextBlock x:Name="CaptionLabel" FontFamily="Consolas, Menlo, monospace" FontSize="22" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
+                </Border>
+
                 <Border x:Name="AdLabelBox" Background="Black" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="9,0,0,12" IsVisible="False">
                     <TextBlock x:Name="AdLabel" FontFamily="Arial" FontWeight="Bold" FontSize="24" Foreground="Gold" />
                 </Border>
@@ -114,6 +120,6 @@
                     <TextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="Consolas, Menlo, monospace" FontSize="21" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
             </Panel>
-        </vlc:VideoView>
+        </Panel>
     </DockPanel>
 </Window>

@@ -16,8 +16,6 @@ namespace FoxIPTV.Classes
 
         private static readonly Regex PieceLength = new Regex(@"[?&]dur=(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private const string VideoDiscontinuity = "Restarting demuxer 0 1";
-
         private static readonly object Lock = new object();
 
         private static string _lastCreative;
@@ -53,28 +51,6 @@ namespace FoxIPTV.Classes
             _entryDiscontinuitySeen = false;
             _breakSeconds = 0;
             _fetchedSeconds = 0;
-        }
-
-        public static void Observe(string message)
-        {
-            if (message == null)
-            {
-                return;
-            }
-
-            if (message.StartsWith(VideoDiscontinuity, StringComparison.Ordinal))
-            {
-                ObserveDiscontinuity();
-
-                return;
-            }
-
-            if (!message.StartsWith("Retrieving http", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            ObserveSegment(message.Substring("Retrieving ".Length).Trim());
         }
 
         /// <summary>Called as each video piece starts playing</summary>

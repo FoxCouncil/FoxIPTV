@@ -1,5 +1,5 @@
 # ═════•°• FoxIPTV •°•═════
-The OSS LibVLC based IPTV client, for Windows, macOS and Linux.
+The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.
 
 # ═════•°• The Why
      ____   _____  ____     _    _   _  ____   _____ 
@@ -36,7 +36,7 @@ Pick one at start up. Details are remembered per provider when you tick "Remembe
 | Free TV Playlists | Pluto TV, Samsung TV Plus, Plex, Roku, Tubi, Free-TV or iptv-org, with guide data | A source and a region |
 | M3U Playlist | Any M3U/M3U8 URL, guide auto-detected from the playlist header or given by hand | The URL |
 
-Providers that offer a library open the **Library** window (right click menu) where you browse categories, search, pick seasons and episodes, and choose a source. Every source is a direct stream URL that LibVLC plays; there is no browser in FoxIPTV. **Switch Provider...** in the menu takes you back to the picker.
+Providers that offer a library open the **Library** window (right click menu) where you browse categories, search, pick seasons and episodes, and choose a source. Every source is a direct stream URL that the player opens; there is no browser in FoxIPTV. **Switch Provider...** in the menu takes you back to the picker.
 
 # ═════•°• Writing a plugin
 Free TV Playlists and M3U Playlist are JavaScript files; Xtream and IPTV.org are C#. Drop your own `.js` into the `FoxIPTV/plugins` folder of your application data (`%APPDATA%` on Windows, `~/.config` on Linux and macOS; **Open plugins folder** in the picker takes you there) and it appears in the picker on the next start; a file with the same name as a built-in replaces it. The built-ins are copied to `plugins\examples` for reference, and plugins that fail to load are listed in the picker with the error.
@@ -64,7 +64,7 @@ function browse(categoryId, page) { return { items: [ item ], page, totalPages }
 function search(query, page) { /* same shape */ }
 function details(id, kind) { /* item, with seasons: [ { number, name, episodeCount } ] for series */ }
 function episodes(seriesId, season) { return [ item ]; }
-function resolve(item) { return [ { name, url, headers } ]; }   // url must be something LibVLC can open: HLS, MP4, MPEG-TS, RTSP, ...
+function resolve(item) { return [ { name, url, headers } ]; }   // url must be something the player can open: HLS, MP4, MPEG-TS, RTSP, ...
 ```
 
 An item is `{ id, kind: "movie" | "series" | "episode", title, subtitle, year, overview, poster, backdrop, rating, duration, seriesId, season, episode, seasons, extra }`.
@@ -83,7 +83,9 @@ The `host` object is the bridge back to FoxIPTV:
 Scripts run off the UI thread and one call at a time, so plain blocking code is fine. A Debug build can exercise a plugin without the UI: `FoxIPTV --test-provider <id> "Field=Value" --search text` writes a report to `selftest-<id>.txt` in the temp folder's `FoxIPTV` directory.
 
 # ═════•°• Building
-Needs the .NET 10 SDK. `dotnet build src/FoxIPTV/FoxIPTV.csproj` builds the app, `dotnet test tests/FoxIPTV.Tests` runs the tests. On Linux, install VLC from your package manager (`sudo apt install vlc libvlc-dev`); on macOS, install VLC.app.
+Needs the .NET 10 SDK. `dotnet build src/FoxIPTV/FoxIPTV.csproj` builds the app, `dotnet test tests/FoxIPTV.Tests` runs the tests.
+
+The player needs a small LGPL build of FFmpeg, made once into `native/<runtime>`. Run `build/ffmpeg.sh linux-x64` on Ubuntu 24.04, or `build/ffmpeg.sh osx-arm64` on macOS. On Windows, build it in a container from the repository root: `docker run --rm -v "${PWD}:/src" -w /src ubuntu:24.04 bash build/ffmpeg.sh win-x64` (PowerShell). The app build copies the files next to the app; without them the app starts but can't play.
 
 # ═════•°• Roadmap
 - IR Remote Support

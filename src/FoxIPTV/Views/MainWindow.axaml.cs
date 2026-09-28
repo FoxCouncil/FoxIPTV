@@ -80,7 +80,7 @@ namespace FoxIPTV.Views
 
             InitializeOverlay();
 
-            InitializeVlcPlayer();
+            InitializePlayer();
 
             InitializeFormDefaults();
 
@@ -107,6 +107,8 @@ namespace FoxIPTV.Views
 
             SizeChanged += (sender, args) =>
             {
+                CaptionLabel.FontSize = Math.Max(14, Math.Min(48, args.NewSize.Height / 22));
+
                 _resizeSettle.Stop();
                 _resizeSettle.Start();
             };
@@ -272,20 +274,6 @@ namespace FoxIPTV.Views
 
                 BeginMoveDrag(args);
             };
-
-            OverlayPanel.AttachedToVisualTree += (sender, args) =>
-            {
-                if (TopLevel.GetTopLevel(OverlayPanel) is TopLevel overlay && overlay != this)
-                {
-                    overlay.KeyUp -= OverlayKeyUp;
-                    overlay.KeyUp += OverlayKeyUp;
-                }
-            };
-        }
-
-        private void OverlayKeyUp(object sender, KeyEventArgs e)
-        {
-            HotKey(e);
         }
 
         private void MainWindow_Closing(object sender, WindowClosingEventArgs e)
@@ -494,8 +482,6 @@ namespace FoxIPTV.Views
             StatusMessageBox.IsVisible = false;
 
             StatusMessage.Text = string.Empty;
-
-            StopPlayer();
         }
 
         private string ErrorRetryText()
@@ -522,6 +508,8 @@ namespace FoxIPTV.Views
                 if (_isErrorRetryTimeout <= 0)
                 {
                     RemoveErrorState();
+
+                    PlayCurrent();
                 }
             }
 
@@ -529,9 +517,12 @@ namespace FoxIPTV.Views
 
             TimerAdLabel();
 
-            TimerCaptionHold();
-
             TimerUiFade();
+
+            if (_isPlaying)
+            {
+                VideoView.Wake();
+            }
 
             TimerKeyboardEntry();
 
@@ -604,14 +595,14 @@ namespace FoxIPTV.Views
 
         private void TimerTvIcons()
         {
-            var tracks = _currentTracks;
+            var info = _player.Info;
 
-            if (tracks == null || _uiFadeoutTime == 0)
+            if (_uiFadeoutTime == 0 || info == null || info.VideoCodec == null && info.AudioCodec == null)
             {
                 return;
             }
 
-            var tmpTvIcons = TvIconData.CreateData(_ccAvailable, tracks);
+            var tmpTvIcons = TvIconData.CreateData(info);
 
             if (_currentTvIconData != null && _currentTvIconData == tmpTvIcons)
             {

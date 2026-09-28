@@ -1092,7 +1092,7 @@ namespace FoxIPTV.Playback
 
             Interlocked.Increment(ref _framesDecoded);
 
-            Frames.Add(new VideoFrame { Frame = keep, Time = time, Duration = duration, IsHardware = hardware, Number = ++state.Number }, () => Clock, _token);
+            Frames.Add(new VideoFrame { Frame = keep, Time = time, Duration = duration, IsHardware = hardware, Number = ++state.Number, Width = keep->width, Height = keep->height }, () => Clock, _token);
 
             if (!_videoReady)
             {

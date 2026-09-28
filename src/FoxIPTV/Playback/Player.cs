@@ -143,6 +143,9 @@ namespace FoxIPTV.Playback
             Caption = null;
             CaptionChanged?.Invoke(null);
 
+            Info = new StreamInfo();
+            InfoChanged?.Invoke(Info);
+
             session.Start();
         }
 

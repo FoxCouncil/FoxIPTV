@@ -5,8 +5,7 @@ namespace FoxIPTV.Classes
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
-    using System.Linq;
-    using LibVLCSharp.Shared;
+    using Playback;
 
     /// <summary>
     /// A class to contain the data state of various icons to inform
@@ -25,7 +24,7 @@ namespace FoxIPTV.Classes
         /// <summary>Show or hide an icon if Closed Captioning information is available</summary>
         public bool ClosedCaptioning { get; set; }
 
-        /// <summary>Icon key of the current video codec in FourCC format, ie: H264, etc</summary>
+        /// <summary>Icon key of the current video codec, ie: H264, HEVC</summary>
         public string VideoCodec { get; set; }
 
         /// <summary>Icon key of the current video height in uppercase P format, ie: 720P, 1080P</summary>
@@ -34,7 +33,7 @@ namespace FoxIPTV.Classes
         /// <summary>Icon key of the current video frame rate, suffixed with capitals FPS, ie: 25FPS, 30FPS</summary>
         public string FrameRate { get; set; }
 
-        /// <summary>Icon key of the current audio codec in FourCC format, ie: M4A, AC3</summary>
+        /// <summary>Icon key of the current audio codec, ie: AAC, AC3</summary>
         public string AudioCodec { get; set; }
 
         /// <summary>Icon key of the current audio channel, ie: STEREO, 5.1</summary>
@@ -100,56 +99,60 @@ namespace FoxIPTV.Classes
                    string.Equals(AudioRate, other.AudioRate, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CodecName(string fourCc)
+        private static string CodecName(string codec)
         {
-            switch ((fourCc ?? string.Empty).Trim().ToLowerInvariant())
+            switch ((codec ?? string.Empty).Trim().ToLowerInvariant())
             {
                 case "h264":
-                case "avc1":
                 {
                     return "H264";
                 }
 
                 case "hevc":
-                case "hvc1":
-                case "hev1":
-                case "h265":
                 {
                     return "HEVC";
                 }
 
-                case "av01":
-                {
-                    return "AV1";
-                }
-
-                case "vp09":
-                case "vp90":
-                {
-                    return "VP9";
-                }
-
-                case "mpgv":
-                case "mp2v":
+                case "mpeg2video":
                 {
                     return "MPEG2";
                 }
 
-                case "a52":
-                case "a52 ":
-                case "ac-3":
+                case "mpeg1video":
                 {
-                    return "AC3";
+                    return "MPEG1";
                 }
 
-                case "eac3":
+                case "mpeg4":
                 {
-                    return "EAC3";
+                    return "MPEG4";
+                }
+
+                case "mp2":
+                case "mp2float":
+                {
+                    return "MP2";
+                }
+
+                case "mp3":
+                case "mp3float":
+                {
+                    return "MP3";
+                }
+
+                case "aac_latm":
+                {
+                    return "AAC";
+                }
+
+                case "dca":
+                {
+                    return "DTS";
                 }
 
                 default:
                 {
-                    return (fourCc ?? string.Empty).Trim().ToUpperInvariant();
+                    return (codec ?? string.Empty).Trim().ToUpperInvariant();
                 }
             }
         }
@@ -185,104 +188,47 @@ namespace FoxIPTV.Classes
             }
         }
 
-        private static TvIconData ApplyFacts(TvIconData data)
+        /// <returns>A new instance of a TVIconData mapped from what the player knows about the stream</returns>
+        public static TvIconData CreateData(StreamInfo info)
         {
-            if (data.VideoSize == null && StreamFacts.VideoHeight > 0)
+            var data = new TvIconData { ClosedCaptioning = info?.Captions ?? false };
+
+            if (info == null)
             {
-                data.VideoSize = string.Format(VIDEO_SIZE, StreamFacts.VideoHeight);
+                return data;
             }
 
-            if (data.FrameRate == null && StreamFacts.FrameRate != null)
+            if (!string.IsNullOrEmpty(info.VideoCodec))
             {
-                data.FrameRate = string.Format(FRAME_RATE, StreamFacts.FrameRate);
+                data.VideoCodec = string.Format(VIDEO_CODEC, CodecName(info.VideoCodec));
             }
 
-            if (data.AudioChannel == null && StreamFacts.AudioChannels > 0)
+            if (info.Height > 0)
             {
-                data.AudioChannel = string.Format(AUDIO_CHANNELS, ChannelName(StreamFacts.AudioChannels));
+                data.VideoSize = string.Format(VIDEO_SIZE, info.Height);
             }
 
-            if (data.AudioRate == null && StreamFacts.AudioRate > 0)
+            if (info.FrameRate > 0)
             {
-                data.AudioRate = string.Format(AUDIO_RATE, Math.Floor(StreamFacts.AudioRate / 1000m));
+                data.FrameRate = string.Format(FRAME_RATE, Math.Min(90, Math.Ceiling(info.FrameRate)).ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (!string.IsNullOrEmpty(info.AudioCodec))
+            {
+                data.AudioCodec = string.Format(AUDIO_CODEC, CodecName(info.AudioCodec));
+            }
+
+            if (info.AudioChannels > 0)
+            {
+                data.AudioChannel = string.Format(AUDIO_CHANNELS, ChannelName(info.AudioChannels));
+            }
+
+            if (info.AudioRate > 0)
+            {
+                data.AudioRate = string.Format(AUDIO_RATE, Math.Floor(info.AudioRate / 1000m));
             }
 
             return data;
-        }
-
-        /// <param name="closedCaptioning">The current Closed Caption state</param>
-        /// <returns>A new instance of a TVIconData mapped from the arguments specified</returns>
-        public static TvIconData CreateData(bool closedCaptioning, MediaTrack[] mediaTracks)
-        {
-            var newObj = new TvIconData { ClosedCaptioning = closedCaptioning };
-
-            // Get VLC's video data
-            var videoTracks = mediaTracks.Where(x => x.TrackType == TrackType.Video).ToArray();
-
-            if (videoTracks.Length > 0)
-            {
-                var videoData = videoTracks[0];
-
-                // Get the video codec, converting to FourCC output
-                newObj.VideoCodec = string.Format(VIDEO_CODEC, CodecName(videoData.Codec.ToFourCC()));
-
-                var videoTrack = videoData.Data.Video;
-
-                if (videoTrack.Height > 0)
-                {
-                    // Get the video height format
-                    newObj.VideoSize = string.Format(VIDEO_SIZE, videoTrack.Height);
-                }
-
-                // These VLC frame rates results can get a little wacky.
-                if (videoTrack.FrameRateNum > 0 && videoTrack.FrameRateDen > 0)
-                {
-                    var frameRateStr = Math.Ceiling(videoTrack.FrameRateNum / (double)videoTrack.FrameRateDen).ToString(CultureInfo.InvariantCulture);
-
-                    if (videoTrack.FrameRateNum > 90 && videoTrack.FrameRateDen == 1)
-                    {
-                        // Woah, too fast, default to 90FPS
-                        frameRateStr = "90";
-                    }
-
-                    newObj.FrameRate = string.Format(FRAME_RATE, frameRateStr);
-                }
-            }
-
-            // Get VLC's audio track(s) of type audio or null.
-            var audioTracks = mediaTracks.Where(x => x.TrackType == TrackType.Audio).ToArray();
-
-            if (audioTracks.Length == 0)
-            {
-                // Since we don't have any audio data yet, here, take the video data
-                return ApplyFacts(newObj);
-            }
-
-            var audioData = audioTracks[0];
-
-            // We can get the Audio codec in FourCC format even if the audio track is not loaded
-            newObj.AudioCodec = string.Format(AUDIO_CODEC, CodecName(audioData.Codec.ToFourCC()));
-
-            var audioTrack = audioData.Data.Audio;
-
-            if (audioTrack.Channels > 0)
-            {
-                // More study of how LibVLC exposes this information, but generally there is only two modes we care to show the user
-                var channels = ChannelName((int)audioTrack.Channels);
-
-                if (channels != string.Empty)
-                {
-                    newObj.AudioChannel = string.Format(AUDIO_CHANNELS, channels);
-                }
-            }
-
-            if (audioTrack.Rate > 0)
-            {
-                // Solid audio rate
-                newObj.AudioRate = string.Format(AUDIO_RATE, Math.Floor((decimal) audioTrack.Rate / 1000));
-            }
-
-            return ApplyFacts(newObj);
         }
     }
 }

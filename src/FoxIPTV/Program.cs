@@ -29,8 +29,6 @@ namespace FoxIPTV
             }
 #endif
 
-            VlcNativeManager.EnsureExtracted();
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnExplicitShutdown);
 
             TvCore.LogInfo("[.NET] Main(): Quitting Application...");

@@ -35,6 +35,8 @@ namespace FoxIPTV.Playback.Video
 
         private bool _updateQueued;
 
+        private double _queuedAt;
+
         private bool _dirty;
 
         private VideoFrame _current;
@@ -67,6 +69,12 @@ namespace FoxIPTV.Playback.Video
             {
                 _player = value;
 
+                if (_player != null && _d3d != null && _player.Hardware == null && FFmpegNative.Initialize())
+                {
+                    _player.Hardware = HardwareDevice.FromD3D11(_d3d.DevicePointer);
+                    _player.WantsCpuFrames = false;
+                }
+
                 Queue();
             }
         }
@@ -87,8 +95,15 @@ namespace FoxIPTV.Playback.Video
 
         public string Renderer { get; private set; } = "starting";
 
+        /// <summary>Raised with the picture size the first time a picture reaches the screen after Clear</summary>
+        public event Action<int, int> PictureShown;
+
+        private bool _announced;
+
         public void Clear()
         {
+            _announced = false;
+
             _pending?.Free();
             _pending = null;
 
@@ -215,6 +230,7 @@ namespace FoxIPTV.Playback.Video
             }
 
             _updateQueued = true;
+            _queuedAt = _clock.Elapsed.TotalSeconds;
 
             _compositor.RequestCompositionUpdate(_update);
         }
@@ -257,6 +273,13 @@ namespace FoxIPTV.Playback.Video
 
                     _current = frame;
                     _dirty = false;
+
+                    if (!_announced)
+                    {
+                        _announced = true;
+
+                        PictureShown?.Invoke(frame.Width, frame.Height);
+                    }
                 }
                 else
                 {
@@ -278,8 +301,14 @@ namespace FoxIPTV.Playback.Video
             }
         }
 
+        /// <summary>Keeps the picture loop going; re-arms it when a refresh callback never came back, as can happen while the window is hidden</summary>
         public void Wake()
         {
+            if (_updateQueued && _clock.Elapsed.TotalSeconds - _queuedAt > 1)
+            {
+                _updateQueued = false;
+            }
+
             Queue();
         }
 

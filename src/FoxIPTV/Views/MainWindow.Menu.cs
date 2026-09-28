@@ -9,7 +9,7 @@ namespace FoxIPTV.Views
     using Avalonia.Controls;
     using Avalonia.Input;
     using Classes;
-    using LibVLCSharp.Shared;
+    using Playback;
 
     public partial class MainWindow
     {
@@ -242,11 +242,9 @@ namespace FoxIPTV.Views
             TvCore.Settings.AspectRatio = aspectRatioVal;
             TvCore.Settings.Save();
 
-            Vlc(player =>
-            {
-                player.AspectRatio = aspectRatioVal.Length == 0 ? null : aspectRatioVal;
-                _aspectRatio = player.AspectRatio;
-            });
+            VideoView.AspectRatio = aspectRatioVal;
+
+            _aspectRatio = aspectRatioVal.Length == 0 ? null : aspectRatioVal;
 
             AspectRatioResize();
         }
@@ -264,11 +262,8 @@ namespace FoxIPTV.Views
             TvCore.Settings.StereoMode = stereoMode;
             TvCore.Settings.Save();
 
-            Vlc(player =>
-            {
-                player.SetChannel((AudioOutputChannel)stereoMode);
-                _audioChannel = stereoMode;
-            });
+            _player.StereoMode = (StereoMode)stereoMode;
+            _audioChannel = stereoMode;
         }
 
         private void HotKey(KeyEventArgs e)
@@ -562,9 +557,6 @@ namespace FoxIPTV.Views
 
         private void RestoreOwnedWindows()
         {
-            VideoView.IsVisible = false;
-            VideoView.IsVisible = true;
-
             if (_guideWindow != null && TvCore.Settings.GuideOpen && !_guideWindow.IsVisible)
             {
                 _guideWindow.Show(this);
@@ -589,13 +581,10 @@ namespace FoxIPTV.Views
         /// <summary>Toggle the mute state</summary>
         private void ToggleMute()
         {
-            Vlc(player =>
-            {
-                var unmute = player.Volume == 0;
+            _muted = !_muted;
+            _player.Muted = _muted;
 
-                player.Volume = unmute ? DefaultVolume : 0;
-                _muted = !unmute;
-            });
+            TvCore.LogInfo($"[Audio] {(_muted ? "Muted" : "Unmuted")}");
         }
 
         /// <summary>Toggle Closed Captioning on or off</summary>
@@ -606,9 +595,9 @@ namespace FoxIPTV.Views
 
             TvCore.LogInfo($"[CC] Setting turned {(TvCore.Settings.CCEnabled ? "on" : "off")}");
 
-            _ccDetected = false;
-
             CcStatusLabel.Opacity = TvCore.Settings.CCEnabled ? 1 : 0.35;
+
+            ShowCaption();
         }
 
         /// <summary>Set fullscreen to a specific state</summary>
