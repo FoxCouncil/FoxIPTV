@@ -84,7 +84,7 @@ Scripts run off the UI thread and one call at a time, so plain blocking code is 
 # ═════•°• Building
 Needs the .NET 10 SDK. `dotnet build src/FoxIPTV/FoxIPTV.csproj` builds the app, `dotnet test tests/FoxIPTV.Tests` runs the tests.
 
-The player needs a small LGPL build of FFmpeg, made once into `native/<runtime>`. Run `build/ffmpeg.sh linux-x64` on Ubuntu 24.04, or `build/ffmpeg.sh osx-arm64` on macOS. On Windows, build it in a container from the repository root: `docker run --rm -v "${PWD}:/src" -w /src ubuntu:24.04 bash build/ffmpeg.sh win-x64` (PowerShell). The app build copies the files next to the app; without them the app starts but can't play.
+The player needs a small LGPL build of FFmpeg, made once into `native/<runtime>`. Run `build/ffmpeg.sh linux-x64` on Ubuntu 22.04, so the result also runs on 22.04 and newer, or `build/ffmpeg.sh osx-arm64` on macOS. On Windows, build it in a container from the repository root: `docker run --rm -v "${PWD}:/src" -w /src ubuntu:24.04 bash build/ffmpeg.sh win-x64` (PowerShell). The app build copies the files next to the app; without them the app starts but can't play.
 
 # ═════•°• Roadmap
 - IR Remote Support
