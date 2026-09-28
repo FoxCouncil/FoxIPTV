@@ -24,6 +24,8 @@ namespace FoxIPTV
 
         public override void OnFrameworkInitializationCompleted()
         {
+            WindowIconArt.FollowTheme();
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;

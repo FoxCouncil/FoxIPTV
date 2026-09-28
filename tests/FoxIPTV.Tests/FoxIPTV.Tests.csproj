@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Update="Media\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\FoxIPTV\Assets\FoxIPTV.ico" Link="Media\FoxIPTV.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
