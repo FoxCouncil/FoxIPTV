@@ -11,7 +11,7 @@ The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.
 # Versions •°•═════
 ## Version 3.0 (alpha)
 - Runs on Windows, macOS and Linux
-- Provider picker: Xtream, IPTV.org, Free TV Playlists, M3U, and your own JavaScript plugins
+- Provider picker: IPTV.org, Free TV Playlists, M3U, and your own JavaScript plugins
 - Program Guide as one scrollable surface
 - Channel Editor with favourites per provider
 - On-demand Library for providers that offer one
@@ -31,7 +31,6 @@ Pick one at start up. Details are remembered per provider when you tick "Remembe
 
 | Provider | Gives you | Needs |
 |---|---|---|
-| Xtream IPTV | Live channels + guide | Panel URL, username, password |
 | IPTV.org | ~15,000 public live channels | Nothing |
 | Free TV Playlists | Pluto TV, Samsung TV Plus, Plex, Roku, Tubi, Free-TV or iptv-org, with guide data | A source and a region |
 | M3U Playlist | Any M3U/M3U8 URL, guide auto-detected from the playlist header or given by hand | The URL |
@@ -39,7 +38,7 @@ Pick one at start up. Details are remembered per provider when you tick "Remembe
 Providers that offer a library open the **Library** window (right click menu) where you browse categories, search, pick seasons and episodes, and choose a source. Every source is a direct stream URL that the player opens; there is no browser in FoxIPTV. **Switch Provider...** in the menu takes you back to the picker.
 
 # ═════•°• Writing a plugin
-Free TV Playlists and M3U Playlist are JavaScript files; Xtream and IPTV.org are C#. Drop your own `.js` into the `FoxIPTV/plugins` folder of your application data (`%APPDATA%` on Windows, `~/.config` on Linux and macOS; **Open plugins folder** in the picker takes you there) and it appears in the picker on the next start; a file with the same name as a built-in replaces it. The built-ins are copied to `plugins\examples` for reference, and plugins that fail to load are listed in the picker with the error.
+Free TV Playlists and M3U Playlist are JavaScript files; IPTV.org is C#. Drop your own `.js` into the `FoxIPTV/plugins` folder of your application data (`%APPDATA%` on Windows, `~/.config` on Linux and macOS; **Open plugins folder** in the picker takes you there) and it appears in the picker on the next start; a file with the same name as a built-in replaces it. The built-ins are copied to `plugins\examples` for reference, and plugins that fail to load are listed in the picker with the error.
 
 A plugin declares a `plugin` object and defines the functions it supports:
 
