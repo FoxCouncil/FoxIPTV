@@ -3,8 +3,10 @@
 namespace FoxIPTV.Classes
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Text.RegularExpressions;
+    using Playback.Hls;
 
     public static class AdDetector
     {
@@ -26,6 +28,8 @@ namespace FoxIPTV.Classes
 
         private static readonly TimeSpan LongestHeldBreak = TimeSpan.FromMinutes(15);
 
+        private const double CueGraceSeconds = 2;
+
         private static readonly object Lock = new object();
 
         private static string _lastCreative;
@@ -41,6 +45,16 @@ namespace FoxIPTV.Classes
         private static bool _held;
 
         private static bool _breakNext;
+
+        private static bool _cued;
+
+        private static double _cueLength;
+
+        private static double _cuePlayed;
+
+        private static string _cueId;
+
+        private static string _finishedCueId;
 
         public static bool InAd { get; private set; }
 
@@ -67,9 +81,13 @@ namespace FoxIPTV.Classes
             _fetchedSeconds = 0;
             _held = false;
             _breakNext = false;
+            _cued = false;
+            _cueLength = 0;
+            _cuePlayed = 0;
+            _cueId = null;
         }
 
-        public static void ObserveSegment(string address, string title = null)
+        public static void ObserveSegment(string address, string title = null, IReadOnlyList<string> marks = null, double duration = 0)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -87,8 +105,62 @@ namespace FoxIPTV.Classes
             var isAd = AdPiece.IsMatch(url);
             var isProgramme = SplitAfterBreak.IsMatch(path) || title != null && ProgrammeTitle.IsMatch(title);
 
+            ReadCues(marks, out var breakStarts, out var breakEnds, out var breakLength, out var breakElapsed, out var breakId);
+
             lock (Lock)
             {
+                if (_cued && breakEnds)
+                {
+                    TvCore.LogInfo($"[Ads] Cue-in, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s: {Short(url)}");
+
+                    _finishedCueId = _cueId;
+
+                    Clear();
+                }
+
+                if (breakStarts && !_cued && (breakId == null || breakId != _finishedCueId))
+                {
+                    Clear();
+
+                    InAd = true;
+                    AdNumber = 1;
+                    _cued = true;
+                    _cueId = breakId;
+                    _breakStarted = DateTime.UtcNow;
+
+                    TvCore.LogInfo($"[Ads] Cue-out, break{(breakLength > 0 ? $" of {breakLength:0}s" : string.Empty)} started: {Short(url)}");
+                }
+
+                if (_cued)
+                {
+                    if (breakLength > 0)
+                    {
+                        _cueLength = breakLength;
+                    }
+
+                    if (breakElapsed >= 0)
+                    {
+                        _cuePlayed = breakElapsed;
+                    }
+
+                    var overdue = _cueLength > 0 ? _cuePlayed >= _cueLength + CueGraceSeconds : DateTime.UtcNow - _breakStarted > LongestHeldBreak;
+
+                    if (!overdue)
+                    {
+                        SecondsLeft = _cueLength > 0 ? Math.Max(0, _cueLength - _cuePlayed) : (double?)null;
+
+                        _cuePlayed += duration;
+
+                        return;
+                    }
+
+                    TvCore.LogInfo($"[Ads] Break ran its full {_cueLength:0}s with no cue-in: {Short(url)}");
+
+                    _finishedCueId = _cueId;
+
+                    Clear();
+                }
+
                 if (_held)
                 {
                     if (!isProgramme && DateTime.UtcNow - _breakStarted < LongestHeldBreak)
@@ -198,6 +270,112 @@ namespace FoxIPTV.Classes
 
                 TvCore.LogInfo($"[Ads] Next ad in the break, #{AdNumber} (discontinuity)");
             }
+        }
+
+        private static void ReadCues(IReadOnlyList<string> marks, out bool cueOut, out bool cueIn, out double length, out double elapsed, out string id)
+        {
+            cueOut = false;
+            cueIn = false;
+            length = 0;
+            elapsed = -1;
+            id = null;
+
+            if (marks == null)
+            {
+                return;
+            }
+
+            foreach (var mark in marks)
+            {
+                if (string.IsNullOrEmpty(mark))
+                {
+                    continue;
+                }
+
+                var colon = mark.IndexOf(':');
+                var tag = colon < 0 ? mark : mark.Substring(0, colon);
+                var value = colon < 0 ? string.Empty : mark.Substring(colon + 1);
+
+                switch (tag)
+                {
+                    case "#EXT-X-CUE-OUT":
+                    {
+                        cueOut = true;
+                        length = value.Contains('=') ? Number(HlsPlaylist.Attributes(value), "DURATION") : Number(value);
+                    }
+                    break;
+
+                    case "#EXT-X-CUE-OUT-CONT":
+                    {
+                        cueOut = true;
+
+                        var slash = value.IndexOf('/');
+
+                        if (slash > 0 && !value.Contains('='))
+                        {
+                            elapsed = Number(value.Substring(0, slash));
+                            length = Number(value.Substring(slash + 1));
+                        }
+                        else
+                        {
+                            var attributes = HlsPlaylist.Attributes(value);
+
+                            elapsed = attributes.ContainsKey("ElapsedTime") ? Number(attributes, "ElapsedTime") : -1;
+                            length = Number(attributes, "Duration");
+                        }
+                    }
+                    break;
+
+                    case "#EXT-X-CUE-IN":
+                    {
+                        cueIn = true;
+                    }
+                    break;
+
+                    case "#EXT-X-DATERANGE":
+                    {
+                        var attributes = HlsPlaylist.Attributes(value);
+
+                        if (attributes.ContainsKey("SCTE35-OUT"))
+                        {
+                            cueOut = true;
+                            length = Number(attributes, attributes.ContainsKey("DURATION") ? "DURATION" : "PLANNED-DURATION");
+                            id = attributes.TryGetValue("ID", out var rangeId) ? rangeId : null;
+                        }
+
+                        if (attributes.ContainsKey("SCTE35-IN"))
+                        {
+                            cueIn = true;
+                        }
+                    }
+                    break;
+
+                    case "#EXT-X-AD-START":
+                    {
+                        var attributes = HlsPlaylist.Attributes(value);
+
+                        if (attributes.TryGetValue("URI", out var uri) && Uri.TryCreate(uri, UriKind.Absolute, out var parsed))
+                        {
+                            var query = System.Web.HttpUtility.ParseQueryString(parsed.Query);
+
+                            cueOut = true;
+                            length = Number(query["dur"]);
+                            id = query["id"];
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        private static double Number(IDictionary<string, string> attributes, string key)
+        {
+            return attributes.TryGetValue(key, out var value) ? Number(value) : 0;
+        }
+
+        private static double Number(string value)
+        {
+            return double.TryParse(value?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && number > 0 ? number : 0;
         }
 
         private static string Short(string url)

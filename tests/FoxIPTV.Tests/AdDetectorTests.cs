@@ -160,5 +160,125 @@ namespace FoxIPTV.Tests
 
             Assert.False(AdDetector.InAd);
         }
+
+        private const string RokuPiece = "https://aka-live1050.delivery.roku.com/c8620cf9-c802-4867-a846-ed2960692499/t2-origin/out/v1/live_1_low/live_1_low_{0}.ts";
+
+        private static void Tagged(string url, double duration, params string[] marks)
+        {
+            AdDetector.ObserveSegment(url, null, marks, duration);
+        }
+
+        [Fact]
+        public void Roku_CueTagsHoldTheBreakAndCountDown()
+        {
+            AdDetector.Reset();
+
+            Tagged(string.Format(RokuPiece, 2216970), 4.0);
+
+            Assert.False(AdDetector.InAd);
+
+            Tagged(string.Format(RokuPiece, 2216971), 2.2, "#EXT-OATCLS-SCTE35:/DCaAAAAAAAAAP/wFAUAAZSnf+//PA9Fqf4ApMt/", "#EXT-X-ASSET:CAID=0x6C6177616E646372696D655F6C696E656172", "#EXT-X-CUE-OUT:120.000");
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(120, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged(string.Format(RokuPiece, 2216972), 4.0, "#EXT-X-CUE-OUT-CONT:CAID=0x6C6177616E646372696D655F6C696E656172,ElapsedTime=2.200,Duration=120.000,SCTE35=/DCzAAAAAAAAAACwBQb/PA9FqQCdAiZDVUVJ");
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(117.8, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged(string.Format(RokuPiece, 2217001), 1.8, "#EXT-X-CUE-OUT-CONT:CAID=0x6C6177616E646372696D655F6C696E656172,ElapsedTime=118.200,Duration=120.000,SCTE35=/DCzAAAAAAAAAACwBQb/PA9FqQCdAiZDVUVJ");
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(1.8, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(1, AdDetector.AdNumber);
+
+            Tagged(string.Format(RokuPiece, 2217002), 2.2, "#EXT-OATCLS-SCTE35:/DAgAAAAAAAAAP/wDwUAAZSnf0//PLQRKQAAAAAAADZm0SY=", "#EXT-X-CUE-IN");
+
+            Assert.False(AdDetector.InAd);
+            Assert.Null(AdDetector.SecondsLeft);
+        }
+
+        [Fact]
+        public void Wurl_JoiningMidBreakStillShowsTheAd()
+        {
+            AdDetector.Reset();
+
+            Tagged("https://bec-spin-1-us.plex.wurl.tv/5/hls-v3/2208084-1.ts", 6.006, "#EXT-X-CUE-OUT-CONT:ElapsedTime=30.03,Duration=120,SCTE35=WURL1790497008");
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(89.97, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged("https://bec-spin-1-us.plex.wurl.tv/5/hls-v3/2208100-1.ts", 6.006, "#EXT-X-CUE-IN");
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void DateRange_StartsTheBreakAndDiscontinuitiesCountTheAds()
+        {
+            AdDetector.Reset();
+
+            Tagged("https://dai.google.com/linear/pods/v1/seg/ad/1.ts", 4.992, "#EXT-X-DATERANGE:ID=\"123404-1790627197\",START-DATE=\"2026-09-28T20:26:37.663116Z\",PLANNED-DURATION=179.996489,SCTE35-OUT=0xFC304E0000");
+            AdDetector.ObserveDiscontinuity();
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(179.996, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged("https://dai.google.com/linear/pods/v1/seg/ad/2.ts", 4.992);
+            AdDetector.ObserveDiscontinuity();
+            Tagged("https://dai.google.com/linear/pods/v1/seg/ad/3.ts", 4.992);
+            AdDetector.ObserveDiscontinuity();
+
+            Assert.Equal(3, AdDetector.AdNumber);
+
+            Tagged("https://propee33f9c2-s.vtg.paramount.tech/index-english=4011-1.ts", 2.816, "#EXT-X-CUE-IN");
+            AdDetector.ObserveDiscontinuity();
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void Amagi_AdStartRunsForItsLengthOnce()
+        {
+            AdDetector.Reset();
+
+            const string beacon = "https://amg00793-amg00793c6-plex-us-2667.playouts.now.amagi.tv/ts-us-e2-n2/beacon/amg00793-bbcstudios-bbcearthaall-plexus/{0}.ts";
+            const string start = "#EXT-X-AD-START:URI=\"https://amg00793-amg00793c6-plex-us-2667.playouts.now.amagi.tv/ts-us-e2-n2/beacon/ad-metadata/amg00793-bbcstudios-bbcearthaall-plexus/cb51391e?break_type=MID_ROLL&dur=120.000000&id=amg00793-bbcstudios-bbcearthaall-plexus_488987-cue-out-120.053000_default&msn=488994&sts=13.146\"";
+
+            Tagged(string.Format(beacon, 488992), 6.673, start);
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(120, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged(string.Format(beacon, 488993), 6.673, start);
+
+            for (var piece = 488994; piece <= 489010; piece++)
+            {
+                Tagged(string.Format(beacon, piece), 6.673, piece == 489005 ? new[] { start } : Array.Empty<string>());
+
+                Assert.True(AdDetector.InAd, $"piece {piece}");
+            }
+
+            Tagged(string.Format(beacon, 489011), 6.673);
+
+            Assert.False(AdDetector.InAd);
+
+            Tagged(string.Format(beacon, 489012), 6.673, start);
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void CueInAndCueOutOnOnePiece_StartsTheNextBreak()
+        {
+            AdDetector.Reset();
+
+            Tagged(string.Format(RokuPiece, 1), 4.0, "#EXT-X-CUE-OUT:30");
+            Tagged(string.Format(RokuPiece, 2), 4.0, "#EXT-X-CUE-IN", "#EXT-X-CUE-OUT:DURATION=60");
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(60, AdDetector.SecondsLeft.Value, 3);
+        }
     }
 }

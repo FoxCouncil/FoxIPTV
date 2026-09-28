@@ -182,6 +182,18 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void AdStart_IsKeptAsAMark()
+        {
+            const string start = "#EXT-X-AD-START:URI=\"https://x.example/ad-metadata/a?break_type=MID_ROLL&dur=120.000000&id=brk\"";
+            const string text = "#EXTM3U\n#EXT-X-TARGETDURATION:7\n" + start + "\n#EXTINF:6.673,\nbeacon/1.ts\n#EXTINF:6.673,\nbeacon/2.ts\n";
+
+            var playlist = HlsPlaylist.Parse(text, Base);
+
+            Assert.Equal(start, Assert.Single(playlist.Segments[0].Marks));
+            Assert.Empty(playlist.Segments[1].Marks);
+        }
+
+        [Fact]
         public void Attributes_KeepCommasInsideQuotes()
         {
             var attributes = HlsPlaylist.Attributes("TYPE=AUDIO,NAME=\"a, b\",BANDWIDTH=10, CODECS=\"x,y\"");

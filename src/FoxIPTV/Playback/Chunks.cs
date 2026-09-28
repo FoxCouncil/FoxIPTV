@@ -24,6 +24,8 @@ namespace FoxIPTV.Playback
 
         public string Title { get; set; }
 
+        public IReadOnlyList<string> Marks { get; set; }
+
         public bool StartsDiscontinuity { get; set; }
 
         public override string ToString() => $"period {Period} d{Discontinuity}{(IsInit ? " init" : string.Empty)} {Data?.Length ?? 0}B {Duration:0.000}s {Url}";

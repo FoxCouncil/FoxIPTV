@@ -306,6 +306,7 @@ namespace FoxIPTV.Playback.Hls
                     Duration = segment.Duration,
                     Url = segment.Uri.ToString(),
                     Title = segment.Title,
+                    Marks = segment.Marks,
                     StartsDiscontinuity = discontinuity
                 };
 

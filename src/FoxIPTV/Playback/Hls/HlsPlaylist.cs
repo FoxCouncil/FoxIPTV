@@ -411,6 +411,7 @@ namespace FoxIPTV.Playback.Hls
                         case "#EXT-X-SCTE35":
                         case "#EXT-OATCLS-SCTE35":
                         case "#EXT-X-ASSET":
+                        case "#EXT-X-AD-START":
                         {
                             marks.Add(line);
                         }

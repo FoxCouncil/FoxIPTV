@@ -106,6 +106,30 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Live_RokuCueTagsShowAsAnAd()
+        {
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts"), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts"),
+                new LivePiece("low/0.ts", true, Tags: "#EXT-X-CUE-OUT:2.000"),
+                new LivePiece("low/1.ts", Tags: "#EXT-X-CUE-OUT-CONT:ElapsedTime=1.000,Duration=2.000"),
+                new LivePiece("low/2.ts", Tags: "#EXT-X-CUE-IN"),
+                new LivePiece("low/3.ts")
+            };
+
+            ServeLive(pieces, null);
+
+            using var run = Play("/live.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 30), run.Describe());
+
+            AssertSmooth(run, 7, 160, 90);
+            Assert.True(run.AdSeen, "the cued break was not shown as an ad");
+            Assert.False(AdDetector.InAd, "the break did not end at the cue-in");
+            AssertPolite();
+        }
+
+        [Fact]
         public void Live_SkipsAMissingPiece()
         {
             var pieces = new[]
@@ -327,6 +351,11 @@ namespace FoxIPTV.Tests.Engine
                         text.Append("#EXT-X-DISCONTINUITY\n");
                     }
 
+                    if (pieces[i].Tags != null)
+                    {
+                        text.Append(pieces[i].Tags).Append('\n');
+                    }
+
                     text.Append("#EXTINF:1.000,").Append(pieces[i].Title).Append('\n').Append(paths[i]).Append('\n');
                 }
 
@@ -391,6 +420,6 @@ namespace FoxIPTV.Tests.Engine
             }
         }
 
-        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null);
+        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null, string Tags = null);
     }
 }
