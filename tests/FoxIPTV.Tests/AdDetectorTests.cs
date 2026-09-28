@@ -270,6 +270,42 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Amagi_NewAdStartInsideABreakIsTheNextAd()
+        {
+            AdDetector.Reset();
+
+            const string beacon = "https://amg00793-amg00793c6-plex-us-2667.playouts.now.amagi.tv/ts-us-e2-n2/beacon/amg00793-bbcstudios-bbcearthaall-plexus/{0}.ts";
+            const string midRoll = "#EXT-X-AD-START:URI=\"https://amg00793-amg00793c6-plex-us-2667.playouts.now.amagi.tv/ts-us-e2-n2/beacon/ad-metadata/amg00793-bbcstudios-bbcearthaall-plexus/cb51391e?break_type=MID_ROLL&dur=120.000000&id=amg00793-bbcstudios-bbcearthaall-plexus_488987-cue-out-120.053000_default&msn=488994&sts=13.146\"";
+            const string lBand = "#EXT-X-AD-START:URI=\"https://amg00793-amg00793c6-plex-us-2667.playouts.now.amagi.tv/ts-us-e2-n2/beacon/ad-metadata/amg00793-bbcstudios-bbcearthaall-plexus/cb51391e?break_type=LBAND&dur=15.000000&id=amg00793-bbcstudios-bbcearthaall-plexus_hard-489000-lband-15.000000_default&msn=489007&sts=13.347\"";
+
+            Tagged(string.Format(beacon, 488992), 6.673, midRoll);
+
+            for (var piece = 488993; piece <= 489004; piece++)
+            {
+                Tagged(string.Format(beacon, piece), 6.673);
+            }
+
+            Tagged(string.Format(beacon, 489005), 6.673, lBand);
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(2, AdDetector.AdNumber);
+            Assert.Equal(15, AdDetector.SecondsLeft.Value, 3);
+
+            Tagged(string.Format(beacon, 489006), 6.673);
+            Tagged(string.Format(beacon, 489007), 6.673);
+
+            Assert.True(AdDetector.InAd);
+
+            Tagged(string.Format(beacon, 489008), 6.673);
+
+            Assert.False(AdDetector.InAd);
+
+            Tagged(string.Format(beacon, 489009), 6.673, midRoll);
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
         public void CueInAndCueOutOnOnePiece_StartsTheNextBreak()
         {
             AdDetector.Reset();

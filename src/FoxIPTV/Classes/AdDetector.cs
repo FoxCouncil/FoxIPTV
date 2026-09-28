@@ -54,7 +54,7 @@ namespace FoxIPTV.Classes
 
         private static string _cueId;
 
-        private static string _finishedCueId;
+        private static readonly HashSet<string> FinishedCueIds = new HashSet<string>(StringComparer.Ordinal);
 
         public static bool InAd { get; private set; }
 
@@ -67,6 +67,8 @@ namespace FoxIPTV.Classes
             lock (Lock)
             {
                 Clear();
+
+                FinishedCueIds.Clear();
             }
         }
 
@@ -113,12 +115,22 @@ namespace FoxIPTV.Classes
                 {
                     TvCore.LogInfo($"[Ads] Cue-in, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s: {Short(url)}");
 
-                    _finishedCueId = _cueId;
-
-                    Clear();
+                    Finish();
                 }
 
-                if (breakStarts && !_cued && (breakId == null || breakId != _finishedCueId))
+                if (_cued && breakStarts && breakId != null && _cueId != null && breakId != _cueId && !FinishedCueIds.Contains(breakId))
+                {
+                    FinishedCueIds.Add(_cueId);
+
+                    AdNumber++;
+                    _cueId = breakId;
+                    _cueLength = breakLength;
+                    _cuePlayed = 0;
+
+                    TvCore.LogInfo($"[Ads] Next ad in the break, #{AdNumber}{(breakLength > 0 ? $" of {breakLength:0}s" : string.Empty)}: {Short(url)}");
+                }
+
+                if (breakStarts && !_cued && (breakId == null || !FinishedCueIds.Contains(breakId)))
                 {
                     Clear();
 
@@ -156,9 +168,7 @@ namespace FoxIPTV.Classes
 
                     TvCore.LogInfo($"[Ads] Break ran its full {_cueLength:0}s with no cue-in: {Short(url)}");
 
-                    _finishedCueId = _cueId;
-
-                    Clear();
+                    Finish();
                 }
 
                 if (_held)
@@ -270,6 +280,16 @@ namespace FoxIPTV.Classes
 
                 TvCore.LogInfo($"[Ads] Next ad in the break, #{AdNumber} (discontinuity)");
             }
+        }
+
+        private static void Finish()
+        {
+            if (_cueId != null)
+            {
+                FinishedCueIds.Add(_cueId);
+            }
+
+            Clear();
         }
 
         private static void ReadCues(IReadOnlyList<string> marks, out bool cueOut, out bool cueIn, out double length, out double elapsed, out string id)
