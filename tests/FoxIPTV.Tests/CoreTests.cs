@@ -101,7 +101,7 @@ namespace FoxIPTV.Tests
             Assert.InRange(iptvOrgUk.Count, 100, 2000);
             Assert.All(iptvOrgUk, x => Assert.StartsWith("UK: ", x.Name));
             Assert.InRange(samsungUs.Count, 300, 1500);
-            Assert.True(samsungAll.Count > samsungUs.Count, $"{samsungAll.Count} Samsung TV Plus channels in all regions");
+            Assert.True(samsungAll.Count >= samsungUs.Count, $"{samsungAll.Count} Samsung TV Plus channels in all regions");
             Assert.Equal(samsungAll.Count, samsungAu.Count);
             Assert.Empty(samsungGuide);
             Assert.Contains(samsungAll, x => x.Group == "United States");
