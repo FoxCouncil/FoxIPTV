@@ -33,6 +33,8 @@ namespace FoxIPTV.Classes
 
         private const string HiddenChannelsFilename = "hidden";
 
+        public const string ChannelIdKey = "id:";
+
         private static readonly HashSet<string> _hiddenStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly HashSet<string> _protectedStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -316,8 +318,9 @@ namespace FoxIPTV.Classes
             LogInfo($"[TVCore] Start(): {Channels.Count} channel(s), {Guide.Count} programme(s) from {CurrentService.Title}");
 
             // Build the zero index map to the actual channel numbers
-            var protectedCount = Channels.RemoveAll(x => x.Stream != null && _protectedStreams.Contains(x.Stream.ToString()));
-            var hiddenCount = Channels.RemoveAll(x => x.Stream != null && _hiddenStreams.Contains(x.Stream.ToString()));
+            var uniqueIds = UniqueIds(Channels);
+            var protectedCount = Channels.RemoveAll(x => IsListed(_protectedStreams, x, uniqueIds));
+            var hiddenCount = Channels.RemoveAll(x => IsListed(_hiddenStreams, x, uniqueIds));
 
             if (protectedCount + hiddenCount > 0)
             {
@@ -599,9 +602,31 @@ namespace FoxIPTV.Classes
             }
         }
 
+        public static HashSet<string> UniqueIds(IEnumerable<Channel> channels)
+        {
+            return new HashSet<string>(channels.Where(x => !string.IsNullOrEmpty(x.Id)).GroupBy(x => x.Id, StringComparer.OrdinalIgnoreCase).Where(x => x.Count() == 1).Select(x => x.Key), StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool IsListed(HashSet<string> list, Channel channel, HashSet<string> uniqueIds)
+        {
+            return channel.Stream != null && list.Contains(channel.Stream.ToString()) || !string.IsNullOrEmpty(channel.Id) && uniqueIds.Contains(channel.Id) && list.Contains(ChannelIdKey + channel.Id);
+        }
+
         public static void MarkProtected(Channel channel)
         {
-            if (channel?.Stream == null || Channels == null || !_protectedStreams.Add(channel.Stream.ToString()))
+            if (channel?.Stream == null || Channels == null)
+            {
+                return;
+            }
+
+            var added = _protectedStreams.Add(channel.Stream.ToString());
+
+            if (!string.IsNullOrEmpty(channel.Id) && _protectedStreams.Add(ChannelIdKey + channel.Id))
+            {
+                added = true;
+            }
+
+            if (!added)
             {
                 return;
             }

@@ -38,6 +38,26 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Lists_MatchByAddressOrUniqueId()
+        {
+            var channels = new System.Collections.Generic.List<Channel>
+            {
+                new Channel { Id = "A", Stream = new Uri("https://one.example/a.m3u8") },
+                new Channel { Id = "B", Stream = new Uri("https://one.example/b.m3u8") },
+                new Channel { Id = "C", Stream = new Uri("https://one.example/c1.m3u8") },
+                new Channel { Id = "C", Stream = new Uri("https://one.example/c2.m3u8") }
+            };
+
+            var unique = TvCore.UniqueIds(channels);
+            var list = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase) { "https://one.example/a.m3u8", TvCore.ChannelIdKey + "B", TvCore.ChannelIdKey + "C" };
+
+            Assert.True(TvCore.IsListed(list, channels[0], unique));
+            Assert.True(TvCore.IsListed(list, channels[1], unique));
+            Assert.False(TvCore.IsListed(list, channels[2], unique));
+            Assert.False(TvCore.IsListed(list, channels[3], unique));
+        }
+
+        [Fact]
         public void Roku_KeepsOnlyChannelsWithoutDrm()
         {
             var page = Newtonsoft.Json.Linq.JObject.Parse(@"{
