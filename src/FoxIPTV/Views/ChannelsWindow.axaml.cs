@@ -67,6 +67,10 @@ namespace FoxIPTV.Views
 
     public partial class ChannelsWindow : Window
     {
+        private const string FavoriteGroup = "★";
+
+        private const string OtherGroup = "☆";
+
         private string _allChannelsFilter = string.Empty;
 
         private string _allChannelCategoryFilter = "None";
@@ -97,6 +101,7 @@ namespace FoxIPTV.Views
 
             FilterNoneButton.Click += ButtonFilter_Click;
             FilterCategoriesButton.Click += ButtonFilter_Click;
+            FilterFavoritesButton.Click += ButtonFilter_Click;
 
             ChannelList.SelectionChanged += ChannelList_SelectionChanged;
 
@@ -148,6 +153,8 @@ namespace FoxIPTV.Views
             {
                 return;
             }
+
+            UpdateGroupRow();
 
             var generation = ++_generation;
             var filter = _allChannelsFilter;
@@ -202,7 +209,7 @@ namespace FoxIPTV.Views
                 };
             }
 
-            if (grouping != "Categories")
+            if (grouping != "Categories" && grouping != "Favorites")
             {
                 rows.Add(new ChannelRow { Text = $"All Channels ({tvChannels.Count})", IsHeading = true });
 
@@ -210,11 +217,6 @@ namespace FoxIPTV.Views
 
                 return rows;
             }
-
-            var byCategory = tvChannels.GroupBy(x => x.Group?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase).ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
-            var categories = byCategory.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x, StringComparer.CurrentCultureIgnoreCase).ToList();
-
-            rows.Add(new ChannelRow { Text = $"{grouping} ({categories.Count})", IsHeading = true });
 
             void AddGroup(string key, string title, List<Channel> channels)
             {
@@ -227,6 +229,31 @@ namespace FoxIPTV.Views
                     rows.AddRange(channels.Select(channel => Row(channel, 16)));
                 }
             }
+
+            if (grouping == "Favorites")
+            {
+                var favorites = tvChannels.Where(IsFavorite).ToList();
+                var others = tvChannels.Where(x => !IsFavorite(x)).ToList();
+
+                rows.Add(new ChannelRow { Text = $"All Channels ({tvChannels.Count})", IsHeading = true });
+
+                if (favorites.Count > 0)
+                {
+                    AddGroup(FavoriteGroup, "Favorite Channels", favorites);
+                }
+
+                if (others.Count > 0)
+                {
+                    AddGroup(OtherGroup, "Other Channels", others);
+                }
+
+                return rows;
+            }
+
+            var byCategory = tvChannels.GroupBy(x => x.Group?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase).ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
+            var categories = byCategory.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x, StringComparer.CurrentCultureIgnoreCase).ToList();
+
+            rows.Add(new ChannelRow { Text = $"{grouping} ({categories.Count})", IsHeading = true });
 
             foreach (var category in categories)
             {
@@ -393,6 +420,15 @@ namespace FoxIPTV.Views
             }
 
             row.IsFavourite = IsFavorite(row.Channel);
+
+            if (_allChannelCategoryFilter == "Favorites")
+            {
+                LoadAll();
+            }
+            else
+            {
+                UpdateGroupRow();
+            }
         }
 
         private static Dictionary<string, string> OnNowTitles()
@@ -454,10 +490,25 @@ namespace FoxIPTV.Views
 
             _allChannelCategoryFilter = (string)button.Tag;
 
+            LoadAll();
+        }
+
+        private void UpdateGroupRow()
+        {
+            var total = TvCore.Channels?.Count ?? 0;
+            var favorites = TvCore.Channels?.Count(IsFavorite) ?? 0;
+            var canGroupFavorites = favorites > 0 && favorites < total;
+
+            if (_allChannelCategoryFilter == "Favorites" && !canGroupFavorites)
+            {
+                _allChannelCategoryFilter = "None";
+            }
+
             FilterNoneButton.IsEnabled = _allChannelCategoryFilter != "None";
             FilterCategoriesButton.IsEnabled = _allChannelCategoryFilter != "Categories";
+            FilterFavoritesButton.IsEnabled = _allChannelCategoryFilter != "Favorites" && canGroupFavorites;
 
-            LoadAll();
+            StationCountLabel.Text = total == 1 ? "1 station" : $"{total} stations";
         }
 
         private async void ShowLogo(Channel channel)
