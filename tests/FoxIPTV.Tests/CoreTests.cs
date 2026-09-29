@@ -26,15 +26,15 @@ namespace FoxIPTV.Tests
         [Fact]
         public void Providers_KeepTheirIdsAndRegion()
         {
-            IService[] providers = { new PlutoTv(), new PlexTv(), new RokuTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
+            IService[] providers = { new PlutoTv(), new SamsungTvPlus(), new PlexTv(), new RokuTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
 
-            Assert.Equal(new[] { "pluto", "plex", "roku", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
+            Assert.Equal(new[] { "pluto", "samsungtvplus", "plex", "roku", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
             Assert.All(providers, x => Assert.True(x.Capabilities.HasFlag(ProviderCapabilities.LiveTv)));
-            Assert.All(providers.Take(4), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
-            Assert.Contains(providers[5].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
-            Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[4].Fields.Select(x => x.Key));
+            Assert.All(providers.Take(5), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
+            Assert.Contains(providers[6].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
+            Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[5].Fields.Select(x => x.Key));
             Assert.True(((ILiveTuner)providers[0]).CanTune);
-            Assert.True(((ILiveTuner)providers[2]).CanTune);
+            Assert.True(((ILiveTuner)providers[3]).CanTune);
         }
 
         [Fact]
@@ -72,12 +72,21 @@ namespace FoxIPTV.Tests
             var (freeTv, _) = await new FreeTv { ProgressUpdater = progress }.Process();
             var (iptvOrg, _) = await new IPTVDotOrg { ProgressUpdater = progress }.Process();
             var (iptvOrgUk, _) = await new IPTVDotOrg { ProgressUpdater = progress, Data = new Newtonsoft.Json.Linq.JObject { ["Region"] = "gb" } }.Process();
+            var (samsungUs, samsungGuide) = await new SamsungTvPlus { ProgressUpdater = progress }.Process();
+            var (samsungAll, _) = await new SamsungTvPlus { ProgressUpdater = progress, Data = new Newtonsoft.Json.Linq.JObject { ["Region"] = "all" } }.Process();
+            var (samsungAu, _) = await new SamsungTvPlus { ProgressUpdater = progress, Data = new Newtonsoft.Json.Linq.JObject { ["Region"] = "au" } }.Process();
 
             Assert.True(freeTv.Count > 1000, $"{freeTv.Count} Free-TV channels");
             Assert.True(iptvOrg.Count > 10000, $"{iptvOrg.Count} IPTV.org channels");
             Assert.InRange(iptvOrgUk.Count, 100, 2000);
             Assert.All(iptvOrgUk, x => Assert.StartsWith("UK: ", x.Name));
+            Assert.InRange(samsungUs.Count, 300, 1500);
+            Assert.True(samsungAll.Count > samsungUs.Count, $"{samsungAll.Count} Samsung TV Plus channels in all regions");
+            Assert.Equal(samsungAll.Count, samsungAu.Count);
+            Assert.Empty(samsungGuide);
+            Assert.Contains(samsungAll, x => x.Group == "United States");
             Assert.DoesNotContain(freeTv.Concat(iptvOrg), x => x.Stream.Host.Contains("github", StringComparison.OrdinalIgnoreCase) || (x.Logo?.Host.Contains("github", StringComparison.OrdinalIgnoreCase) ?? false));
+            Assert.DoesNotContain(samsungAll, x => new[] { x.Stream.Host, x.Logo?.Host ?? string.Empty }.Any(host => host.Contains("github", StringComparison.OrdinalIgnoreCase) || host.EndsWith("jmp2.uk", StringComparison.OrdinalIgnoreCase) || host.EndsWith("mjh.nz", StringComparison.OrdinalIgnoreCase)));
         }
 
         [Fact]

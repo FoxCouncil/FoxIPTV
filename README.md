@@ -11,7 +11,7 @@ The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.
 # Versions •°•═════
 ## Version 3.0 (alpha)
 - Runs on Windows, macOS and Linux
-- Provider picker: Pluto TV, Plex, Roku, IPTV.org, Free-TV, M3U
+- Provider picker: Pluto TV, Samsung TV Plus, Plex, Roku, IPTV.org, Free-TV, M3U
 - Program Guide as one scrollable surface
 - Channel Editor with favourites per provider
 - Stream tags, "(Ad)" readout during ad breaks, playback trace in the status bar
@@ -31,6 +31,7 @@ Pick one at start up. Details are remembered per provider when you tick "Remembe
 | Provider | Gives you | Needs |
 |---|---|---|
 | Pluto TV | Live channels with guide data | A region |
+| Samsung TV Plus | Live channels | A region |
 | Plex | Live channels with guide data | A region |
 | Roku | Live channels with guide data | A region |
 | IPTV.org | ~15,000 public live channels | Nothing |
