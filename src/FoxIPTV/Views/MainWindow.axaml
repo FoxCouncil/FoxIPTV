@@ -113,7 +113,7 @@
                 </StackPanel>
 
                 <Border x:Name="CaptionBox" Background="Black" Padding="12,2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,48" IsVisible="False">
-                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="avares://FoxIPTV/Assets/Fonts#VT323" FontSize="30" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="avares://FoxIPTV/Assets/Fonts#VCR OSD Mono" FontSize="30" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
                 </Border>
 
                 <Border x:Name="AdLabelBox" Background="Black" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="9,0,0,12" IsVisible="False">

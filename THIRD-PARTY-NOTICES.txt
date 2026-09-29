@@ -76,11 +76,12 @@ License: MIT. Copyright (c) Tom Deseyn. Source: https://github.com/tmds/Tmds.DBu
 License: MIT. Copyright (c) .NET Foundation and Contributors.
 Source: https://github.com/dotnet/runtime
 
-VT323 font (captions)
----------------------
-License: SIL Open Font License 1.1 (see below).
-Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com).
-Source: https://github.com/google/fonts/tree/main/ofl/vt323
+VCR OSD Mono font 1.001 (captions)
+----------------------------------
+License: free, including commercial use. By Riciery Leal (mrmanet). Listed as
+"100% Free" on dafont.com, where the author wrote on 2017-02-24: "Yes, the font
+is free even for commercial purposes."
+Source: https://www.dafont.com/vcr-osd-mono.font
 
 Inter font (through Avalonia.Fonts.Inter)
 -----------------------------------------
@@ -166,5 +167,5 @@ freely, subject to the following restrictions:
 SIL Open Font License 1.1
 =========================
 
-The full text is in VT323-OFL.txt, next to this file, and at
+The full text is in OFL.txt, next to this file, and at
 https://openfontlicense.org/open-font-license-official-text/
