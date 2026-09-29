@@ -66,6 +66,8 @@ namespace FoxIPTV.Playback.Hls
 
         public ChunkQueue Audio { get; private set; }
 
+        public ChunkQueue Subtitles { get; private set; }
+
         public bool IsLive { get; private set; } = true;
 
         public double TargetDuration { get; private set; }
@@ -76,6 +78,7 @@ namespace FoxIPTV.Playback.Hls
         {
             var main = entry;
             Uri audioUri = null;
+            Uri subtitleUri = null;
 
             if (entry.IsMaster)
             {
@@ -108,9 +111,19 @@ namespace FoxIPTV.Playback.Hls
                     TvCore.LogInfo($"[Player] HLS audio comes from its own playlist: {audio}");
                 }
 
+                var subtitles = Subtitle(entry, chosen);
+
+                if (subtitles != null)
+                {
+                    subtitleUri = subtitles.Uri;
+                    Subtitles = new ChunkQueue();
+
+                    TvCore.LogInfo($"[Player] HLS subtitles come from their own playlist: {subtitles}");
+                }
+
                 main = null;
 
-                _ = Task.Run(() => RunTrack("video", Main, chosen.Uri, null, true));
+                _ = Task.Run(() => RunTrack("video", Main, chosen.Uri, null, true, true));
             }
             else
             {
@@ -119,20 +132,40 @@ namespace FoxIPTV.Playback.Hls
 
                 TvCore.LogInfo($"[Player] HLS {entry.Describe()}");
 
-                _ = Task.Run(() => RunTrack("video", Main, entry.Uri, main, true));
+                _ = Task.Run(() => RunTrack("video", Main, entry.Uri, main, true, true));
             }
 
             if (audioUri != null)
             {
-                _ = Task.Run(() => RunTrack("audio", Audio, audioUri, null, false));
+                _ = Task.Run(() => RunTrack("audio", Audio, audioUri, null, false, true));
+            }
+
+            if (subtitleUri != null)
+            {
+                _ = Task.Run(() => RunTrack("subtitles", Subtitles, subtitleUri, null, false, false));
             }
         }
 
-        private async Task RunTrack(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist first, bool isMain)
+        public static HlsRendition Subtitle(HlsPlaylist master, HlsVariant variant)
+        {
+            var embedded = !string.IsNullOrEmpty(variant.ClosedCaptions) && !string.Equals(variant.ClosedCaptions, "NONE", StringComparison.OrdinalIgnoreCase);
+            var packaged = !string.IsNullOrEmpty(variant.Codecs) && variant.Codecs.Split(',').Any(x => x.Trim().StartsWith("stpp", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("wvtt", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrEmpty(variant.SubtitleGroup) || embedded || packaged)
+            {
+                return null;
+            }
+
+            var group = master.Renditions.Where(x => string.Equals(x.Type, "SUBTITLES", StringComparison.OrdinalIgnoreCase) && x.GroupId == variant.SubtitleGroup && x.Uri != null && !x.IsForced).ToList();
+
+            return group.FirstOrDefault(x => x.IsDefault) ?? group.FirstOrDefault(x => x.Language != null && x.Language.StartsWith("en", StringComparison.OrdinalIgnoreCase)) ?? group.FirstOrDefault(x => x.AutoSelect) ?? group.FirstOrDefault();
+        }
+
+        private async Task RunTrack(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist first, bool isMain, bool required)
         {
             try
             {
-                await Track(name, queue, playlistUri, first, isMain).ConfigureAwait(false);
+                await Track(name, queue, playlistUri, first, isMain, required).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -143,7 +176,10 @@ namespace FoxIPTV.Playback.Hls
                 {
                     TvCore.LogError($"[Player] HLS {name} track stopped: {ex.GetType().Name}: {ex.Message}");
 
-                    _events.OnSourceFailed(ex.Message);
+                    if (required)
+                    {
+                        _events.OnSourceFailed(ex.Message);
+                    }
                 }
             }
             finally
@@ -152,7 +188,7 @@ namespace FoxIPTV.Playback.Hls
             }
         }
 
-        private async Task Track(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist playlist, bool isMain)
+        private async Task Track(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist playlist, bool isMain, bool required)
         {
             long? next = null;
             var period = 0;
@@ -232,7 +268,14 @@ namespace FoxIPTV.Playback.Hls
 
                 if (segment.Key != null && segment.Key.IsCopyProtection)
                 {
-                    _events.OnProtected($"key {segment.Key.Method} {segment.Key.KeyFormat}");
+                    if (required)
+                    {
+                        _events.OnProtected($"key {segment.Key.Method} {segment.Key.KeyFormat}");
+                    }
+                    else
+                    {
+                        TvCore.LogInfo($"[Player] HLS {name}: copy-protected ({segment.Key.Method} {segment.Key.KeyFormat}), leaving it out");
+                    }
 
                     return;
                 }

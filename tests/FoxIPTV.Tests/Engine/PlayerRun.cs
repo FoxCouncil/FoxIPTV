@@ -19,6 +19,8 @@ namespace FoxIPTV.Tests.Engine
 
         private readonly List<ShownFrame> _frames = new List<ShownFrame>();
 
+        private readonly List<ShownCaption> _captions = new List<ShownCaption>();
+
         private readonly Thread _pump;
 
         private volatile bool _stopping;
@@ -49,6 +51,16 @@ namespace FoxIPTV.Tests.Engine
                     {
                         Failure = detail;
                     }
+                }
+            };
+
+            Player.CaptionChanged += caption =>
+            {
+                var clock = Player.Clock;
+
+                lock (_lock)
+                {
+                    _captions.Add(new ShownCaption(clock, caption));
                 }
             };
 
@@ -93,6 +105,17 @@ namespace FoxIPTV.Tests.Engine
                 lock (_lock)
                 {
                     return _frames.ToList();
+                }
+            }
+        }
+
+        public IReadOnlyList<ShownCaption> Captions
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _captions.ToList();
                 }
             }
         }
@@ -170,4 +193,6 @@ namespace FoxIPTV.Tests.Engine
     }
 
     public readonly record struct ShownFrame(double Time, double Clock, int Width, int Height);
+
+    public readonly record struct ShownCaption(double Clock, string Text);
 }

@@ -48,6 +48,8 @@ namespace FoxIPTV.Playback
 
         private readonly List<Tuple<double, string>> _captionMarks = new List<Tuple<double, string>>();
 
+        private readonly SubtitleTrack _subtitles = new SubtitleTrack();
+
         private readonly Stopwatch _age = Stopwatch.StartNew();
 
         private readonly object _infoLock = new object();
@@ -87,6 +89,10 @@ namespace FoxIPTV.Playback
         private volatile bool _finished;
 
         private volatile bool _posterTaken;
+
+        private volatile bool _embeddedCaptions;
+
+        private volatile bool _subtitlesFound;
 
         private double _readySince = double.NaN;
 
@@ -264,6 +270,11 @@ namespace FoxIPTV.Playback
                     if (separateAudio)
                     {
                         StartThread("demux audio", () => DemuxChunks(_hls.Audio, false, true, false));
+                    }
+
+                    if (_hls.Subtitles != null)
+                    {
+                        StartThread("subtitles", () => ReadSubtitles(_hls.Subtitles));
                     }
                 }
                 else if (_opened.Reader != null)
@@ -759,6 +770,11 @@ namespace FoxIPTV.Playback
                     if (isVideo)
                     {
                         state.LastVideo = mapped;
+
+                        if (reader != null && _hls?.Subtitles != null)
+                        {
+                            _subtitles.NoteVideo(key, seconds, mapped);
+                        }
                     }
                     else
                     {
@@ -1038,6 +1054,8 @@ namespace FoxIPTV.Playback
 
             if (caption != null && captions != null && caption->size > 0)
             {
+                _embeddedCaptions = true;
+
                 var text = captions.Decode(caption->data, (int)caption->size, stamp);
 
                 if (text != null)
@@ -1659,6 +1677,60 @@ namespace FoxIPTV.Playback
                 _lastCaption = caption;
 
                 _owner.ReportCaption(this, caption);
+            }
+
+            if (_subtitlesFound && !_embeddedCaptions)
+            {
+                var text = _subtitles.TextAt(clock);
+
+                if (!string.Equals(text, _lastCaption ?? string.Empty, StringComparison.Ordinal))
+                {
+                    _lastCaption = text;
+
+                    _owner.ReportCaption(this, text);
+                }
+            }
+        }
+
+        private void ReadSubtitles(ChunkQueue queue)
+        {
+            var refused = false;
+
+            while (!_token.IsCancellationRequested)
+            {
+                var chunk = queue.Peek(_token);
+
+                if (chunk == null)
+                {
+                    break;
+                }
+
+                queue.Take();
+
+                var cues = WebVtt.Parse(Web.Decode(chunk.Data));
+
+                if (cues == null)
+                {
+                    if (!refused)
+                    {
+                        refused = true;
+
+                        TvCore.LogError($"[Player] Session {Id}: the subtitle track is not WebVTT, leaving it out: {chunk.Url}");
+                    }
+
+                    continue;
+                }
+
+                if (!_subtitlesFound)
+                {
+                    _subtitlesFound = true;
+
+                    TvCore.LogInfo($"[Player] Session {Id}: subtitles found in their own track");
+
+                    SetInfo(x => x.Captions = true);
+                }
+
+                _subtitles.Add(chunk.Discontinuity, cues);
             }
         }
 

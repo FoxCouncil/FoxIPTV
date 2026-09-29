@@ -27,6 +27,10 @@ namespace FoxIPTV.Playback.Hls
 
         public string AudioGroup { get; set; }
 
+        public string SubtitleGroup { get; set; }
+
+        public string ClosedCaptions { get; set; }
+
         public bool HasVideo => Width > 0 || Height > 0 || HasVideoCodec;
 
         private bool HasVideoCodec => !string.IsNullOrEmpty(Codecs) && Codecs.Split(',').Any(x => x.Trim().StartsWith("avc", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("hvc", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("hev", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("mp4v", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("av01", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("vp09", StringComparison.OrdinalIgnoreCase));
@@ -48,9 +52,11 @@ namespace FoxIPTV.Playback.Hls
 
         public bool AutoSelect { get; set; }
 
+        public bool IsForced { get; set; }
+
         public Uri Uri { get; set; }
 
-        public override string ToString() => $"{Type} {GroupId} {Name} {Language}{(IsDefault ? " default" : string.Empty)}";
+        public override string ToString() => $"{Type} {GroupId} {Name} {Language}{(IsDefault ? " default" : string.Empty)}{(IsForced ? " forced" : string.Empty)}";
     }
 
     public sealed class HlsKey
@@ -268,6 +274,8 @@ namespace FoxIPTV.Playback.Hls
                                 AverageBandwidth = Long(attributes, "AVERAGE-BANDWIDTH"),
                                 Codecs = Text(attributes, "CODECS"),
                                 AudioGroup = Text(attributes, "AUDIO"),
+                                SubtitleGroup = Text(attributes, "SUBTITLES"),
+                                ClosedCaptions = Text(attributes, "CLOSED-CAPTIONS"),
                                 FrameRate = Double(attributes, "FRAME-RATE")
                             };
 
@@ -299,6 +307,7 @@ namespace FoxIPTV.Playback.Hls
                                 Language = Text(attributes, "LANGUAGE"),
                                 IsDefault = string.Equals(Text(attributes, "DEFAULT"), "YES", StringComparison.OrdinalIgnoreCase),
                                 AutoSelect = string.Equals(Text(attributes, "AUTOSELECT"), "YES", StringComparison.OrdinalIgnoreCase),
+                                IsForced = string.Equals(Text(attributes, "FORCED"), "YES", StringComparison.OrdinalIgnoreCase),
                                 Uri = string.IsNullOrEmpty(mediaUri) ? null : Resolve(uri, mediaUri)
                             });
                         }

@@ -226,6 +226,77 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Subtitles_ShowOnTimeFromTheirOwnTrack()
+        {
+            ServeClips("low", 4);
+
+            for (var i = 0; i < 4; i++)
+            {
+                _server.Serve($"/subs/{i}.vtt", Cue(Clip($"low/{i}.ts"), $"Line {i}"));
+            }
+
+            _server.Serve("/low.m3u8", Vod(Pieces("low", 4)));
+            _server.Serve("/subs.m3u8", Vod(Pieces("subs", 4, "vtt")));
+            _server.Serve("/master.m3u8", "#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"English\",DEFAULT=NO,FORCED=NO,URI=\"subs.m3u8\"\n#EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=160x90,CODECS=\"avc1.42c00c,mp4a.40.2\",SUBTITLES=\"subs\"\nlow.m3u8\n");
+
+            using var run = Play("/master.m3u8", false);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 20), run.Describe());
+
+            AssertSmooth(run, 4, 160, 90);
+
+            var zero = FirstVideoPts(Clip("low/0.ts"));
+            var shown = run.Captions.Where(x => !string.IsNullOrEmpty(x.Text)).ToList();
+
+            Assert.Equal(new[] { "Line 0", "Line 1", "Line 2", "Line 3" }, shown.Select(x => x.Text));
+
+            for (var i = 0; i < 4; i++)
+            {
+                var due = run.Frames[0].Time + (FirstVideoPts(Clip($"low/{i}.ts")) - zero) / 90000.0 + 0.2;
+
+                Assert.InRange(shown[i].Clock, due - 0.05, due + 0.35);
+            }
+
+            Assert.True(run.Player.Info.Captions);
+            AssertPolite();
+        }
+
+        [Fact]
+        public void Subtitles_FollowTheVideoThroughAnAdBreak()
+        {
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts"), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts"),
+                new LivePiece($"{Ad}/0.ts", true), new LivePiece($"{Ad}/1.ts"),
+                new LivePiece("low/0.ts", true), new LivePiece("low/1.ts")
+            };
+
+            ServeLive(pieces, null);
+            ServeLiveSubtitles(pieces);
+
+            _server.Serve("/live-master.m3u8", "#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"English\",LANGUAGE=\"en\",URI=\"live-subs.m3u8\"\n#EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=160x90,CODECS=\"avc1.42c00c,mp4a.40.2\",SUBTITLES=\"subs\"\nlive.m3u8\n");
+
+            using var run = Play("/live-master.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 30), run.Describe());
+
+            AssertSmooth(run, 7, 160, 90);
+
+            var shown = run.Captions.Where(x => !string.IsNullOrEmpty(x.Text)).ToList();
+
+            Assert.Equal(new[] { "Piece 1", "Piece 2", "Piece 3", "Piece 4", "Piece 5", "Piece 6", "Piece 7" }, shown.Select(x => x.Text));
+
+            for (var i = 0; i < shown.Count; i++)
+            {
+                var due = run.Frames[0].Time + i + 0.2;
+
+                Assert.InRange(shown[i].Clock, due - 0.05, due + 0.4);
+            }
+
+            AssertPolite();
+        }
+
+        [Fact]
         public void Progressive_PlaysAFileToTheEnd()
         {
             _server.Serve("/file.ts", Enumerable.Range(0, 4).SelectMany(i => Clip($"low/{i}.ts")).ToArray());
@@ -366,6 +437,77 @@ namespace FoxIPTV.Tests.Engine
 
                 return new Reply { Data = Encoding.UTF8.GetBytes(text.ToString()) };
             });
+        }
+
+        private void ServeLiveSubtitles(IReadOnlyList<LivePiece> pieces)
+        {
+            var started = double.NaN;
+
+            for (var i = 0; i < pieces.Count; i++)
+            {
+                _server.Serve($"/live-subs/{i}.vtt", Cue(Clip(pieces[i].Clip), $"Piece {i}"));
+            }
+
+            _server.Serve("/live-subs.m3u8", () =>
+            {
+                if (double.IsNaN(started))
+                {
+                    started = _server.Now;
+                }
+
+                var available = Math.Min(pieces.Count, LiveWindow + (int)(_server.Now - started));
+                var first = available - LiveWindow;
+                var text = new StringBuilder("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n");
+
+                text.Append($"#EXT-X-MEDIA-SEQUENCE:{first}\n");
+                text.Append($"#EXT-X-DISCONTINUITY-SEQUENCE:{pieces.Take(first + 1).Count(x => x.StartsDiscontinuity)}\n");
+
+                for (var i = first; i < available; i++)
+                {
+                    if (i > first && pieces[i].StartsDiscontinuity)
+                    {
+                        text.Append("#EXT-X-DISCONTINUITY\n");
+                    }
+
+                    text.Append("#EXTINF:1.000,\n").Append($"live-subs/{i}.vtt\n");
+                }
+
+                if (available == pieces.Count)
+                {
+                    text.Append("#EXT-X-ENDLIST\n");
+                }
+
+                return new Reply { Data = Encoding.UTF8.GetBytes(text.ToString()) };
+            });
+        }
+
+        private static string Cue(byte[] clip, string text)
+        {
+            return $"WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:{FirstVideoPts(clip)},LOCAL:00:00:00.000\n\n00:00:00.200 --> 00:00:00.800\n{text}\n";
+        }
+
+        private static long FirstVideoPts(byte[] ts)
+        {
+            for (var at = 0; at + 188 <= ts.Length; at += 188)
+            {
+                var starts = (ts[at + 1] & 0x40) != 0;
+                var control = (ts[at + 3] >> 4) & 3;
+                var payload = at + 4 + (control >= 2 ? 1 + ts[at + 4] : 0);
+
+                if (!starts || (control & 1) == 0 || payload + 14 > at + 188)
+                {
+                    continue;
+                }
+
+                if (ts[payload] == 0 && ts[payload + 1] == 0 && ts[payload + 2] == 1 && (ts[payload + 3] & 0xF0) == 0xE0 && (ts[payload + 7] & 0x80) != 0)
+                {
+                    var p = payload + 9;
+
+                    return (((long)ts[p] >> 1) & 7) << 30 | (long)ts[p + 1] << 22 | ((long)ts[p + 2] >> 1) << 15 | (long)ts[p + 3] << 7 | (long)ts[p + 4] >> 1;
+                }
+            }
+
+            throw new InvalidDataException("no video timestamp in the clip");
         }
 
         private static void AssertIncreasing(IReadOnlyList<ShownFrame> frames)
