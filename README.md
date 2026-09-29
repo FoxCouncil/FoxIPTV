@@ -26,7 +26,7 @@ The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.
 - Hot Keys
 
 # ═════•°• Providers
-Pick one at start up. Details are remembered per provider when you tick "Remember these details": encrypted to your Windows account on Windows, and with a key only your user account can read on macOS and Linux.
+Pick one at start up.
 
 | Provider | Gives you | Needs |
 |---|---|---|

@@ -36,8 +36,6 @@ namespace FoxIPTV.Views
 
         public IService SelectedService => ServicesComboBox.SelectedItem as IService;
 
-        public bool RememberMe => RememberMeCheckBox.IsChecked == true;
-
         public JObject FieldValues
         {
             get
@@ -74,14 +72,11 @@ namespace FoxIPTV.Views
             ServicesComboBox.ItemsSource = TvCore.Services;
             ServicesComboBox.SelectionChanged += (sender, args) => BuildFields();
 
-            var remembered = TvCore.Services.FindIndex(x => string.Equals(x.Id, TvCore.Settings.ProviderId, StringComparison.OrdinalIgnoreCase));
-
-            ServicesComboBox.SelectedIndex = remembered >= 0 ? remembered : 0;
+            ServicesComboBox.SelectedIndex = 0;
 
             if (TvCore.Services.Count == 0)
             {
                 LoginButton.IsEnabled = false;
-                RememberMeCheckBox.IsEnabled = false;
             }
 
             LoginButton.Click += LoginButton_Click;
@@ -121,10 +116,6 @@ namespace FoxIPTV.Views
 
             if (service != null)
             {
-                var remembered = ProviderStore.Load(service.Id);
-
-                RememberMeCheckBox.IsChecked = remembered != null;
-
                 foreach (var field in service.Fields)
                 {
                     FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
@@ -136,7 +127,7 @@ namespace FoxIPTV.Views
                         HorizontalAlignment = HorizontalAlignment.Right
                     };
 
-                    var input = CreateInput(field, remembered?[field.Key]?.ToString());
+                    var input = CreateInput(field);
 
                     input.Name = field.Key;
                     input.Tag = field;
@@ -159,9 +150,6 @@ namespace FoxIPTV.Views
                 }
             }
 
-            FormGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            Grid.SetRow(RememberMeCheckBox, row);
-
             var input0 = _inputs.Values.FirstOrDefault();
 
             if (input0 != null && string.IsNullOrEmpty(InputText(input0)))
@@ -174,7 +162,7 @@ namespace FoxIPTV.Views
             }
         }
 
-        private static Control CreateInput(ProviderField field, string remembered)
+        private static Control CreateInput(ProviderField field)
         {
             if (field.Kind == ProviderFieldKind.Choice)
             {
@@ -195,16 +183,14 @@ namespace FoxIPTV.Views
                     });
                 }
 
-                var wanted = remembered ?? field.Default;
-
-                var index = wanted == null ? -1 : field.Choices.IndexOf(wanted);
+                var index = field.Default == null ? -1 : field.Choices.IndexOf(field.Default);
 
                 combo.SelectedIndex = index >= 0 ? index : (field.Choices.Count > 0 ? 0 : -1);
 
                 return combo;
             }
 
-            var textBox = new TextBox { Text = remembered ?? field.Default ?? string.Empty };
+            var textBox = new TextBox { Text = field.Default ?? string.Empty };
 
             if (field.Kind == ProviderFieldKind.Password)
             {
@@ -273,7 +259,6 @@ namespace FoxIPTV.Views
             TvCore.SelectService(service.Id);
 
             service.Data = FieldValues;
-            service.SaveAuthentication = RememberMe;
 
             TvCore.LogDebug($"[.NET] ProviderWindow: Checking authentication for {service.Title}");
 
@@ -305,18 +290,6 @@ namespace FoxIPTV.Views
 
                 return;
             }
-
-            if (RememberMe)
-            {
-                ProviderStore.Save(service.Id, service.Data);
-            }
-            else
-            {
-                ProviderStore.Delete(service.Id);
-            }
-
-            TvCore.Settings.ProviderId = service.Id;
-            TvCore.Settings.Save();
 
             _result.TrySetResult(true);
 
