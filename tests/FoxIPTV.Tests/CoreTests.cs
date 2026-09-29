@@ -26,14 +26,43 @@ namespace FoxIPTV.Tests
         [Fact]
         public void Providers_KeepTheirIdsAndRegion()
         {
-            IService[] providers = { new PlutoTv(), new PlexTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
+            IService[] providers = { new PlutoTv(), new PlexTv(), new RokuTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
 
-            Assert.Equal(new[] { "pluto", "plex", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
+            Assert.Equal(new[] { "pluto", "plex", "roku", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
             Assert.All(providers, x => Assert.True(x.Capabilities.HasFlag(ProviderCapabilities.LiveTv)));
-            Assert.All(providers.Take(3), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
-            Assert.Contains(providers[4].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
-            Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[3].Fields.Select(x => x.Key));
+            Assert.All(providers.Take(4), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
+            Assert.Contains(providers[5].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
+            Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[4].Fields.Select(x => x.Key));
             Assert.True(((ILiveTuner)providers[0]).CanTune);
+            Assert.True(((ILiveTuner)providers[2]).CanTune);
+        }
+
+        [Fact]
+        public void Roku_KeepsOnlyChannelsWithoutDrm()
+        {
+            var page = Newtonsoft.Json.Linq.JObject.Parse(@"{
+                ""categoryMapping"": [
+                    { ""type"": ""Utility"", ""id"": ""roku.epg.category-allchannels"", ""title"": ""All Channels"", ""collectionIds"": [ ""a"", ""b"", ""c"" ] },
+                    { ""type"": ""Genre"", ""id"": ""roku.epg.cat-livefeed-tv"", ""title"": ""TV Shows"", ""collectionIds"": [ ""a"", ""b"", ""x"", ""y"" ] },
+                    { ""type"": ""Genre"", ""id"": ""roku.epg.cat-crime"", ""title"": ""Crime"", ""collectionIds"": [ ""a"", ""z"" ] },
+                    { ""type"": ""Genre"", ""id"": ""roku.epg.cat-epg-newly-added"", ""title"": ""Newly Added"", ""collectionIds"": [ ""a"" ] }
+                ],
+                ""collections"": [
+                    { ""features"": { ""station"": { ""title"": ""Open"", ""displayNumber"": ""116"", ""meta"": { ""id"": ""a"", ""mediaType"": ""livefeed"" }, ""imageMap"": { ""epgLogo"": { ""path"": ""https://example.com/a.png"" } }, ""viewOptions"": [ { ""playId"": ""s-open"", ""providerId"": ""rokuavod"", ""media"": { ""videos"": [ { ""videoType"": ""HLS"", ""url"": ""https://example.com/a?format=hls"" } ] } } ] } } },
+                    { ""features"": { ""station"": { ""title"": ""Locked"", ""displayNumber"": ""100"", ""meta"": { ""id"": ""b"", ""mediaType"": ""livefeed"" }, ""viewOptions"": [ { ""playId"": ""s-locked"", ""providerId"": ""rokuavod"", ""media"": { ""videos"": [ { ""videoType"": ""DASH"", ""url"": ""https://example.com/b?format=dash"", ""drmAuthentication"": { ""drmContentProvider"": ""roku"" } }, { ""videoType"": ""HLS"", ""url"": ""https://example.com/b?format=hls"", ""drmAuthentication"": { ""drmContentProvider"": ""roku"" } } ] } } ] } } },
+                    { ""features"": { ""station"": { ""title"": ""Playlist"", ""displayNumber"": ""6001"", ""meta"": { ""id"": ""c"", ""mediaType"": ""playlist"" } } } }
+                ]
+            }");
+
+            var channels = new RokuTv().Lineup(page);
+
+            var channel = Assert.Single(channels);
+            Assert.Equal(116u, channel.Index);
+            Assert.Equal("a", channel.Id);
+            Assert.Equal("Open", channel.Name);
+            Assert.Equal("Crime", channel.Group);
+            Assert.Equal("https://example.com/a.png", channel.Logo.ToString());
+            Assert.Equal("https://therokuchannel.roku.com/watch/a", channel.Stream.ToString());
         }
 
         [Fact]
