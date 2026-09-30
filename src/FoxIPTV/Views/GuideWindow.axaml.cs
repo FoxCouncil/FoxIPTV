@@ -19,6 +19,20 @@ namespace FoxIPTV.Views
 
             ResetViewButton.Click += (sender, args) => Guide.ResetView();
 
+            SearchBox.TextChanged += (sender, args) =>
+            {
+                ClearSearchButton.IsVisible = !string.IsNullOrEmpty(SearchBox.Text);
+
+                Guide.Search = SearchBox.Text;
+            };
+
+            ClearSearchButton.Click += (sender, args) =>
+            {
+                SearchBox.Text = string.Empty;
+
+                SearchBox.Focus();
+            };
+
             _clock.Tick += (sender, args) => DateTimeLabel.Text = $"{DateTime.Now:F}";
             _clock.Start();
 

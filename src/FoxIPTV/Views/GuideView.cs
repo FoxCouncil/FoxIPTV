@@ -4,6 +4,8 @@ namespace FoxIPTV.Views
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using Avalonia;
     using Avalonia.Controls;
     using Avalonia.Controls.Primitives;
@@ -46,6 +48,10 @@ namespace FoxIPTV.Views
 
         private Programme _hoverProgramme;
 
+        private string _search = string.Empty;
+
+        private List<int> _shown;
+
         private readonly List<Tuple<Rect, object>> _hits = new List<Tuple<Rect, object>>();
 
         public ScrollBar ScrollBar { get; set; }
@@ -63,6 +69,7 @@ namespace FoxIPTV.Views
             TvCore.StateChanged += state => Dispatcher.UIThread.Post(() =>
             {
                 _dataLoaded = state == TvCoreState.Running;
+                _shown = null;
 
                 if (_dataLoaded)
                 {
@@ -70,17 +77,44 @@ namespace FoxIPTV.Views
                 }
             });
 
-            TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(InvalidateVisual);
+            TvCore.ChannelListChanged += () => Dispatcher.UIThread.Post(() =>
+            {
+                _shown = null;
+
+                InvalidateVisual();
+            });
 
             TvCore.ChannelChanged += channel => Dispatcher.UIThread.Post(() =>
             {
-                if (channel < _topChannel || channel >= _topChannel + VisibleRows)
+                var position = Shown.IndexOf((int)channel);
+
+                if (position >= 0 && (position < _topChannel || position >= _topChannel + VisibleRows))
                 {
-                    _topChannel = (int)channel;
+                    _topChannel = position;
                 }
 
                 InvalidateVisual();
             });
+        }
+
+        public string Search
+        {
+            get => _search;
+            set
+            {
+                var search = value?.Trim() ?? string.Empty;
+
+                if (search == _search)
+                {
+                    return;
+                }
+
+                _search = search;
+                _shown = null;
+                _topChannel = 0;
+
+                InvalidateVisual();
+            }
         }
 
         public void AttachScrollBar(ScrollBar scrollBar)
@@ -97,14 +131,55 @@ namespace FoxIPTV.Views
         public void ResetView()
         {
             _startUtc = null;
-            _topChannel = (int)TvCore.CurrentChannelIndex;
+            _topChannel = Math.Max(0, Shown.IndexOf((int)TvCore.CurrentChannelIndex));
 
             InvalidateVisual();
         }
 
         private int VisibleRows => Math.Max(1, (int)((Bounds.Height - HeaderHeight) / RowHeight));
 
-        private static int ChannelCount => TvCore.ChannelIndexList?.Count ?? 0;
+        private static int TotalChannels => Math.Min(TvCore.ChannelIndexList?.Count ?? 0, TvCore.Channels?.Count ?? 0);
+
+        private int ChannelCount => Shown.Count;
+
+        private List<int> Shown
+        {
+            get
+            {
+                if (_shown != null)
+                {
+                    return _shown;
+                }
+
+                var channels = TvCore.Channels;
+                var total = TotalChannels;
+                var nowUtc = DateTimeOffset.UtcNow;
+
+                EnsureIndex();
+
+                _shown = new List<int>(total);
+
+                for (var i = 0; i < total; i++)
+                {
+                    if (_search.Length == 0 || Matches(channels[i], nowUtc))
+                    {
+                        _shown.Add(i);
+                    }
+                }
+
+                return _shown;
+            }
+        }
+
+        private bool Matches(Channel channel, DateTimeOffset nowUtc)
+        {
+            if ((channel.Name ?? string.Empty).IndexOf(_search, StringComparison.OrdinalIgnoreCase) >= 0 || channel.Index.ToString(CultureInfo.InvariantCulture) == _search)
+            {
+                return true;
+            }
+
+            return channel.Id != null && _byChannel.TryGetValue(channel.Id, out var programmes) && programmes.Any(x => x.Stop > nowUtc && (x.Title ?? string.Empty).IndexOf(_search, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
 
         private DateTimeOffset StartUtc => _startUtc ?? Floor(DateTimeOffset.UtcNow, StepMinutes);
 
@@ -137,6 +212,7 @@ namespace FoxIPTV.Views
             }
 
             _byChannel = new Dictionary<string, List<Programme>>(StringComparer.Ordinal);
+            _shown = null;
 
             foreach (var programme in TvCore.Guide ?? new List<Programme>())
             {
@@ -216,7 +292,7 @@ namespace FoxIPTV.Views
 
             _hits.Clear();
 
-            if (!_dataLoaded || ChannelCount == 0 || TvCore.Channels == null)
+            if (!_dataLoaded || TotalChannels == 0 || TvCore.Channels == null)
             {
                 DrawText(g, "No guide yet", 15, FontWeight.Bold, MutedText, new Rect(0, 0, width, height), TextAlignment.Center);
 
@@ -260,16 +336,18 @@ namespace FoxIPTV.Views
 
             // Rows
             var rows = VisibleRows;
+            var shown = Shown;
 
             for (var row = 0; row < rows; row++)
             {
-                var channelIndex = _topChannel + row;
+                var position = _topChannel + row;
 
-                if (channelIndex >= ChannelCount || channelIndex >= TvCore.Channels.Count)
+                if (position >= shown.Count)
                 {
                     break;
                 }
 
+                var channelIndex = shown[position];
                 var channel = TvCore.Channels[channelIndex];
                 var y = HeaderHeight + row * RowHeight;
                 var isCurrent = channelIndex == (int)TvCore.CurrentChannelIndex;
