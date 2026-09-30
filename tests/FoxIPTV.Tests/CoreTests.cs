@@ -142,8 +142,7 @@ namespace FoxIPTV.Tests
             Assert.Equal(samsungAll.Count, samsungAu.Count);
             Assert.Empty(samsungGuide);
             Assert.Contains(samsungAll, x => x.Group == "United States");
-            Assert.DoesNotContain(freeTv.Concat(iptvOrg), x => x.Stream.Host.Contains("github", StringComparison.OrdinalIgnoreCase) || (x.Logo?.Host.Contains("github", StringComparison.OrdinalIgnoreCase) ?? false));
-            Assert.DoesNotContain(samsungAll, x => new[] { x.Stream.Host, x.Logo?.Host ?? string.Empty }.Any(host => host.Contains("github", StringComparison.OrdinalIgnoreCase) || host.EndsWith("jmp2.uk", StringComparison.OrdinalIgnoreCase) || host.EndsWith("mjh.nz", StringComparison.OrdinalIgnoreCase)));
+            Assert.DoesNotContain(freeTv.Concat(iptvOrg).Concat(samsungAll), x => new[] { x.Stream.Host, x.Logo?.Host ?? string.Empty }.Any(host => host.Contains("github", StringComparison.OrdinalIgnoreCase) || host.EndsWith("jmp2.uk", StringComparison.OrdinalIgnoreCase) || host.EndsWith("mjh.nz", StringComparison.OrdinalIgnoreCase)));
         }
 
         [Fact]
