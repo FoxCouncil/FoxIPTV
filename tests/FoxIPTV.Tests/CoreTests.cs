@@ -37,6 +37,27 @@ namespace FoxIPTV.Tests
             Assert.True(((ILiveTuner)providers[3]).CanTune);
         }
 
+        [Theory]
+        [InlineData("NEWSMAX2", true)]
+        [InlineData("US: Fox News Channel", true)]
+        [InlineData("LiveNOW from FOX", true)]
+        [InlineData("FOX LOCAL Seattle", true)]
+        [InlineData("The First", true)]
+        [InlineData("US: The First TV", true)]
+        [InlineData("Real America’s Voice en Español", true)]
+        [InlineData("The Daily Wire TV", true)]
+        [InlineData("OAN Plus", true)]
+        [InlineData("US: NTD TV English", true)]
+        [InlineData("MrBeast", true)]
+        [InlineData("The First 48", false)]
+        [InlineData("Firefox Live", false)]
+        [InlineData("BBC News", false)]
+        [InlineData("US: CBS News 24/7", false)]
+        public void CuratedList_LeavesOutTheseChannels(string name, bool leftOut)
+        {
+            Assert.Equal(leftOut, ProviderParts.IsUnwanted(name));
+        }
+
         [Fact]
         public void Lists_MatchByAddressOrUniqueId()
         {

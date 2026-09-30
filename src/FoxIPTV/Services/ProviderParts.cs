@@ -8,12 +8,22 @@ namespace FoxIPTV.Services
     using System.IO.Compression;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
     using Classes;
     using Newtonsoft.Json.Linq;
 
     public static class ProviderParts
     {
         public static readonly string[] Regions = { "us", "ca", "gb", "au", "nz", "de", "fr", "es", "it", "at", "ch", "dk", "no", "se", "in", "kr", "mx", "br", "ar", "cl", "all" };
+
+        private static readonly Regex UnwantedName = new Regex(@"newsmax|real america[’']?s voice|^the first( tv)?$|daily wire|salem news|\bfox\b|\boan\b|one america news|\bntd\b|\bepoch (tv|times)\b|lindell|frank speech|war room|right side broadcasting|\brsbn\b|\bblaze ?tv\b|\bthe blaze\b|turning point|prageru|breitbart|daily caller|\bmr\.? ?beast\b|\bbeast games\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex CountryPrefix = new Regex(@"^[A-Z]{2}: ", RegexOptions.Compiled);
+
+        public static bool IsUnwanted(string name)
+        {
+            return !string.IsNullOrWhiteSpace(name) && UnwantedName.IsMatch(CountryPrefix.Replace(name.Trim(), string.Empty));
+        }
 
         public static string ShippedList(string name)
         {

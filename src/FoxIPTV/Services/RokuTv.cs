@@ -103,7 +103,7 @@ namespace FoxIPTV.Services
                 var station = collection["features"]?["station"];
                 var id = station?["meta"]?["id"]?.ToString();
 
-                if (string.IsNullOrEmpty(id) || station["meta"]?["mediaType"]?.ToString() != "livefeed")
+                if (string.IsNullOrEmpty(id) || station["meta"]?["mediaType"]?.ToString() != "livefeed" || ProviderParts.IsUnwanted(station["title"]?.ToString()))
                 {
                     continue;
                 }

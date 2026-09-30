@@ -77,7 +77,7 @@ namespace FoxIPTV.Services
             {
                 var id = item["id"]?.ToString();
 
-                if (string.IsNullOrEmpty(id))
+                if (string.IsNullOrEmpty(id) || ProviderParts.IsUnwanted(item["name"]?.ToString()))
                 {
                     continue;
                 }

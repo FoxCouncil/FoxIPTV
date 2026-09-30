@@ -76,7 +76,7 @@ namespace FoxIPTV.Services
                     continue;
                 }
 
-                if (!Uri.TryCreate(row[4]?.ToString(), UriKind.Absolute, out var streamUri))
+                if (!Uri.TryCreate(row[4]?.ToString(), UriKind.Absolute, out var streamUri) || ProviderParts.IsUnwanted(row[1]?.ToString()))
                 {
                     continue;
                 }

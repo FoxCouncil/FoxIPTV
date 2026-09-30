@@ -44,6 +44,8 @@ namespace FoxIPTV.Services
             var playlist = M3UParser.Parse(ProviderParts.ShippedList("freetv.m3u.gz"));
             var channels = ProviderParts.FromPlaylist(playlist);
 
+            channels.RemoveAll(x => ProviderParts.IsUnwanted(x.Name));
+
             ProgressUpdater?.Item1.Report(100);
 
             var guideAddress = PickGuide(playlist.GuideUrls, region);
