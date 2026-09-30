@@ -48,9 +48,6 @@
   </Target>
 
   <ItemGroup>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.11" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
@@ -64,7 +61,6 @@
     <PackageReference Include="ppy.SDL3-CS" Version="2026.722.0" />
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.1" />
 
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
   </ItemGroup>

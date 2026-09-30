@@ -122,8 +122,6 @@ namespace FoxIPTV.Playback
     {
         protected AVCodecContext* Context;
 
-        public AVCodecID CodecId => Context == null ? AVCodecID.AV_CODEC_ID_NONE : Context->codec_id;
-
         public string CodecName => Context == null ? null : ffmpeg.avcodec_get_name(Context->codec_id);
 
         public AVCodecContext* Codec => Context;
@@ -484,8 +482,6 @@ namespace FoxIPTV.Playback
         }
 
         public int OutputRate { get; }
-
-        public int OutputChannels => _outputChannels;
 
         public string InputDescription { get; private set; }
 

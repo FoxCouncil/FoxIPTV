@@ -183,8 +183,6 @@ namespace FoxIPTV.Playback
 
         private readonly LinkedList<VideoFrame> _items = new LinkedList<VideoFrame>();
 
-        private bool _completed;
-
         public FrameQueue(int capacity)
         {
             Capacity = capacity;
@@ -201,28 +199,6 @@ namespace FoxIPTV.Playback
                 lock (_lock)
                 {
                     return _items.Count;
-                }
-            }
-        }
-
-        public bool IsDrained
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _completed && _items.Count == 0;
-                }
-            }
-        }
-
-        public double LastTime
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _items.Last?.Value.Time ?? double.NaN;
                 }
             }
         }
@@ -326,8 +302,6 @@ namespace FoxIPTV.Playback
         {
             lock (_lock)
             {
-                _completed = true;
-
                 Monitor.PulseAll(_lock);
             }
         }

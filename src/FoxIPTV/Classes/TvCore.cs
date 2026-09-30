@@ -2,19 +2,18 @@
 
 namespace FoxIPTV.Classes
 {
-    using Newtonsoft.Json;
-    using Services;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Net;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Timers;
     using Avalonia.Media.Imaging;
+    using Newtonsoft.Json;
+    using Services;
     using Timer = System.Timers.Timer;
 
     /// <summary>The static god class for FoxIPTV's functionality and features</summary>
@@ -65,8 +64,6 @@ namespace FoxIPTV.Classes
 
         /// <summary>The queue of image Uris to download</summary>
         private static Queue<Tuple<uint, string>> _imageCacheQueue;
-
-        public const string ServiceUserAgentString = Web.UserAgent;
 
         /// <summary>The error event; any significant errors will be posted here for safe display to the user</summary>
         public static event Action<string> Error;
@@ -271,7 +268,7 @@ namespace FoxIPTV.Classes
         {
             instance.ProgressUpdater = new Tuple<IProgress<int>, IProgress<int>>(new Progress<int>(percentage => ChannelLoadPercentageChanged?.Invoke(percentage)), new Progress<int>(percentage => GuideLoadPercentageChanged?.Invoke(percentage)));
 
-            LogDebug($"[TVCore] Startup: Installing [{instance.Title}] Service ({instance.Capabilities})");
+            LogDebug($"[TVCore] Startup: Installing [{instance.Title}] Service");
 
             Services.Add(instance);
         }

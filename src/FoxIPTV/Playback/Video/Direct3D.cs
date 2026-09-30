@@ -11,8 +11,6 @@ namespace FoxIPTV.Playback.Video
 
         public const int FormatNv12 = 103;
 
-        public const int FormatP010 = 104;
-
         public const uint BindShaderResource = 0x8;
 
         public const uint BindRenderTarget = 0x20;

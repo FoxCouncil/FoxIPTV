@@ -16,10 +16,6 @@ namespace FoxIPTV.Services
 
         public string Title => "M3U Playlist";
 
-        public string Description => "Any M3U or M3U8 playlist URL, with an optional XMLTV guide; the guide is auto-detected from the playlist header when it declares one";
-
-        public ProviderCapabilities Capabilities => ProviderCapabilities.LiveTv;
-
         public List<ProviderField> Fields { get; } = new List<ProviderField>
         {
             ProviderField.Url("Playlist URL"),
@@ -29,14 +25,7 @@ namespace FoxIPTV.Services
 
         public JObject Data { get; set; }
 
-        public bool SaveAuthentication { get; set; }
-
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
-
-        public Task<bool> IsAuthenticated()
-        {
-            return Task.FromResult(true);
-        }
 
         public async Task<Tuple<List<Channel>, List<Programme>>> Process()
         {

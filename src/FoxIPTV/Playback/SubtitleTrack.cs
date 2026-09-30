@@ -31,12 +31,7 @@ namespace FoxIPTV.Playback
 
         private readonly HashSet<string> _known = new HashSet<string>(StringComparer.Ordinal);
 
-        private readonly Func<double> _now;
-
-        public SubtitleTrack(Func<double> now = null)
-        {
-            _now = now ?? (() => Environment.TickCount64 / 1000.0);
-        }
+        private static double Now => Environment.TickCount64 / 1000.0;
 
         public void NoteVideo(int discontinuity, double source, double mapped)
         {
@@ -76,7 +71,7 @@ namespace FoxIPTV.Playback
                         continue;
                     }
 
-                    _waiting.Add(new Waiting { Key = key, Discontinuity = discontinuity, Cue = cue, Since = _now() });
+                    _waiting.Add(new Waiting { Key = key, Discontinuity = discontinuity, Cue = cue, Since = Now });
                 }
             }
         }
@@ -102,7 +97,7 @@ namespace FoxIPTV.Playback
 
         private void Place()
         {
-            var now = _now();
+            var now = Now;
 
             for (var i = 0; i < _waiting.Count; i++)
             {

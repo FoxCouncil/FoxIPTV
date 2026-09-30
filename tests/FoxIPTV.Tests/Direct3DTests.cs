@@ -3,7 +3,6 @@
 namespace FoxIPTV.Tests
 {
     using System;
-    using System.Runtime.InteropServices;
     using FFmpeg.AutoGen;
     using FoxIPTV.Playback;
     using FoxIPTV.Playback.Video;

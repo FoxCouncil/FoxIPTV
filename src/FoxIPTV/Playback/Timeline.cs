@@ -2,7 +2,6 @@
 
 namespace FoxIPTV.Playback
 {
-    using System;
     using System.Collections.Generic;
     using Classes;
 

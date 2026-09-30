@@ -4,7 +4,6 @@ namespace FoxIPTV.Views
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Avalonia.Controls;
@@ -122,7 +121,7 @@ namespace FoxIPTV.Views
 
                     var label = new TextBlock
                     {
-                        Text = $"{field.Label ?? field.Key}:",
+                        Text = $"{field.Key}:",
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Right
                     };
@@ -190,14 +189,7 @@ namespace FoxIPTV.Views
                 return combo;
             }
 
-            var textBox = new TextBox { Text = field.Default ?? string.Empty };
-
-            if (field.Kind == ProviderFieldKind.Password)
-            {
-                textBox.PasswordChar = '•';
-            }
-
-            return textBox;
+            return new TextBox { Text = field.Default ?? string.Empty };
         }
 
         private static string InputText(Control control)
@@ -239,7 +231,7 @@ namespace FoxIPTV.Views
 
                 if (field.Required && string.IsNullOrEmpty(text) && string.IsNullOrEmpty(field.Default))
                 {
-                    await Dialogs.Message(this, $"{field.Label ?? field.Key} is required.", "Fox IPTV");
+                    await Dialogs.Message(this, $"{field.Key} is required.", "Fox IPTV");
 
                     control.Focus();
 
@@ -248,7 +240,7 @@ namespace FoxIPTV.Views
 
                 if (field.Kind == ProviderFieldKind.Url && !string.IsNullOrEmpty(text) && !Uri.IsWellFormedUriString(text, UriKind.Absolute))
                 {
-                    await Dialogs.Message(this, $"{field.Label ?? field.Key} must be a full URL, including http:// or https://.", "Fox IPTV");
+                    await Dialogs.Message(this, $"{field.Key} must be a full URL, including http:// or https://.", "Fox IPTV");
 
                     control.Focus();
 
@@ -260,41 +252,9 @@ namespace FoxIPTV.Views
 
             service.Data = FieldValues;
 
-            TvCore.LogDebug($"[.NET] ProviderWindow: Checking authentication for {service.Title}");
-
-            IsEnabled = false;
-
-            bool authenticated;
-
-            string failure = null;
-
-            try
-            {
-                authenticated = await Task.Run(service.IsAuthenticated);
-            }
-            catch (Exception ex)
-            {
-                TvCore.LogError($"[.NET] ProviderWindow: {service.Title} authentication threw: {ex.Message}");
-
-                authenticated = false;
-                failure = ex.Message;
-            }
-
-            IsEnabled = true;
-
-            if (!authenticated)
-            {
-                TvCore.LogDebug("[.NET] ProviderWindow: Authentication details incorrect, service rejected them, retrying.");
-
-                await Dialogs.Message(this, failure ?? $"{service.Title} rejected the details you entered, please check them and try again.", "Fox IPTV - Sign In Failed");
-
-                return;
-            }
-
             _result.TrySetResult(true);
 
             Close();
         }
-
     }
 }

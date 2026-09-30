@@ -72,8 +72,6 @@ namespace FoxIPTV.Playback.Hls
 
         public double TargetDuration { get; private set; }
 
-        public string VariantLabel => _variantIndex >= 0 && _variantIndex < _variants.Count ? _variants[_variantIndex].ToString() : null;
-
         public void Start(HlsPlaylist entry)
         {
             var main = entry;

@@ -90,7 +90,7 @@ namespace FoxIPTV.Playback.Hls
             return cues;
         }
 
-        public static bool TryTime(string text, out double seconds)
+        private static bool TryTime(string text, out double seconds)
         {
             seconds = 0;
 

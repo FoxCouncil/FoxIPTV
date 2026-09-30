@@ -30,22 +30,11 @@ namespace FoxIPTV.Services
 
         public string Title => "Plex";
 
-        public string Description => string.Empty;
-
-        public ProviderCapabilities Capabilities => ProviderCapabilities.LiveTv;
-
         public List<ProviderField> Fields { get; } = new List<ProviderField> { ProviderParts.RegionField() };
 
         public JObject Data { get; set; }
 
-        public bool SaveAuthentication { get; set; }
-
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
-
-        public Task<bool> IsAuthenticated()
-        {
-            return Task.FromResult(true);
-        }
 
         public async Task<Tuple<List<Channel>, List<Programme>>> Process()
         {

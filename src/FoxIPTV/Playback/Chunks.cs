@@ -69,17 +69,6 @@ namespace FoxIPTV.Playback
             }
         }
 
-        public bool IsFinished
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _completed;
-                }
-            }
-        }
-
         public void Add(MediaChunk chunk, CancellationToken token)
         {
             lock (_lock)

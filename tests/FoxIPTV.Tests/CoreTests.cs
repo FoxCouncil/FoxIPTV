@@ -3,7 +3,6 @@
 namespace FoxIPTV.Tests
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using FoxIPTV.Classes;
@@ -13,23 +12,11 @@ namespace FoxIPTV.Tests
     public class CoreTests
     {
         [Fact]
-        public void Protect_RoundTrips()
-        {
-            const string secret = "{\"Username\":\"fox\",\"Password\":\"hunter2\"}";
-
-            var sealedText = secret.Protect();
-
-            Assert.NotEqual(secret, sealedText);
-            Assert.Equal(secret, sealedText.Unprotect());
-        }
-
-        [Fact]
         public void Providers_KeepTheirIdsAndRegion()
         {
             IService[] providers = { new PlutoTv(), new SamsungTvPlus(), new PlexTv(), new RokuTv(), new FreeTv(), new M3uPlaylist(), new IPTVDotOrg() };
 
             Assert.Equal(new[] { "pluto", "samsungtvplus", "plex", "roku", "freetv", "m3u", "iptv-org" }, providers.Select(x => x.Id));
-            Assert.All(providers, x => Assert.True(x.Capabilities.HasFlag(ProviderCapabilities.LiveTv)));
             Assert.All(providers.Take(5), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
             Assert.Contains(providers[6].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
             Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[5].Fields.Select(x => x.Key));

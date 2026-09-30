@@ -61,20 +61,7 @@ namespace FoxIPTV.Playback
             return true;
         }
 
-        public bool IsOpen => _stream != null;
-
         public int Channels => _channels;
-
-        public bool IsPaused
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _paused;
-                }
-            }
-        }
 
         public bool Open(int channels)
         {
@@ -182,17 +169,6 @@ namespace FoxIPTV.Playback
                 lock (_lock)
                 {
                     return QueuedSecondsLocked();
-                }
-            }
-        }
-
-        public double EndTime
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _endTime;
                 }
             }
         }

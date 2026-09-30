@@ -3,9 +3,9 @@
 namespace FoxIPTV.Classes
 {
     using System;
-    using Newtonsoft.Json;
     using System.IO;
     using System.Threading;
+    using Newtonsoft.Json;
 
     /// <summary>The class that contains FoxIPTV's settings and defaults</summary>
     public class Settings
@@ -46,9 +46,6 @@ namespace FoxIPTV.Classes
         public int StereoMode { get; set; } = 1;
 
         public bool StatusBar { get; set; } = true;
-
-        public string ProviderId { get; set; } = string.Empty;
-
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();

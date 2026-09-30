@@ -5,7 +5,6 @@ namespace FoxIPTV.Views
     using System;
     using System.Globalization;
     using System.Linq;
-    using System.Threading;
     using Avalonia.Controls;
     using Avalonia.Input;
     using Classes;

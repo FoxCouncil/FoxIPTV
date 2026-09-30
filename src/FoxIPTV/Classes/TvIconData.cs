@@ -86,9 +86,17 @@ namespace FoxIPTV.Classes
         /// <inheritdoc />
         public bool Equals(TvIconData other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return ClosedCaptioning == other.ClosedCaptioning && 
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return ClosedCaptioning == other.ClosedCaptioning &&
                    string.Equals(VideoCodec, other.VideoCodec, StringComparison.OrdinalIgnoreCase) && 
                    string.Equals(VideoSize, other.VideoSize, StringComparison.OrdinalIgnoreCase) && 
                    string.Equals(FrameRate, other.FrameRate, StringComparison.OrdinalIgnoreCase) &&
