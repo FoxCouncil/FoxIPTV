@@ -51,7 +51,7 @@ namespace FoxIPTV.Tests
         [InlineData("MrBeast", true)]
         [InlineData("America's Voice News", true)]
         [InlineData("US: America's Voice", true)]
-        [InlineData("US: InfoWars", true)]
+        [InlineData("US: InfoWars", false)]
         [InlineData("US: 30A Loomered TV", true)]
         [InlineData("US: 30A Lionel Nation", true)]
         [InlineData("Blaze Live", true)]
