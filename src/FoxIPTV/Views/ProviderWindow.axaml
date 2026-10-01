@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="using:FoxIPTV.Services"
         x:Class="FoxIPTV.Views.ProviderWindow"
         Title="Fox IPTV - Provider"
         Icon="/Assets/FoxIPTV.ico"
@@ -14,8 +15,8 @@
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
             <ComboBox x:Name="ServicesComboBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{ReflectionBinding Title}" />
+                    <DataTemplate x:DataType="services:IService">
+                        <TextBlock Text="{Binding Title}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

@@ -3,8 +3,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>FoxIPTV</RootNamespace>
-    <Nullable>disable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>3.0.0-alpha</Version>
@@ -25,9 +23,6 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
 
   <PropertyGroup>
     <FFmpegRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</FFmpegRid>
