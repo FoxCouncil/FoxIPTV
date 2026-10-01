@@ -487,31 +487,17 @@ namespace FoxIPTV.Playback
 
         private unsafe void DemuxProgressive()
         {
-            Interlocked.Increment(ref _demuxersRunning);
+            var reader = _opened.Reader;
 
-            var state = new DemuxState();
-            var packet = ffmpeg.av_packet_alloc();
-
-            try
-            {
-                var reader = _opened.Reader;
-
-                using (var demuxer = Demuxer.OpenCustom(reader.Read, reader.CanSeek ? reader.Seek : null, null, true, _token))
-                {
-                    TvCore.LogInfo($"[Player] Session {Id}: {demuxer.Describe()}");
-
-                    Pump(demuxer, null, 0, true, true, packet, state);
-                }
-            }
-            finally
-            {
-                ffmpeg.av_packet_free(&packet);
-
-                FinishDemux(state, true, true);
-            }
+            DemuxWhole(() => Demuxer.OpenCustom(reader.Read, reader.CanSeek ? reader.Seek : null, null, true, _token));
         }
 
-        private unsafe void DemuxUrl()
+        private void DemuxUrl()
+        {
+            DemuxWhole(() => Demuxer.OpenUrl(_opened.Url, _request.Headers, _token));
+        }
+
+        private unsafe void DemuxWhole(Func<Demuxer> open)
         {
             Interlocked.Increment(ref _demuxersRunning);
 
@@ -520,7 +506,7 @@ namespace FoxIPTV.Playback
 
             try
             {
-                using (var demuxer = Demuxer.OpenUrl(_opened.Url, _request.Headers, _token))
+                using (var demuxer = open())
                 {
                     TvCore.LogInfo($"[Player] Session {Id}: {demuxer.Describe()}");
 

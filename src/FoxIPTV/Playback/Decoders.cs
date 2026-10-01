@@ -164,6 +164,18 @@ namespace FoxIPTV.Playback
             return context;
         }
 
+        protected void OpenCodec(AVCodec* codec, AVCodecParameters* parameters)
+        {
+            var opened = ffmpeg.avcodec_open2(Context, codec, null);
+
+            if (opened < 0)
+            {
+                Dispose();
+
+                FFmpegNative.Check(opened, $"Opening the {ffmpeg.avcodec_get_name(parameters->codec_id)} decoder");
+            }
+        }
+
         public virtual void Dispose()
         {
             if (Context != null)
@@ -221,14 +233,7 @@ namespace FoxIPTV.Playback
                 decoder.Context->thread_type = ffmpeg.FF_THREAD_FRAME | ffmpeg.FF_THREAD_SLICE;
             }
 
-            var opened = ffmpeg.avcodec_open2(decoder.Context, codec, null);
-
-            if (opened < 0)
-            {
-                decoder.Dispose();
-
-                FFmpegNative.Check(opened, $"Opening the {ffmpeg.avcodec_get_name(parameters->codec_id)} decoder");
-            }
+            decoder.OpenCodec(codec, parameters);
 
             return decoder;
         }
@@ -284,14 +289,7 @@ namespace FoxIPTV.Playback
             decoder.Context = Allocate(codec, parameters);
             decoder.Context->thread_count = 1;
 
-            var opened = ffmpeg.avcodec_open2(decoder.Context, codec, null);
-
-            if (opened < 0)
-            {
-                decoder.Dispose();
-
-                FFmpegNative.Check(opened, $"Opening the {ffmpeg.avcodec_get_name(parameters->codec_id)} decoder");
-            }
+            decoder.OpenCodec(codec, parameters);
 
             return decoder;
         }
