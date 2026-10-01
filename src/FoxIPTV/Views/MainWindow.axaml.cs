@@ -9,22 +9,10 @@ namespace FoxIPTV.Views
     using Avalonia.Controls;
     using Avalonia.Threading;
     using Classes;
+    using Playback.Video;
 
     public partial class MainWindow : Window
     {
-        private static readonly Dictionary<string, double> AspectRatioConversionTable = new Dictionary<string, double>
-        {
-            { string.Empty, 0.5625 },
-            { "16:9", 0.5625 },
-            { "4:3", 0.75 },
-            { "1:1", 1.0 },
-            { "16:10", 0.625 },
-            { "2.21:1", 0.4524886877828054 },
-            { "2.35:1", 0.425531914893617 },
-            { "2.39:1", 0.4184100418410042 },
-            { "5:4", 0.8 }
-        };
-
         /// <summary>The time out in 100ms chunks to wait before retrying the media stream</summary>
         private int _isErrorRetryTimeout = 100;
 
@@ -385,10 +373,8 @@ namespace FoxIPTV.Views
             {
                 var heightAdjust = StatusBar.IsVisible ? StatusBar.Bounds.Height : 0;
 
-                if (!AspectRatioConversionTable.TryGetValue(TvCore.Settings.AspectRatio ?? string.Empty, out var aspectRatio))
-                {
-                    aspectRatio = AspectRatioConversionTable[string.Empty];
-                }
+                var forced = VideoSurface.ParseAspect(TvCore.Settings.AspectRatio);
+                var aspectRatio = forced > 0 ? 1 / forced : 9 / 16.0;
 
                 double wantedWidth;
                 double wantedHeight;

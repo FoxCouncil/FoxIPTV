@@ -164,6 +164,19 @@ namespace FoxIPTV.Playback
 
         public int Height { get; set; }
 
+        public double DisplayAspect(double forcedAspect)
+        {
+            if (forcedAspect > 0)
+            {
+                return forcedAspect;
+            }
+
+            var sar = Frame->sample_aspect_ratio;
+            var pixelAspect = sar.num > 0 && sar.den > 0 ? sar.num / (double)sar.den : 1.0;
+
+            return Frame->width * pixelAspect / Math.Max(1, Frame->height);
+        }
+
         public void Free()
         {
             var frame = Frame;

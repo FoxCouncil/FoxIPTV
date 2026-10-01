@@ -71,10 +71,9 @@ namespace FoxIPTV.Playback.Video
             {
                 _player = value;
 
-                if (_player != null && _d3d != null && _player.Hardware == null && FFmpegNative.Initialize())
+                if (_player != null && _player.Hardware == null)
                 {
-                    _player.Hardware = HardwareDevice.FromD3D11(_d3d.DevicePointer);
-                    _player.WantsCpuFrames = false;
+                    ShareDevice();
                 }
 
                 Queue();
@@ -100,15 +99,29 @@ namespace FoxIPTV.Playback.Video
 
         private bool _announced;
 
-        public void Clear()
+        private void ShareDevice()
         {
-            _announced = false;
+            if (_player != null && _d3d != null && FFmpegNative.Initialize())
+            {
+                _player.Hardware = HardwareDevice.FromD3D11(_d3d.DevicePointer);
+                _player.WantsCpuFrames = false;
+            }
+        }
 
+        private void DropFrames()
+        {
             _pending?.Free();
             _pending = null;
 
             _current?.Free();
             _current = null;
+        }
+
+        public void Clear()
+        {
+            _announced = false;
+
+            DropFrames();
 
             if (_d3d != null)
             {
@@ -176,11 +189,7 @@ namespace FoxIPTV.Playback.Video
                         {
                             ElementComposition.SetElementChildVisual(this, _visual);
 
-                            if (_player != null && FFmpegNative.Initialize())
-                            {
-                                _player.Hardware = HardwareDevice.FromD3D11(_d3d.DevicePointer);
-                                _player.WantsCpuFrames = false;
-                            }
+                            ShareDevice();
 
                             Renderer = $"GPU (D3D11 on {_d3d.Adapter})";
                         }
@@ -225,11 +234,7 @@ namespace FoxIPTV.Playback.Video
 
             _d3d = null;
 
-            _pending?.Free();
-            _pending = null;
-
-            _current?.Free();
-            _current = null;
+            DropFrames();
 
             ElementComposition.SetElementChildVisual(this, null);
 
@@ -372,10 +377,8 @@ namespace FoxIPTV.Playback.Video
             return PixelSize.FromSize(Bounds.Size, scale);
         }
 
-        private double ForcedAspect()
+        public static double ParseAspect(string ratio)
         {
-            var ratio = _aspectRatio;
-
             if (string.IsNullOrWhiteSpace(ratio))
             {
                 return 0;
@@ -395,7 +398,7 @@ namespace FoxIPTV.Playback.Video
         {
             if (_d3d != null)
             {
-                return _d3d.Present(frame, PixelSizeNow(), ForcedAspect());
+                return _d3d.Present(frame, PixelSizeNow(), ParseAspect(_aspectRatio));
             }
 
             return ShowBitmap(frame);
@@ -436,11 +439,7 @@ namespace FoxIPTV.Playback.Video
                 ffmpeg.sws_scale(_scaler, sources, sourceStrides, 0, height, target, strides);
             }
 
-            var sar = av->sample_aspect_ratio;
-            var pixelAspect = sar.num > 0 && sar.den > 0 ? sar.num / (double)sar.den : 1.0;
-            var forced = ForcedAspect();
-
-            _bitmapAspect = forced > 0 ? forced : width * pixelAspect / height;
+            _bitmapAspect = frame.DisplayAspect(ParseAspect(_aspectRatio));
             _bitmapRect = new Rect(0, 0, width, height);
 
             InvalidateVisual();

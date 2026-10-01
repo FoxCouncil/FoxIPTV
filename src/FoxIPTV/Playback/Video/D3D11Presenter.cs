@@ -153,7 +153,7 @@ namespace FoxIPTV.Playback.Video
 
                 try
                 {
-                    Configure(av, interlaced, size, forcedAspect);
+                    Configure(av, interlaced, size, frame.DisplayAspect(forcedAspect));
 
                     result = _d3d.Blt(_processor, target.OutputView, input, (uint)(frame.Number & 0xFFFFFFF));
 
@@ -362,14 +362,10 @@ namespace FoxIPTV.Playback.Video
             _enumerator = IntPtr.Zero;
         }
 
-        private unsafe void Configure(AVFrame* frame, bool interlaced, PixelSize output, double forcedAspect)
+        private unsafe void Configure(AVFrame* frame, bool interlaced, PixelSize output, double aspect)
         {
             var width = frame->width;
             var height = frame->height;
-
-            var sar = frame->sample_aspect_ratio;
-            var pixelAspect = sar.num > 0 && sar.den > 0 ? sar.num / (double)sar.den : 1.0;
-            var aspect = forcedAspect > 0 ? forcedAspect : width * pixelAspect / Math.Max(1, height);
 
             var fitWidth = output.Width;
             var fitHeight = (int)Math.Round(output.Width / aspect);
