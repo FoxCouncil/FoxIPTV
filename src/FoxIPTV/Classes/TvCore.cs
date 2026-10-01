@@ -192,23 +192,10 @@ namespace FoxIPTV.Classes
 
             LogDebug("[TVCore] Startup: Application directories created");
 
-            var assembly = Assembly.GetExecutingAssembly();
-
-            var types = assembly.GetTypes().Where(p => typeof(IService).IsAssignableFrom(p) && p.IsClass && !p.IsAbstract && p.GetConstructor(Type.EmptyTypes) != null);
-
-            foreach (var type in types)
+            foreach (var service in new IService[] { new PlutoTv(), new SamsungTvPlus(), new PlexTv(), new RokuTv(), new IPTVDotOrg(), new FreeTv(), new M3uPlaylist() })
             {
-                try
-                {
-                    InstallService((IService)Activator.CreateInstance(type));
-                }
-                catch (Exception ex)
-                {
-                    LogError($"[TVCore] Startup: Unable to install {type.Name}: {ex.Message}");
-                }
+                InstallService(service);
             }
-
-            Services.Sort((a, b) => ProviderRank(a) != ProviderRank(b) ? ProviderRank(a).CompareTo(ProviderRank(b)) : string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
 
             // Load the settings from the disk, if they exist
             Settings.Load();
@@ -445,15 +432,6 @@ namespace FoxIPTV.Classes
             }
 
             return contents;
-        }
-
-        private static readonly string[] ProviderOrder = { "pluto", "samsungtvplus", "plex", "roku", "iptv-org", "freetv", "m3u" };
-
-        private static int ProviderRank(IService service)
-        {
-            var index = Array.FindIndex(ProviderOrder, x => string.Equals(x, service.Id, StringComparison.OrdinalIgnoreCase));
-
-            return index < 0 ? ProviderOrder.Length : index;
         }
 
         private static string FavoritesFilePath => Path.Combine(UserStoragePath, CurrentService == null ? ChannelFavoritesFilename : $"{ChannelFavoritesFilename}-{CurrentService.Id}");

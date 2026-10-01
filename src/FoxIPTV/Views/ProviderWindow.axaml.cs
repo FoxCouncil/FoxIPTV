@@ -73,11 +73,6 @@ namespace FoxIPTV.Views
 
             ServicesComboBox.SelectedIndex = 0;
 
-            if (TvCore.Services.Count == 0)
-            {
-                LoginButton.IsEnabled = false;
-            }
-
             LoginButton.Click += LoginButton_Click;
 
             Closed += (sender, args) => _result.TrySetResult(false);

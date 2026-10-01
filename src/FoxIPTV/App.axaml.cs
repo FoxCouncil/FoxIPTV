@@ -37,15 +37,6 @@ namespace FoxIPTV
 
         private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (TvCore.Services.Count == 0)
-            {
-                await Dialogs.Message(null, "No content providers could be loaded, check the log for details.", "Fox IPTV");
-
-                desktop.Shutdown();
-
-                return;
-            }
-
             if (!await ProviderWindow.ChooseProvider())
             {
                 desktop.Shutdown();
