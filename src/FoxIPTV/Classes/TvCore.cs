@@ -38,6 +38,8 @@ namespace FoxIPTV.Classes
 
         private static readonly HashSet<string> _protectedStreams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly HashSet<string> _unwritableLists = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         private static int _protectedGapAt = -1;
 
         /// <summary>A non win forms timer at 100ms intervals</summary>
@@ -456,108 +458,98 @@ namespace FoxIPTV.Classes
 
         private static string FavoritesFilePath => Path.Combine(UserStoragePath, CurrentService == null ? ChannelFavoritesFilename : $"{ChannelFavoritesFilename}-{CurrentService.Id}");
 
-        /// <summary>Load the favorite data from the user storage location</summary>
-        private static void FavoritesLoad()
-        {
-            ChannelFavorites.Clear();
-
-            var favoriteChannelsFilePath = FavoritesFilePath;
-
-            if (!File.Exists(favoriteChannelsFilePath))
-            {
-                favoriteChannelsFilePath = Path.Combine(UserStoragePath, ChannelFavoritesFilename);
-            }
-
-            if (!File.Exists(favoriteChannelsFilePath))
-            {
-                return;
-            }
-
-            LogInfo($"[TVCore] FavoritesLoad(): Loading channelIndex favorites file: {favoriteChannelsFilePath}");
-
-            var rawJson = File.ReadAllText(favoriteChannelsFilePath);
-
-            if (string.IsNullOrWhiteSpace(rawJson))
-            {
-                return;
-            }
-
-            try
-            {
-                ChannelFavorites.AddRange(JsonConvert.DeserializeObject<List<string>>(rawJson));
-            }
-            catch (Exception e)
-            {
-                LogError($"[TVCore] FavoritesLoad(): Error parsing channelIndex favorites file... {e.Message}");
-                return;
-            }
-
-            LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} channelIndex favorites");
-        }
-
-        /// <summary>Load the image blacklist data from the user storage location</summary>
-        private static void BlacklistLoad()
-        {
-            var imageServerBlacklistFilename = Path.Combine(UserStoragePath, ImageServerBlacklistFilename);
-
-            if (!File.Exists(imageServerBlacklistFilename))
-            {
-                return;
-            }
-
-            LogInfo($"[TVCore] BlacklistLoad(): Loading image server blacklist file: {imageServerBlacklistFilename}");
-
-            var rawJson = File.ReadAllText(imageServerBlacklistFilename);
-
-            if (string.IsNullOrWhiteSpace(rawJson))
-            {
-                return;
-            }
-
-            _imageServerBlacklist.Clear();
-
-            try
-            {
-                _imageServerBlacklist.AddRange(JsonConvert.DeserializeObject<List<string>>(rawJson));
-            }
-            catch (Exception e)
-            {
-                LogError($"[TVCore] FavoritesLoad(): Error parsing channelIndex favorites file... {e.Message}");
-                return;
-            }
-
-            LogDebug($"[TVCore] FavoritesLoad(): Loaded {ChannelFavorites.Count} blacklist images");
-        }
+        private static string BlacklistFilePath => Path.Combine(UserStoragePath, ImageServerBlacklistFilename);
 
         private static string ProtectedFilePath => Path.Combine(UserStoragePath, $"{ProtectedChannelsFilename}-{CurrentService?.Id ?? "none"}");
 
         private static string HiddenFilePath => Path.Combine(UserStoragePath, $"{HiddenChannelsFilename}-{CurrentService?.Id ?? "none"}");
 
-        private static void ProtectedLoad()
+        /// <summary>Load the favorite data from the user storage location</summary>
+        private static void FavoritesLoad()
         {
-            LoadStreamList(ProtectedFilePath, _protectedStreams);
-            LoadStreamList(HiddenFilePath, _hiddenStreams);
+            ChannelFavorites.Clear();
+            ChannelFavorites.AddRange(ReadList(File.Exists(FavoritesFilePath) ? FavoritesFilePath : Path.Combine(UserStoragePath, ChannelFavoritesFilename)));
         }
 
-        private static void LoadStreamList(string path, HashSet<string> into)
+        /// <summary>Load the image blacklist data from the user storage location</summary>
+        private static void BlacklistLoad()
         {
-            into.Clear();
+            _imageServerBlacklist.Clear();
+            _imageServerBlacklist.AddRange(ReadList(BlacklistFilePath));
+        }
 
+        private static void ProtectedLoad()
+        {
+            _protectedStreams.Clear();
+            _protectedStreams.UnionWith(ReadList(ProtectedFilePath));
+
+            _hiddenStreams.Clear();
+            _hiddenStreams.UnionWith(ReadList(HiddenFilePath));
+        }
+
+        private static List<string> ReadList(string path)
+        {
             if (!File.Exists(path))
             {
-                return;
+                return new List<string>();
             }
+
+            LogInfo($"[TVCore] Reading {path}");
 
             try
             {
-                foreach (var stream in JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(path)) ?? new List<string>())
-                {
-                    into.Add(stream);
-                }
+                return JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(path)) ?? new List<string>();
             }
             catch (Exception e)
             {
-                LogError($"[TVCore] LoadStreamList(): Error parsing {path}: {e.Message}");
+                LogError($"[TVCore] Unable to read {path}: {e.Message}");
+
+                SetAside(path);
+
+                return new List<string>();
+            }
+        }
+
+        private static void SetAside(string path)
+        {
+            var aside = $"{path}.unreadable-{DateTime.Now:yyyyMMddHHmmss}";
+
+            try
+            {
+                File.Move(path, aside);
+
+                LogError($"[TVCore] Kept the unreadable file as {aside}");
+            }
+            catch (Exception e)
+            {
+                lock (_unwritableLists)
+                {
+                    _unwritableLists.Add(path);
+                }
+
+                LogError($"[TVCore] {path} will not be saved over this session: {e.Message}");
+            }
+        }
+
+        private static void WriteList(string path, IEnumerable<string> items)
+        {
+            lock (_unwritableLists)
+            {
+                if (_unwritableLists.Contains(path))
+                {
+                    return;
+                }
+            }
+
+            LogDebug($"[TVCore] Saving {path}");
+
+            try
+            {
+                File.WriteAllText(path, JsonConvert.SerializeObject(items));
+            }
+            catch (Exception e)
+            {
+                LogError($"[TVCore] Unable to write {path}: {e.Message}");
             }
         }
 
@@ -592,14 +584,7 @@ namespace FoxIPTV.Classes
 
             LogInfo($"[TVCore] MarkProtected({channel.Index} {channel.Name}): copy-protected, hidden from now on");
 
-            try
-            {
-                File.WriteAllText(ProtectedFilePath, JsonConvert.SerializeObject(_protectedStreams.ToList()));
-            }
-            catch (Exception e)
-            {
-                LogError($"[TVCore] MarkProtected(): Unable to write {ProtectedFilePath}: {e.Message}");
-            }
+            WriteList(ProtectedFilePath, _protectedStreams);
 
             var position = Channels.IndexOf(channel);
 
@@ -624,25 +609,13 @@ namespace FoxIPTV.Classes
         /// <summary>Saves the user favorite channels to the user storage location</summary>
         private static void FavoritesSave()
         {
-            var rawJson = JsonConvert.SerializeObject(ChannelFavorites);
-
-            var favoriteChannelsFilePath = FavoritesFilePath;
-
-            LogInfo($"[TVCore] FavoritesSave(): Saving channelIndex favorites file: {favoriteChannelsFilePath}");
-
-            File.WriteAllText(favoriteChannelsFilePath, rawJson);
+            WriteList(FavoritesFilePath, ChannelFavorites);
         }
 
         /// <summary>Saves the image blacklist data to the user storage location</summary>
         private static void BlacklistSave()
         {
-            var rawJson = JsonConvert.SerializeObject(_imageServerBlacklist);
-
-            var imageServerBlacklistFilename = Path.Combine(UserStoragePath, ImageServerBlacklistFilename);
-
-            LogDebug($"[TVCore] BlacklistSave(): Saving image server blacklist file: {imageServerBlacklistFilename}");
-
-            File.WriteAllText(imageServerBlacklistFilename, rawJson);
+            WriteList(BlacklistFilePath, _imageServerBlacklist);
         }
 
         /// <summary>Start the logging system, and insert two blank lines</summary>
