@@ -16,9 +16,6 @@ namespace FoxIPTV.Classes
         /// <summary>The stop time of this programme</summary>
         public DateTimeOffset Stop { get; set; }
 
-        /// <summary>How many blocks long is this programme, in 10 minute intervals</summary>
-        public int BlockLength { get; set; }
-
         /// <summary>The title of the programme</summary>
         public string Title { get; set; }
 

@@ -8,8 +8,6 @@ namespace FoxIPTV.Services
 
     public interface ILiveTuner
     {
-        bool CanTune { get; }
-
         Task<Uri> Tune(Channel channel);
     }
 }

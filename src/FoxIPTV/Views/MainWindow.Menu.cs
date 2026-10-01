@@ -518,9 +518,6 @@ namespace FoxIPTV.Views
 
                 RestoreOwnedWindows();
             }
-
-            TvCore.Settings.Visibility = IsVisible;
-            TvCore.Settings.Save();
         }
 
         private void RestoreOwnedWindows()

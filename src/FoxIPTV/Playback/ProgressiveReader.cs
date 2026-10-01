@@ -145,8 +145,6 @@ namespace FoxIPTV.Playback
 
         public bool CanSeek { get; }
 
-        public long BytesRead { get; private set; }
-
         public Action<int> OnBytes { get; set; }
 
         public int Read(byte* buffer, int size)
@@ -282,7 +280,6 @@ namespace FoxIPTV.Playback
         private int Advance(int count)
         {
             _position += count;
-            BytesRead += count;
 
             OnBytes?.Invoke(count);
 

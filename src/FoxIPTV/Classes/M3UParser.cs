@@ -22,8 +22,6 @@ namespace FoxIPTV.Classes
         public string Url { get; set; }
 
         public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        public Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     public class M3UPlaylist
@@ -124,22 +122,6 @@ namespace FoxIPTV.Classes
                         if (pending != null)
                         {
                             pending.Group = line.Substring(8).Trim();
-                        }
-
-                        continue;
-                    }
-
-                    if (line.StartsWith("#EXTVLCOPT:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (pending != null)
-                        {
-                            var option = line.Substring(11);
-                            var eq = option.IndexOf('=');
-
-                            if (eq > 0)
-                            {
-                                pending.Options[option.Substring(0, eq).Trim()] = option.Substring(eq + 1).Trim();
-                            }
                         }
 
                         continue;

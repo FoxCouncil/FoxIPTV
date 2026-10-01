@@ -94,8 +94,7 @@ namespace FoxIPTV.Classes
                         Title = title ?? string.Empty,
                         Description = description ?? string.Empty,
                         Start = start,
-                        Stop = stop,
-                        BlockLength = (int)Math.Floor((stop - start).TotalMinutes / 10d)
+                        Stop = stop
                     });
 
                     if (progress != null && guide.Count % 250 == 0)

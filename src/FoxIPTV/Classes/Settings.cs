@@ -36,8 +36,6 @@ namespace FoxIPTV.Classes
 
         public bool GuideOpen { get; set; } = false;
 
-        public bool Visibility { get; set; } = true;
-
         public double Opacity { get; set; } = 1;
 
         /// <summary>The current aspect ratio for the video</summary>

@@ -19,17 +19,6 @@ namespace FoxIPTV.Playback
 
         private int _synthetic = -1;
 
-        public double End
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return double.IsNaN(_end) ? 0 : _end;
-                }
-            }
-        }
-
         public double Offset(int key, double seconds)
         {
             lock (_lock)

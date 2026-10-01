@@ -44,8 +44,6 @@ namespace FoxIPTV.Services
 
         public Tuple<IProgress<int>, IProgress<int>> ProgressUpdater { get; set; }
 
-        public bool CanTune => true;
-
         public async Task<Tuple<List<Channel>, List<Programme>>> Process()
         {
             ProgressUpdater?.Item1.Report(0);

@@ -61,8 +61,6 @@ namespace FoxIPTV.Playback
             return true;
         }
 
-        public int Channels => _channels;
-
         public bool Open(int channels)
         {
             lock (_lock)
@@ -384,17 +382,6 @@ namespace FoxIPTV.Playback
                     }
 
                     _speed = value;
-                }
-            }
-        }
-
-        public bool IsRunning
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return _watch.IsRunning;
                 }
             }
         }

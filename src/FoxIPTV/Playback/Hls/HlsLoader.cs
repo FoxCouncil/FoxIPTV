@@ -70,8 +70,6 @@ namespace FoxIPTV.Playback.Hls
 
         public bool IsLive { get; private set; } = true;
 
-        public double TargetDuration { get; private set; }
-
         public void Start(HlsPlaylist entry)
         {
             var main = entry;
@@ -126,7 +124,6 @@ namespace FoxIPTV.Playback.Hls
             else
             {
                 IsLive = entry.IsLive;
-                TargetDuration = entry.TargetDuration;
 
                 TvCore.LogInfo($"[Player] HLS {entry.Describe()}");
 
@@ -214,7 +211,6 @@ namespace FoxIPTV.Playback.Hls
                     if (isMain)
                     {
                         IsLive = playlist.IsLive;
-                        TargetDuration = playlist.TargetDuration;
                     }
                 }
 

@@ -138,9 +138,6 @@ namespace FoxIPTV.Views
         {
             Show();
 
-            TvCore.Settings.Visibility = true;
-            TvCore.Settings.Save();
-
             AspectRatioResizeLater();
 
             TvCore.ChannelLoadPercentageChanged += percentage => Ui(() =>
@@ -283,7 +280,7 @@ namespace FoxIPTV.Views
 
             if (channelObj == null)
             {
-                Title = TitleOf(ProviderLabel(), "Fox IPTV");
+                Title = TitleOf(TvCore.CurrentService?.Title, "Fox IPTV");
 
                 return;
             }
@@ -297,26 +294,12 @@ namespace FoxIPTV.Views
                 channel += $" - [ {programme} ]";
             }
 
-            Title = TitleOf(channel, ProviderLabel(), "Fox IPTV");
+            Title = TitleOf(channel, TvCore.CurrentService?.Title, "Fox IPTV");
         }
 
         private static string TitleOf(params string[] parts)
         {
             return string.Join(" - ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
-        }
-
-        private static string ProviderLabel()
-        {
-            var service = TvCore.CurrentService;
-
-            if (service == null)
-            {
-                return string.Empty;
-            }
-
-            var source = service.Data?["Source"]?.ToString();
-
-            return string.IsNullOrWhiteSpace(source) ? service.Title : source;
         }
 
         private void GuiShow()

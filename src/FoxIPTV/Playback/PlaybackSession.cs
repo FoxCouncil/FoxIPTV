@@ -54,7 +54,7 @@ namespace FoxIPTV.Playback
 
         private readonly object _infoLock = new object();
 
-        private StreamInfo _info = new StreamInfo();
+        private readonly StreamInfo _info = new StreamInfo();
 
         private HlsLoader _hls;
 
@@ -148,17 +148,6 @@ namespace FoxIPTV.Playback
                 }
 
                 return _audioClock ? _audio.Clock : _wall.Now;
-            }
-        }
-
-        public StreamInfo Info
-        {
-            get
-            {
-                lock (_infoLock)
-                {
-                    return _info.Clone();
-                }
             }
         }
 

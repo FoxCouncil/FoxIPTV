@@ -34,8 +34,6 @@ namespace FoxIPTV.Playback
             _token = token;
         }
 
-        public AVFormatContext* Format => _format;
-
         public int VideoIndex { get; private set; } = -1;
 
         public int AudioIndex { get; private set; } = -1;

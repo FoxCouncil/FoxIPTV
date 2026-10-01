@@ -59,8 +59,6 @@ namespace FoxIPTV.Playback.Video
 
         public const int ColorSpaceFullHlgP2020 = 19;
 
-        private const int WaitTimeout = 0x102;
-
         private static readonly Guid FactoryId = new Guid("770aae78-f26f-4dba-a829-253c83d1b387");
 
         private static readonly Guid ResourceId = new Guid("035f3ab4-482e-4e50-b41f-8a7f8bd8960b");

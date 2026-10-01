@@ -119,8 +119,7 @@ namespace FoxIPTV.Services
                 Start = start,
                 Stop = stop,
                 Title = title ?? string.Empty,
-                Description = description ?? string.Empty,
-                BlockLength = (int)Math.Floor((stop - start).TotalMinutes / 10d)
+                Description = description ?? string.Empty
             };
         }
     }

@@ -5,7 +5,6 @@ namespace FoxIPTV
     using System;
     using System.Threading.Tasks;
     using Avalonia;
-    using Avalonia.Controls;
     using Avalonia.Controls.ApplicationLifetimes;
     using Avalonia.Markup.Xaml;
     using Classes;
@@ -28,8 +27,6 @@ namespace FoxIPTV
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
                 desktop.ShutdownRequested += (sender, args) => TvCore.Settings.Save();
 
                 _ = StartAsync(desktop);

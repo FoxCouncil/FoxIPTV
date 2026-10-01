@@ -43,17 +43,8 @@ namespace FoxIPTV.Classes
         /// <summary>A non win forms timer at 100ms intervals</summary>
         private static readonly Timer _coreTimer = new Timer(100);
 
-        /// <summary>A storage cache for loading channel logo image data</summary>
-        private static readonly ConcurrentDictionary<uint, byte[]> _imageCache = new ConcurrentDictionary<uint, byte[]>();
-
-        /// <summary>The synchronizer object for writing to the logfile</summary>
-        private static readonly object _logWriterLock = new object();
-
         /// <summary>The stream writer for writing to the logfile</summary>
         private static readonly StreamWriter _logWriter;
-
-        /// <summary>A in-memory log storage, limited to 1,000 items</summary>
-        private static readonly FixedQueue<string> _logBuffer = new FixedQueue<string> { FixedSize = 1000 };
 
         private static readonly BlockingCollection<string> _logQueue = new BlockingCollection<string>();
 
@@ -64,9 +55,6 @@ namespace FoxIPTV.Classes
 
         /// <summary>The queue of image Uris to download</summary>
         private static Queue<Tuple<uint, string>> _imageCacheQueue;
-
-        /// <summary>The error event; any significant errors will be posted here for safe display to the user</summary>
-        public static event Action<string> Error;
 
         /// <summary>The TvCore's state change event, will include the new state being changed to</summary>
         public static event Action<TvCoreState> StateChanged;
@@ -194,23 +182,10 @@ namespace FoxIPTV.Classes
             TaskScheduler.UnobservedTaskException += (s, a) => LogException(a.Exception);
             AppDomain.CurrentDomain.UnhandledException += (s, a) => LogException(a.ExceptionObject as Exception);
 
-            try
+            // Make sure these directories exist
+            foreach (var dir in new[] { TempPath, CachePath, UserStoragePath })
             {
-                // Make sure these directories exist
-                var directoriesToCheck = new[] { TempPath, CachePath, UserStoragePath };
-
-                foreach (var dir in directoriesToCheck)
-                {
-                    if (!Directory.Exists(dir))
-                    {
-                        Directory.CreateDirectory(dir);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Error?.Invoke("DIRECTORY_CREATION_ERROR");
-                throw;
+                Directory.CreateDirectory(dir);
             }
 
             LogDebug("[TVCore] Startup: Application directories created");
@@ -444,18 +419,6 @@ namespace FoxIPTV.Classes
             FavoritesSave();
         }
 
-        /// <summary>A central place to download string based data and cache it for a specified time</summary>
-        /// <param name="contentUri">The url to the string data that needs to be downloaded</param>
-        /// <param name="cacheFilename">The filename of the cached string data</param>
-        /// <param name="cacheTime">How long to cache the data, in hours</param>
-        /// <returns>An awaitable task</returns>
-        public static async Task<string> DownloadStringAndCache(string contentUri, string cacheFilename, int cacheTime)
-        {
-            LogDebug($"[TVCore] DownloadStringAndCache(url, {cacheFilename}, {cacheTime}) called");
-
-            return await Web.GetStringCached(contentUri, cacheFilename, cacheTime);
-        }
-
         /// <summary>A central place to download image based data and cache it</summary>
         /// <param name="imageUri">The URI of the image to download</param>
         /// <returns>A awaitable task</returns>
@@ -476,7 +439,6 @@ namespace FoxIPTV.Classes
                 contents = await Web.GetBytes(imageUri);
 
                 // Cache
-                File.Delete(cachePath);
                 File.WriteAllBytes(cachePath, contents);
             }
 
@@ -704,19 +666,14 @@ namespace FoxIPTV.Classes
             {
                 foreach (var line in _logQueue.GetConsumingEnumerable())
                 {
-                    lock (_logWriterLock)
+                    _logWriter.WriteLine(line);
+
+                    while (_logQueue.TryTake(out var more))
                     {
-                        _logWriter.WriteLine(line);
-
-                        string more;
-
-                        while (_logQueue.TryTake(out more))
-                        {
-                            _logWriter.WriteLine(more);
-                        }
-
-                        _logWriter.Flush();
+                        _logWriter.WriteLine(more);
                     }
+
+                    _logWriter.Flush();
                 }
             }
             catch (Exception)
@@ -735,11 +692,6 @@ namespace FoxIPTV.Classes
             }
 
             var logLine = $"[{DateTime.UtcNow:O}]-[{logLevel.ToString().ToUpper().PadLeft(7)}]: {message}";
-
-            lock (_logBuffer)
-            {
-                _logBuffer.Enqueue(logLine);
-            }
 
             try
             {
@@ -795,7 +747,6 @@ namespace FoxIPTV.Classes
                 try
                 {
                     var imageData = await DownloadImageAndCache(image.Item2);
-                    _imageCache.TryAdd(image.Item1, imageData);
 
                     Bitmap logo;
 

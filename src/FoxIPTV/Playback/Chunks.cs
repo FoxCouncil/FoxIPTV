@@ -162,10 +162,6 @@ namespace FoxIPTV.Playback
 
         public int Period { get; }
 
-        public MediaChunk First { get; private set; }
-
-        public long BytesRead { get; private set; }
-
         public List<MediaChunk> TakeStarted()
         {
             lock (_started)
@@ -199,7 +195,6 @@ namespace FoxIPTV.Playback
                     Marshal.Copy(_current.Data, _position, (IntPtr)buffer, count);
 
                     _position += count;
-                    BytesRead += count;
 
                     return count;
                 }
@@ -220,8 +215,6 @@ namespace FoxIPTV.Playback
 
                 _current = next;
                 _position = 0;
-
-                First ??= next;
 
                 lock (_started)
                 {

@@ -20,8 +20,8 @@ namespace FoxIPTV.Tests
             Assert.All(providers.Take(5), x => Assert.Contains(x.Fields, f => f.Key == "Region" && f.Default == "us" && f.Choices.Count == 21));
             Assert.Contains(providers[6].Fields, f => f.Key == "Region" && f.Default == "all" && f.Choices.Count == 21);
             Assert.Equal(new[] { "Playlist URL", "Guide URL", "Cache Hours" }, providers[5].Fields.Select(x => x.Key));
-            Assert.True(((ILiveTuner)providers[0]).CanTune);
-            Assert.True(((ILiveTuner)providers[3]).CanTune);
+            Assert.IsAssignableFrom<ILiveTuner>(providers[0]);
+            Assert.IsAssignableFrom<ILiveTuner>(providers[3]);
         }
 
         [Theory]

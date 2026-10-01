@@ -11,7 +11,7 @@
 
     <StackPanel Margin="16" Spacing="12">
         <Grid x:Name="FormGrid" ColumnDefinitions="Auto,*" RowDefinitions="Auto" ColumnSpacing="10" RowSpacing="8">
-            <TextBlock x:Name="ProviderLabel" Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Provider:" VerticalAlignment="Center" HorizontalAlignment="Right" />
             <ComboBox x:Name="ServicesComboBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>

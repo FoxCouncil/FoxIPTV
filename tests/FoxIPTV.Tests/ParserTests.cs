@@ -8,7 +8,7 @@ namespace FoxIPTV.Tests
     public class ParserTests
     {
         [Fact]
-        public void M3U_ReadsHeaderGuidesAttributesAndOptions()
+        public void M3U_ReadsHeaderGuidesAndAttributes()
         {
             const string text = "#EXTM3U url-tvg=\"http://a/guide.xml, http://b/guide.xml.gz\"\n" +
                                 "#EXTINF:-1 tvg-id=\"one.us\" tvg-logo=\"http://a/1.png\" group-title=\"News, Weather\" tvg-chno=\"7\",Channel One\n" +
@@ -30,7 +30,7 @@ namespace FoxIPTV.Tests
             Assert.Equal("Channel One", one.Name);
             Assert.Equal("News, Weather", one.Group);
             Assert.Equal("http://a/1.png", one.Logo);
-            Assert.Equal("Test Agent", one.Options["http-user-agent"]);
+            Assert.Equal("http://a/one.m3u8", one.Url);
 
             var two = playlist.Entries[1];
 
@@ -56,7 +56,7 @@ namespace FoxIPTV.Tests
             Assert.Equal("News", programme.Title);
             Assert.Equal("Tonight", programme.Description);
             Assert.Equal(new DateTimeOffset(2026, 9, 25, 18, 0, 0, TimeSpan.Zero), programme.Start);
-            Assert.Equal(6, programme.BlockLength);
+            Assert.Equal(new DateTimeOffset(2026, 9, 25, 19, 0, 0, TimeSpan.Zero), programme.Stop);
         }
     }
 }

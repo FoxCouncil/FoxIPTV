@@ -125,7 +125,7 @@ namespace FoxIPTV.Views
 
             var channel = TvCore.CurrentChannel;
 
-            if (channel != null && TvCore.CurrentService is ILiveTuner tuner && tuner.CanTune)
+            if (channel != null && TvCore.CurrentService is ILiveTuner tuner)
             {
                 try
                 {
