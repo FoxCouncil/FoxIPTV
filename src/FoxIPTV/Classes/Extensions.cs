@@ -2,6 +2,7 @@
 
 namespace FoxIPTV.Classes
 {
+    using System;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -15,21 +16,7 @@ namespace FoxIPTV.Classes
         public static string ToMD5(this string inputString)
         {
             // Use input string to calculate MD5 hash
-            using (var md5 = MD5.Create())
-            {
-                var inputBytes = Encoding.ASCII.GetBytes(inputString);
-                var hashBytes = md5.ComputeHash(inputBytes);
-
-                // Convert the byte array to hexadecimal string
-                var sb = new StringBuilder();
-
-                foreach (var aByte in hashBytes)
-                {
-                    sb.Append(aByte.ToString("X2"));
-                }
-
-                return sb.ToString();
-            }
+            return Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(inputString)));
         }
     }
 }

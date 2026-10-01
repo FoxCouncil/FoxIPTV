@@ -502,13 +502,13 @@ namespace FoxIPTV.Views
                 SetOsd(ChannelLabelBox, ChannelLabel, string.Empty);
                 SetOsd(ChannelNameLabelBox, ChannelNameLabel, string.Empty);
 
-                var newChannelNumber = uint.Parse(string.Join(string.Empty, _numberEntryDigits.Select(x => x.ToString())));
+                var parsed = uint.TryParse(string.Join(string.Empty, _numberEntryDigits.Select(x => x.ToString())), out var newChannelNumber);
 
                 _numberEntryMode = false;
                 _numberEntryModeTimeout = 0;
                 _numberEntryDigits.Clear();
 
-                if (TvCore.ChannelIndexList == null || !TvCore.ChannelIndexList.Contains(newChannelNumber))
+                if (!parsed || TvCore.ChannelIndexList == null || !TvCore.ChannelIndexList.Contains(newChannelNumber))
                 {
                     return;
                 }
