@@ -52,28 +52,18 @@ namespace FoxIPTV.Classes
         private readonly string _filePath = Path.Combine(TvCore.UserStoragePath, "settings.json");
 
         /// <summary>The previous state of loaded settings, used to compare differences</summary>
-        private Settings _loadedSettingsData;
+        private string _savedJson;
 
         /// <summary>Save current settings if there is any differences</summary>
         public void Save()
         {
-            // Null check, or clean state
-            if (_loadedSettingsData != null)
-            {
-                var differences = _loadedSettingsData.Difference(this);
+            // Convert to JSON, because
+            var settingsData = JsonConvert.SerializeObject(this);
 
-                // Don't waste the time to save if nothing has changed
-                if (differences.Count == 0)
-                {
-                    return;
-                }
-#if DEBUG
-                // Only log the differences in debug mode only
-                foreach (var diff in differences)
-                {
-                    TvCore.LogDebug($"[Settings] {diff}");
-                }
-#endif
+            // Don't waste the time to save if nothing has changed
+            if (settingsData == _savedJson)
+            {
+                return;
             }
 
             // Lock the file for writing
@@ -81,13 +71,10 @@ namespace FoxIPTV.Classes
 
             try
             {
-                // Convert to JSON, because
-                var settingsData = JsonConvert.SerializeObject(this);
-
                 File.WriteAllText(_filePath, settingsData);
 
                 // Save the new state, using JSON for cloning
-                _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(settingsData);
+                _savedJson = settingsData;
             }
             catch (Exception e)
             {
@@ -116,18 +103,10 @@ namespace FoxIPTV.Classes
                     return;
                 }
 
-                var fileContents = File.ReadAllText(_filePath);
-
-                _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(fileContents);
-
-                var settingsType = _loadedSettingsData.GetType();
-
                 // Copy the values from the newly loaded state to this instance
-                foreach (var setting in settingsType.GetProperties())
-                {
-                    var currentProperty = GetType().GetProperty(setting.Name);
-                    currentProperty?.SetValue(this, setting.GetValue(_loadedSettingsData));
-                }
+                JsonConvert.PopulateObject(File.ReadAllText(_filePath), this);
+
+                _savedJson = JsonConvert.SerializeObject(this);
             }
             catch (Exception e)
             {
