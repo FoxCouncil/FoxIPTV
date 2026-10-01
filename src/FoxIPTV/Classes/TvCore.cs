@@ -1,4 +1,4 @@
-﻿// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
 namespace FoxIPTV.Classes
 {
@@ -106,7 +106,7 @@ namespace FoxIPTV.Classes
 
         /// <summary>The path to the temporary folder used by this application</summary>
         public static string TempPath => Path.Combine(Path.GetTempPath(), "FoxIPTV");
-        
+
         /// <summary>The path to store cached data, (data that can be re-downloaded)</summary>
         public static string CachePath => Path.Combine(TempPath, "cache");
 

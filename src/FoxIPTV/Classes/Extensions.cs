@@ -1,4 +1,4 @@
-﻿// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
 namespace FoxIPTV.Classes
 {
@@ -37,7 +37,7 @@ namespace FoxIPTV.Classes
                     ValueA = property.GetValue(valueA),
                     ValueB = property.GetValue(valueB)
                 };
-                
+
                 // If both values are null, nothing's changed
                 if (v.ValueA == null && v.ValueB == null)
                 {

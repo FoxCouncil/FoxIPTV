@@ -1,4 +1,4 @@
-﻿// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
 namespace FoxIPTV.Classes
 {
@@ -97,8 +97,8 @@ namespace FoxIPTV.Classes
             }
 
             return ClosedCaptioning == other.ClosedCaptioning &&
-                   string.Equals(VideoCodec, other.VideoCodec, StringComparison.OrdinalIgnoreCase) && 
-                   string.Equals(VideoSize, other.VideoSize, StringComparison.OrdinalIgnoreCase) && 
+                   string.Equals(VideoCodec, other.VideoCodec, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(VideoSize, other.VideoSize, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(FrameRate, other.FrameRate, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(AudioCodec, other.AudioCodec, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(AudioChannel, other.AudioChannel, StringComparison.OrdinalIgnoreCase) &&

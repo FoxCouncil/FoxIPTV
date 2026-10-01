@@ -1,4 +1,4 @@
-﻿// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
 namespace FoxIPTV.Classes
 {
@@ -49,7 +49,7 @@ namespace FoxIPTV.Classes
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();
-        
+
         /// <summary>The filepath to the user settings</summary>
         private readonly string _filePath = Path.Combine(TvCore.UserStoragePath, "settings.json");
 
@@ -123,7 +123,7 @@ namespace FoxIPTV.Classes
                 _loadedSettingsData = JsonConvert.DeserializeObject<Settings>(fileContents);
 
                 var settingsType = _loadedSettingsData.GetType();
-                
+
                 // Copy the values from the newly loaded state to this instance
                 foreach (var setting in settingsType.GetProperties())
                 {

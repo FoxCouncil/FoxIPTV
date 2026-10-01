@@ -1,4 +1,4 @@
-﻿// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
 
 namespace FoxIPTV.Classes
 {
