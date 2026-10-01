@@ -24,8 +24,6 @@ namespace FoxIPTV.Services
 
         private const double GuideCacheHours = 6;
 
-        private const int GuideRequestsAtOnce = 12;
-
         private readonly SemaphoreSlim _tokenGate = new SemaphoreSlim(1, 1);
 
         private readonly Dictionary<string, Play> _plays = new Dictionary<string, Play>(StringComparer.Ordinal);
@@ -147,39 +145,8 @@ namespace FoxIPTV.Services
         {
             var now = DateTime.UtcNow;
             var block = $"tpl_date={now:yyyy-MM-dd}&tpl_hour={now.Hour / GuideBlockHours * GuideBlockHours}";
-            var pages = new string[ids.Count];
-            var done = 0;
-
-            using (var gate = new SemaphoreSlim(GuideRequestsAtOnce))
-            {
-                await Task.WhenAll(ids.Select(async (id, index) =>
-                {
-                    var address = $"{SiteAddress}/api/v4/epg/{id}?{block}&include=title,description,series.title&expand=series";
-
-                    await gate.WaitAsync().ConfigureAwait(false);
-
-                    try
-                    {
-                        pages[index] = await Web.GetStringCached(address, "roku-" + address.ToMD5(), GuideCacheHours).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        TvCore.LogDebug($"[{Title}] Guide page failed {address}: {ex.Message}");
-                    }
-                    finally
-                    {
-                        gate.Release();
-
-                        var count = Interlocked.Increment(ref done);
-
-                        if (count % 25 == 0)
-                        {
-                            ProgressUpdater?.Item2.Report(count * 100 / ids.Count);
-                        }
-                    }
-                })).ConfigureAwait(false);
-            }
-
+            var addresses = ids.Select(id => $"{SiteAddress}/api/v4/epg/{id}?{block}&include=title,description,series.title&expand=series").ToList();
+            var pages = await ProviderParts.GuidePages(addresses, "roku-", GuideCacheHours, null, ProgressUpdater?.Item2, Title).ConfigureAwait(false);
             var programmes = new List<Programme>();
 
             for (var index = 0; index < pages.Length; index++)

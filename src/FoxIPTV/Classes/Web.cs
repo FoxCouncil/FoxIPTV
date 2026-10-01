@@ -38,23 +38,30 @@ namespace FoxIPTV.Classes
             return client;
         }
 
+        private static HttpRequestMessage Request(HttpMethod method, string url, IDictionary<string, string> headers)
+        {
+            var request = new HttpRequestMessage(method, url);
+
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                    if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                    {
+                        request.Headers.Remove("User-Agent");
+                    }
+
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            return request;
+        }
+
         public static async Task<string> PostString(string url, string body, string contentType, IDictionary<string, string> headers = null)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            using (var request = Request(HttpMethod.Post, url, headers))
             {
-                if (headers != null)
-                {
-                    foreach (var header in headers)
-                    {
-                        if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
-                        {
-                            request.Headers.Remove("User-Agent");
-                        }
-
-                        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                    }
-                }
-
                 request.Content = new StringContent(body ?? string.Empty, Encoding.UTF8, contentType ?? "application/json");
 
                 using (var response = await Client.SendAsync(request).ConfigureAwait(false))
@@ -68,21 +75,8 @@ namespace FoxIPTV.Classes
 
         public static async Task<byte[]> GetBytes(string url, IDictionary<string, string> headers = null)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            using (var request = Request(HttpMethod.Get, url, headers))
             {
-                if (headers != null)
-                {
-                    foreach (var header in headers)
-                    {
-                        if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
-                        {
-                            request.Headers.Remove("User-Agent");
-                        }
-
-                        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                    }
-                }
-
                 using (var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
                     response.EnsureSuccessStatusCode();

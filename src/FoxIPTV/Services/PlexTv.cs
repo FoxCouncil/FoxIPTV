@@ -5,7 +5,6 @@ namespace FoxIPTV.Services
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using Classes;
     using Newtonsoft.Json.Linq;
@@ -19,8 +18,6 @@ namespace FoxIPTV.Services
         private const int GuideDays = 2;
 
         private const double GuideCacheHours = 6;
-
-        private const int GuideRequestsAtOnce = 12;
 
         private readonly Login _guideLogin = new Login();
 
@@ -87,37 +84,7 @@ namespace FoxIPTV.Services
                 requests.AddRange(gridKeys.Where(x => !string.IsNullOrEmpty(x.Value)).Select(x => Tuple.Create(x.Key, $"{EpgAddress}grid?channelGridKey={x.Value}&date={date}")));
             }
 
-            var pages = new string[requests.Count];
-            var done = 0;
-
-            using (var gate = new SemaphoreSlim(GuideRequestsAtOnce))
-            {
-                await Task.WhenAll(requests.Select(async (request, index) =>
-                {
-                    await gate.WaitAsync().ConfigureAwait(false);
-
-                    try
-                    {
-                        pages[index] = await Web.GetStringCached(request.Item2, "plex-" + request.Item2.ToMD5(), GuideCacheHours, headers).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        TvCore.LogDebug($"[{Title}] Guide page failed {request.Item2}: {ex.Message}");
-                    }
-                    finally
-                    {
-                        gate.Release();
-
-                        var count = Interlocked.Increment(ref done);
-
-                        if (count % 50 == 0)
-                        {
-                            ProgressUpdater?.Item2.Report(count * 100 / requests.Count);
-                        }
-                    }
-                })).ConfigureAwait(false);
-            }
-
+            var pages = await ProviderParts.GuidePages(requests.Select(x => x.Item2).ToList(), "plex-", GuideCacheHours, headers, ProgressUpdater?.Item2, Title).ConfigureAwait(false);
             var programmes = new List<Programme>();
 
             for (var index = 0; index < pages.Length; index++)

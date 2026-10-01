@@ -33,21 +33,14 @@ namespace FoxIPTV.Services
 
             var hours = double.TryParse(ProviderParts.Setting(Data, "Cache Hours", "6"), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ? parsed : 6;
             var address = ProviderParts.Setting(Data, "Playlist URL", string.Empty);
-            var playlist = M3UParser.Parse(await Web.GetStringCached(address, "list-" + address.ToMD5(), hours).ConfigureAwait(false));
+            var playlist = M3UParser.Parse(await ProviderParts.CachedList(address, hours).ConfigureAwait(false));
             var channels = ProviderParts.FromPlaylist(playlist);
 
             TvCore.LogInfo($"[{Title}] Loaded {playlist.Entries.Count} playlist entries");
 
             ProgressUpdater?.Item1.Report(100);
 
-            var guideAddress = ProviderParts.Setting(Data, "Guide URL", playlist.GuideUrls.FirstOrDefault());
-
-            if (string.IsNullOrWhiteSpace(guideAddress))
-            {
-                return new Tuple<List<Channel>, List<Programme>>(channels, new List<Programme>());
-            }
-
-            var guide = XmltvParser.Parse(await Web.GetStringCached(guideAddress, "list-" + guideAddress.ToMD5(), hours).ConfigureAwait(false), ProgressUpdater?.Item2);
+            var guide = await ProviderParts.XmltvGuide(ProviderParts.Setting(Data, "Guide URL", playlist.GuideUrls.FirstOrDefault()), hours, ProgressUpdater?.Item2).ConfigureAwait(false);
 
             return new Tuple<List<Channel>, List<Programme>>(channels, guide);
         }

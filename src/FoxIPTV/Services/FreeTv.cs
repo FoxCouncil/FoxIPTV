@@ -46,7 +46,7 @@ namespace FoxIPTV.Services
                 return new Tuple<List<Channel>, List<Programme>>(channels, new List<Programme>());
             }
 
-            var guide = XmltvParser.Parse(await Web.GetStringCached(guideAddress, "list-" + guideAddress.ToMD5(), CacheHours).ConfigureAwait(false), ProgressUpdater?.Item2);
+            var guide = await ProviderParts.XmltvGuide(guideAddress, CacheHours, ProgressUpdater?.Item2).ConfigureAwait(false);
 
             return new Tuple<List<Channel>, List<Programme>>(channels, guide);
         }
