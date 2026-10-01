@@ -2,10 +2,12 @@
 
 namespace FoxIPTV.Views
 {
+    using System;
     using System.Threading.Tasks;
     using Avalonia.Controls;
     using Avalonia.Layout;
     using Avalonia.Media;
+    using Classes;
 
     public static class Dialogs
     {
@@ -17,6 +19,25 @@ namespace FoxIPTV.Views
         public static Task<bool> YesNo(Window owner, string text, string title)
         {
             return Show(owner, text, title, "Yes", "No");
+        }
+
+        public static void HideOnClose(Window window, Action hidden)
+        {
+            window.Closing += (sender, args) =>
+            {
+                if (args.CloseReason == WindowCloseReason.ApplicationShutdown || args.CloseReason == WindowCloseReason.OwnerWindowClosing || args.CloseReason == WindowCloseReason.OSShutdown)
+                {
+                    return;
+                }
+
+                args.Cancel = true;
+
+                hidden();
+
+                TvCore.Settings.Save();
+
+                window.Hide();
+            };
         }
 
         private static async Task<bool> Show(Window owner, string text, string title, string yes, string no)

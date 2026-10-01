@@ -40,20 +40,7 @@ namespace FoxIPTV.Views
 
             Opened += (sender, args) => Guide.Focus();
 
-            Closing += (sender, args) =>
-            {
-                if (args.CloseReason == WindowCloseReason.ApplicationShutdown || args.CloseReason == WindowCloseReason.OwnerWindowClosing || args.CloseReason == WindowCloseReason.OSShutdown)
-                {
-                    return;
-                }
-
-                args.Cancel = true;
-
-                TvCore.Settings.GuideOpen = false;
-                TvCore.Settings.Save();
-
-                Hide();
-            };
+            Dialogs.HideOnClose(this, () => TvCore.Settings.GuideOpen = false);
         }
     }
 }

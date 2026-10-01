@@ -126,20 +126,7 @@ namespace FoxIPTV.Views
 
             Opened += (sender, args) => LoadAll();
 
-            Closing += (sender, args) =>
-            {
-                if (args.CloseReason == WindowCloseReason.ApplicationShutdown || args.CloseReason == WindowCloseReason.OwnerWindowClosing || args.CloseReason == WindowCloseReason.OSShutdown)
-                {
-                    return;
-                }
-
-                args.Cancel = true;
-
-                TvCore.Settings.ChannelEditorOpen = false;
-                TvCore.Settings.Save();
-
-                Hide();
-            };
+            Dialogs.HideOnClose(this, () => TvCore.Settings.ChannelEditorOpen = false);
         }
 
         private static bool IsFavorite(Channel channel)
@@ -168,13 +155,18 @@ namespace FoxIPTV.Views
                 return;
             }
 
+            ShowRows(rows);
+
+            UpdateGui();
+        }
+
+        private void ShowRows(List<ChannelRow> rows)
+        {
             _isChannelChanging = true;
 
             ChannelList.ItemsSource = rows;
 
             _isChannelChanging = false;
-
-            UpdateGui();
         }
 
         private static List<ChannelRow> BuildRows(string filter, string grouping, HashSet<string> expanded)
@@ -306,11 +298,7 @@ namespace FoxIPTV.Views
         {
             var rows = await Task.Run(() => BuildRows(_allChannelsFilter, _allChannelCategoryFilter, new HashSet<string>(_expanded)));
 
-            _isChannelChanging = true;
-
-            ChannelList.ItemsSource = rows;
-
-            _isChannelChanging = false;
+            ShowRows(rows);
 
             if (!opened)
             {
@@ -456,9 +444,7 @@ namespace FoxIPTV.Views
 
             title = title.Trim();
 
-            var name = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2)[1].Trim() : channel.Name.Trim();
-
-            return string.Equals(title, name, StringComparison.OrdinalIgnoreCase) || string.Equals(title, channel.Name.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : title;
+            return string.Equals(title, channel.ShortName, StringComparison.OrdinalIgnoreCase) || string.Equals(title, channel.Name.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : title;
         }
 
         private void RefreshOnNow()

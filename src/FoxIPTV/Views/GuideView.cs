@@ -359,9 +359,7 @@ namespace FoxIPTV.Views
 
                 DrawText(g, TvCore.ChannelIndexList[channelIndex].ToString(), 19, FontWeight.Bold, isCurrent ? Colors.Lime : Text, new Rect(0, y, NumberWidth, RowHeight), TextAlignment.Center);
 
-                var name = channel.Name.Contains(':') ? channel.Name.Split(new[] { ':' }, 2)[1].Trim() : channel.Name;
-
-                DrawText(g, name, 13, FontWeight.Bold, Text, new Rect(NumberWidth + 4, y, NameWidth - LogoWidth - 10, RowHeight), wrap: true);
+                DrawText(g, channel.ShortName, 13, FontWeight.Bold, Text, new Rect(NumberWidth + 4, y, NameWidth - LogoWidth - 10, RowHeight), wrap: true);
 
                 var logo = channel.LogoImage;
 

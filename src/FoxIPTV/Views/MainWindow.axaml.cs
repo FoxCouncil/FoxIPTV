@@ -273,7 +273,7 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var chanName = channelObj.Name.Contains(':') ? channelObj.Name.Split(new[] { ':' }, 2).Skip(1).FirstOrDefault()?.TrimStart() : channelObj.Name;
+            var chanName = channelObj.ShortName;
             var programme = TvCore.CurrentProgramme?.Title?.Trim();
             var channel = $"CH: {channelObj.Index} [ {chanName} ]";
 
@@ -468,7 +468,7 @@ namespace FoxIPTV.Views
 
             TimerKeyboardEntry();
 
-            MuteLabel.IsVisible = _muted;
+            MuteLabel.IsVisible = _player.Muted;
         }
 
         private void TimerAdLabel()

@@ -17,6 +17,8 @@ namespace FoxIPTV.Classes
         /// <summary>The name of the channel</summary>
         public string Name { get; set; }
 
+        public string ShortName => Name.Contains(':') ? Name.Split(':', 2)[1].Trim() : Name.Trim();
+
         /// <summary>A Uri to a resource that is the channel's logo</summary>
         public Uri Logo { get; set; }
 

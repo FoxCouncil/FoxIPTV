@@ -95,7 +95,7 @@ namespace FoxIPTV.Views
             menu.Opening += (sender, args) =>
             {
                 _trayWindowState.Header = IsVisible ? "Hide Window" : "Show Window";
-                _trayMute.Header = _muted ? "Unmute" : "Mute";
+                _trayMute.Header = _player.Muted ? "Unmute" : "Mute";
             };
 
             _trayIcon = new TrayIcon
@@ -150,7 +150,7 @@ namespace FoxIPTV.Views
             MenuItemWindowState.IsChecked = IsVisible;
             MenuItemWindowState.Header = IsVisible ? "Hide Window" : "Show Window";
 
-            MenuItemMute.IsChecked = _muted;
+            MenuItemMute.IsChecked = _player.Muted;
 
             MenuItemStatusBar.IsChecked = StatusBar.IsVisible;
 
@@ -418,41 +418,32 @@ namespace FoxIPTV.Views
 
         private void ToggleChannelsForm()
         {
-            if (TvCore.Channels == null || TvCore.Channels.Count == 0)
-            {
-                return;
-            }
-
-            if (ChannelsWindowInstance.IsVisible)
-            {
-                TvCore.Settings.ChannelEditorOpen = false;
-                ChannelsWindowInstance.Hide();
-            }
-            else
-            {
-                TvCore.Settings.ChannelEditorOpen = true;
-                ChannelsWindowInstance.Show(this);
-            }
-
-            TvCore.Settings.Save();
+            ToggleToolWindow(() => ChannelsWindowInstance, open => TvCore.Settings.ChannelEditorOpen = open);
         }
 
         private void ToggleGuideForm()
+        {
+            ToggleToolWindow(() => GuideWindowInstance, open => TvCore.Settings.GuideOpen = open);
+        }
+
+        private void ToggleToolWindow(Func<Window> window, Action<bool> remember)
         {
             if (TvCore.Channels == null || TvCore.Channels.Count == 0)
             {
                 return;
             }
 
-            if (GuideWindowInstance.IsVisible)
+            var open = !window().IsVisible;
+
+            remember(open);
+
+            if (open)
             {
-                TvCore.Settings.GuideOpen = false;
-                GuideWindowInstance.Hide();
+                window().Show(this);
             }
             else
             {
-                TvCore.Settings.GuideOpen = true;
-                GuideWindowInstance.Show(this);
+                window().Hide();
             }
 
             TvCore.Settings.Save();
@@ -541,10 +532,9 @@ namespace FoxIPTV.Views
         /// <summary>Toggle the mute state</summary>
         private void ToggleMute()
         {
-            _muted = !_muted;
-            _player.Muted = _muted;
+            _player.Muted = !_player.Muted;
 
-            TvCore.LogInfo($"[Audio] {(_muted ? "Muted" : "Unmuted")}");
+            TvCore.LogInfo($"[Audio] {(_player.Muted ? "Muted" : "Unmuted")}");
         }
 
         /// <summary>Toggle Closed Captioning on or off</summary>

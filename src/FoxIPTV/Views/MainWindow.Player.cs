@@ -22,8 +22,6 @@ namespace FoxIPTV.Views
 
         private string _caption;
 
-        private bool _muted;
-
         private string _aspectRatio;
 
         private int _audioChannel;
