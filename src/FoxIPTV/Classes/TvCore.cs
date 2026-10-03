@@ -22,6 +22,8 @@ namespace FoxIPTV.Classes
         /// <summary>The default filename for the applications logfile</summary>
         private const string LogFilename = "FoxIPTV.log";
 
+        private const long LogRollBytes = 20L * 1024 * 1024;
+
         /// <summary>The default filename for the applications favorite channel data</summary>
         private const string ChannelFavoritesFilename = "fcdata";
 
@@ -156,6 +158,8 @@ namespace FoxIPTV.Classes
         {
             var logPath = LogFilePath();
 
+            RollLog(logPath);
+
             for (var attempt = 1; ; attempt++)
             {
                 try
@@ -226,6 +230,20 @@ namespace FoxIPTV.Classes
             }
 
             return LogPath;
+        }
+
+        private static void RollLog(string path)
+        {
+            try
+            {
+                if (new FileInfo(path).Length > LogRollBytes)
+                {
+                    File.Move(path, Path.ChangeExtension(path, ".old.log"), true);
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private static void InstallService(IService instance)
