@@ -13,14 +13,6 @@ namespace FoxIPTV.Classes
     /// </summary>
     public class TvIconData : IEquatable<TvIconData>
     {
-        // Constants to format the data to icon resource keys
-        private const string VIDEO_CODEC = "VC_{0}";
-        private const string VIDEO_SIZE = "VS_{0}P";
-        private const string FRAME_RATE = "FR_{0}FPS";
-        private const string AUDIO_CODEC = "AC_{0}";
-        private const string AUDIO_CHANNELS = "CH_{0}";
-        private const string AUDIO_RATE = "AR_{0}KHZ";
-
         /// <summary>Show or hide an icon if Closed Captioning information is available</summary>
         public bool ClosedCaptioning { get; set; }
 
@@ -205,32 +197,32 @@ namespace FoxIPTV.Classes
 
             if (!string.IsNullOrEmpty(info.VideoCodec))
             {
-                data.VideoCodec = string.Format(VIDEO_CODEC, CodecName(info.VideoCodec));
+                data.VideoCodec = CodecName(info.VideoCodec);
             }
 
             if (info.Height > 0)
             {
-                data.VideoSize = string.Format(VIDEO_SIZE, info.Height);
+                data.VideoSize = $"{info.Height}P";
             }
 
             if (info.FrameRate > 0)
             {
-                data.FrameRate = string.Format(FRAME_RATE, Math.Min(90, Math.Ceiling(info.FrameRate)).ToString(CultureInfo.InvariantCulture));
+                data.FrameRate = $"{Math.Min(90, Math.Ceiling(info.FrameRate)).ToString(CultureInfo.InvariantCulture)}FPS";
             }
 
             if (!string.IsNullOrEmpty(info.AudioCodec))
             {
-                data.AudioCodec = string.Format(AUDIO_CODEC, CodecName(info.AudioCodec));
+                data.AudioCodec = CodecName(info.AudioCodec);
             }
 
             if (info.AudioChannels > 0)
             {
-                data.AudioChannel = string.Format(AUDIO_CHANNELS, ChannelName(info.AudioChannels));
+                data.AudioChannel = ChannelName(info.AudioChannels);
             }
 
             if (info.AudioRate > 0)
             {
-                data.AudioRate = string.Format(AUDIO_RATE, Math.Floor(info.AudioRate / 1000m));
+                data.AudioRate = $"{Math.Floor(info.AudioRate / 1000m)}KHZ";
             }
 
             return data;

@@ -313,7 +313,7 @@ namespace FoxIPTV.Views
 
             if (_currentTvIconData?.ClosedCaptioning ?? false)
             {
-                AddTag("CC_CC");
+                AddTag("CC");
             }
 
             AddTag(_currentTvIconData?.VideoCodec);
@@ -351,19 +351,14 @@ namespace FoxIPTV.Views
             box.IsVisible = !string.IsNullOrEmpty(text);
         }
 
-        private void AddTag(string iconStringKey)
+        private void AddTag(string text)
         {
-            if (string.IsNullOrWhiteSpace(iconStringKey))
+            if (string.IsNullOrWhiteSpace(text))
             {
                 return;
             }
 
-            iconStringKey = iconStringKey.Trim();
-
-            var underscore = iconStringKey.IndexOf('_');
-            var text = underscore >= 0 ? iconStringKey.Substring(underscore + 1) : iconStringKey;
-
-            TagPanel.Children.Add(new StreamTag { Text = text });
+            TagPanel.Children.Add(new StreamTag { Text = text.Trim() });
         }
 
         /// <summary>Set the window size to always match the media's aspect ratio</summary>

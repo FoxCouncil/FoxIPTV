@@ -138,12 +138,12 @@ namespace FoxIPTV.Tests
             var data = TvIconData.CreateData(new StreamInfo { Captions = true, VideoCodec = "h264", Height = 1080, FrameRate = 29.97, AudioCodec = "aac", AudioChannels = 2, AudioRate = 48000 });
 
             Assert.True(data.ClosedCaptioning);
-            Assert.Equal("VC_H264", data.VideoCodec);
-            Assert.Equal("VS_1080P", data.VideoSize);
-            Assert.Equal("FR_30FPS", data.FrameRate);
-            Assert.Equal("AC_AAC", data.AudioCodec);
-            Assert.Equal("CH_STEREO", data.AudioChannel);
-            Assert.Equal("AR_48KHZ", data.AudioRate);
+            Assert.Equal("H264", data.VideoCodec);
+            Assert.Equal("1080P", data.VideoSize);
+            Assert.Equal("30FPS", data.FrameRate);
+            Assert.Equal("AAC", data.AudioCodec);
+            Assert.Equal("STEREO", data.AudioChannel);
+            Assert.Equal("48KHZ", data.AudioRate);
         }
 
         [Fact]
