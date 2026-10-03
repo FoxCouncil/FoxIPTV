@@ -214,15 +214,11 @@ namespace FoxIPTV.Classes
         {
             var besideExe = Path.Combine(ExePath, LogFilename);
 
-            try
+            if (!Updater.IsInstalled && CanAppend(besideExe))
             {
-                using (new FileStream(besideExe, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
-                {
-                }
-
                 LogPath = besideExe;
             }
-            catch (Exception)
+            else
             {
                 Directory.CreateDirectory(UserStoragePath);
 
@@ -230,6 +226,22 @@ namespace FoxIPTV.Classes
             }
 
             return LogPath;
+        }
+
+        private static bool CanAppend(string path)
+        {
+            try
+            {
+                using (new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+                {
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static void RollLog(string path)

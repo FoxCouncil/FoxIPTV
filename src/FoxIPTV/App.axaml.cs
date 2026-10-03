@@ -49,6 +49,8 @@ namespace FoxIPTV
             desktop.MainWindow = main;
 
             main.Start();
+
+            Updater.DownloadInBackground();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)

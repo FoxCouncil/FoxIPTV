@@ -57,6 +57,8 @@
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 
+    <PackageReference Include="Velopack" Version="1.2.161" />
+
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
   </ItemGroup>
 
