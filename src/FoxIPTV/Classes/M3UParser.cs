@@ -24,7 +24,7 @@ namespace FoxIPTV.Classes
         public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
-    public class M3UPlaylist
+    public class M3UFile
     {
         public List<string> GuideUrls { get; set; } = new List<string>();
 
@@ -35,9 +35,9 @@ namespace FoxIPTV.Classes
     {
         private static readonly Regex AttributeRegex = new Regex("([A-Za-z0-9_\\-]+)=\"([^\"]*)\"", RegexOptions.Compiled);
 
-        public static M3UPlaylist Parse(string text)
+        public static M3UFile Parse(string text)
         {
-            var playlist = new M3UPlaylist();
+            var playlist = new M3UFile();
 
             if (string.IsNullOrWhiteSpace(text))
             {

@@ -141,7 +141,7 @@ namespace FoxIPTV.Services
             return numbered.OrderBy(x => x.Index).ToList();
         }
 
-        public static List<Channel> FromPlaylist(M3UPlaylist playlist)
+        public static List<Channel> FromPlaylist(M3UFile playlist)
         {
             var channels = new List<Channel>();
 
