@@ -80,7 +80,6 @@
                         </MenuItem>
                         <MenuItem x:Name="MenuItemStereoMode" Header="Stereo Mode">
                             <MenuItem Header="Surround (5.1+)" Tag="5" ToggleType="Radio" />
-                            <MenuItem Header="Headphones" Tag="6" ToggleType="Radio" />
                             <Separator />
                             <MenuItem Header="Stereo" Tag="1" ToggleType="Radio" />
                             <MenuItem Header="Reverse Stereo" Tag="2" ToggleType="Radio" />

@@ -23,7 +23,6 @@ namespace FoxIPTV.Playback
         Left = 3,
         Right = 4,
         Surround = 5,
-        Headphones = 6,
         Mono = 7
     }
 
