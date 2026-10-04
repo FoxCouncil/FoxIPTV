@@ -3,10 +3,7 @@
 namespace FoxIPTV.Classes
 {
     using System;
-    using System.Collections.Generic;
-    using System.Formats.Tar;
     using System.IO;
-    using System.IO.Compression;
     using System.Linq;
     using System.Net.Http;
     using System.Reflection;
@@ -15,25 +12,36 @@ namespace FoxIPTV.Classes
     using System.Threading.Tasks;
     using Newtonsoft.Json.Linq;
 
+    public sealed class UpdateOffer
+    {
+        public string Version { get; set; }
+
+        public string Name { get; set; }
+
+        public string Address { get; set; }
+
+        public string Checksum { get; set; }
+    }
+
     public static class Updater
     {
         private const string LatestRelease = "https://api.github.com/repos/FoxCouncil/FoxIPTV/releases/latest";
 
         private const string ChecksumsName = "SHA256SUMS";
 
-        private const string OldSuffix = ".old";
-
-        private const string StagingFolder = ".update";
-
-        private const string LeftoversFile = ".update-leftovers";
-
         private static readonly HttpClient Client = CreateClient();
 
-        private static string AppFolder => AppContext.BaseDirectory;
+        public static event Action AvailableChanged;
 
-        private static string LeftoversPath => Path.Combine(AppFolder, LeftoversFile);
+        public static UpdateOffer Available { get; private set; }
 
         public static bool IsEnabled => Assembly.GetEntryAssembly()?.GetCustomAttributes<AssemblyMetadataAttribute>().Any(x => x.Key == "SelfUpdate" && x.Value == "true") == true;
+
+        private static string ExePath => Environment.ProcessPath;
+
+        private static string OldPath => ExePath + ".old";
+
+        private static string NewPath => ExePath + ".new";
 
         private static string AssetSuffix
         {
@@ -43,17 +51,17 @@ namespace FoxIPTV.Classes
 
                 if (OperatingSystem.IsWindows() && arch == Architecture.X64)
                 {
-                    return "-windows-x64.zip";
+                    return "-windows-x64.exe";
                 }
 
                 if (OperatingSystem.IsLinux() && arch == Architecture.X64)
                 {
-                    return "-linux-x64.tar.gz";
+                    return "-linux-x64";
                 }
 
                 if (OperatingSystem.IsMacOS() && arch == Architecture.Arm64)
                 {
-                    return "-macos-arm64.tar.gz";
+                    return "-macos-arm64";
                 }
 
                 return null;
@@ -69,7 +77,7 @@ namespace FoxIPTV.Classes
             return client;
         }
 
-        public static void UpdateInBackground()
+        public static void CheckInBackground()
         {
             if (!IsEnabled)
             {
@@ -78,122 +86,119 @@ namespace FoxIPTV.Classes
 
             _ = Task.Run(async () =>
             {
+                ClearLeftovers();
+
                 try
                 {
-                    await Update().ConfigureAwait(false);
+                    await CheckAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    TvCore.LogError($"[Updater] Update failed: {ex.GetType().Name}: {ex.Message}");
+                    TvCore.LogError($"[Updater] Update check failed: {ex.GetType().Name}: {ex.Message}");
                 }
             });
         }
 
-        private static async Task Update()
+        public static async Task<UpdateOffer> CheckAsync()
         {
-            ClearLeftovers();
-
             var suffix = AssetSuffix;
 
             if (suffix == null)
             {
                 TvCore.LogInfo($"[Updater] No release build for {RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}");
 
-                return;
+                return null;
             }
 
             var release = JObject.Parse(await Client.GetStringAsync(LatestRelease).ConfigureAwait(false));
             var latest = release["tag_name"]?.ToString().TrimStart('v') ?? string.Empty;
+            UpdateOffer offer = null;
 
-            if (!IsNewer(latest, TvCore.Version))
+            if (IsNewer(latest, TvCore.Version))
             {
-                TvCore.LogInfo($"[Updater] {TvCore.Version} is current, the latest release is {latest}");
+                var assets = release["assets"] as JArray ?? new JArray();
+                var package = assets.FirstOrDefault(x => x["name"]?.ToString().EndsWith(suffix, StringComparison.OrdinalIgnoreCase) == true);
+                var checksums = assets.FirstOrDefault(x => x["name"]?.ToString() == ChecksumsName);
 
-                return;
+                if (package != null && checksums != null)
+                {
+                    var name = package["name"].ToString();
+                    var checksum = ExpectedHash(await Client.GetStringAsync(checksums["browser_download_url"].ToString()).ConfigureAwait(false), name);
+
+                    if (checksum != null)
+                    {
+                        offer = new UpdateOffer { Version = latest, Name = name, Address = package["browser_download_url"].ToString(), Checksum = checksum };
+                    }
+                }
+
+                if (offer == null)
+                {
+                    TvCore.LogError($"[Updater] Release {latest} has no {suffix} build with a checksum");
+                }
             }
 
-            var assets = release["assets"] as JArray ?? new JArray();
-            var package = assets.FirstOrDefault(x => x["name"]?.ToString().EndsWith(suffix, StringComparison.OrdinalIgnoreCase) == true);
-            var checksums = assets.FirstOrDefault(x => x["name"]?.ToString() == ChecksumsName);
+            TvCore.LogInfo(offer == null ? $"[Updater] {TvCore.Version} is current, the latest release is {latest}" : $"[Updater] {latest} is available");
 
-            if (package == null || checksums == null)
-            {
-                TvCore.LogError($"[Updater] Release {latest} has no {suffix} package or no {ChecksumsName}");
+            Available = offer;
 
-                return;
-            }
+            AvailableChanged?.Invoke();
 
-            var name = package["name"].ToString();
-            var expected = ExpectedHash(await Client.GetStringAsync(checksums["browser_download_url"].ToString()).ConfigureAwait(false), name);
+            return offer;
+        }
 
-            if (expected == null)
-            {
-                TvCore.LogError($"[Updater] {ChecksumsName} has no line for {name}");
+        public static async Task InstallAsync(UpdateOffer offer)
+        {
+            ClearLeftovers();
 
-                return;
-            }
+            TvCore.LogInfo($"[Updater] Downloading {offer.Name}");
 
-            if (!CanWrite())
-            {
-                TvCore.LogError($"[Updater] {AppFolder} is not writable, {latest} not installed");
-
-                return;
-            }
-
-            TvCore.LogInfo($"[Updater] Downloading {name}");
-
-            var download = Path.Combine(TvCore.TempPath, name);
-
-            using (var response = await Client.GetAsync(package["browser_download_url"].ToString(), HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+            using (var response = await Client.GetAsync(offer.Address, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
 
-                using (var file = File.Create(download))
+                using (var file = File.Create(NewPath))
                 {
                     await response.Content.CopyToAsync(file).ConfigureAwait(false);
                 }
             }
 
+            string actual;
+
+            using (var file = File.OpenRead(NewPath))
+            {
+                actual = Convert.ToHexString(SHA256.HashData(file));
+            }
+
+            if (!string.Equals(actual, offer.Checksum, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(NewPath);
+
+                throw new InvalidDataException($"{offer.Name} checksum {actual} does not match {offer.Checksum}");
+            }
+
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(NewPath, File.GetUnixFileMode(ExePath));
+            }
+
+            File.Move(ExePath, OldPath, true);
+
             try
             {
-                string actual;
-
-                using (var file = File.OpenRead(download))
-                {
-                    actual = Convert.ToHexString(SHA256.HashData(file));
-                }
-
-                if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
-                {
-                    TvCore.LogError($"[Updater] {name} checksum {actual} does not match {expected}, not installed");
-
-                    return;
-                }
-
-                var staging = Path.Combine(AppFolder, StagingFolder);
-
-                if (Directory.Exists(staging))
-                {
-                    Directory.Delete(staging, true);
-                }
-
-                Extract(download, staging);
-
-                try
-                {
-                    Apply(staging);
-                }
-                finally
-                {
-                    Directory.Delete(staging, true);
-                }
+                File.Move(NewPath, ExePath);
             }
-            finally
+            catch (Exception)
             {
-                File.Delete(download);
+                File.Move(OldPath, ExePath, true);
+
+                throw;
             }
 
-            TvCore.LogInfo($"[Updater] {latest} installed, it runs from the next start");
+            Available = null;
+
+            AvailableChanged?.Invoke();
+
+            TvCore.LogInfo($"[Updater] {offer.Version} installed, it runs from the next start");
         }
 
         public static bool IsNewer(string candidate, string current)
@@ -242,116 +247,18 @@ namespace FoxIPTV.Classes
             return null;
         }
 
-        private static void Extract(string archive, string folder)
-        {
-            Directory.CreateDirectory(folder);
-
-            if (archive.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            {
-                ZipFile.ExtractToDirectory(archive, folder);
-
-                return;
-            }
-
-            using (var file = File.OpenRead(archive))
-            using (var unzipped = new GZipStream(file, CompressionMode.Decompress))
-            {
-                TarFile.ExtractToDirectory(unzipped, folder, false);
-            }
-        }
-
-        private static void Apply(string staging)
-        {
-            var replaced = new List<string>();
-            var added = new List<string>();
-
-            try
-            {
-                foreach (var source in Directory.GetFiles(staging, "*", SearchOption.AllDirectories))
-                {
-                    var target = Path.Combine(AppFolder, Path.GetRelativePath(staging, source));
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(target));
-
-                    if (File.Exists(target))
-                    {
-                        File.Move(target, target + OldSuffix, true);
-
-                        replaced.Add(target);
-                    }
-                    else
-                    {
-                        added.Add(target);
-                    }
-
-                    File.Move(source, target);
-                }
-
-                File.WriteAllLines(LeftoversPath, replaced.Select(x => x + OldSuffix));
-            }
-            catch (Exception)
-            {
-                foreach (var target in added.Where(File.Exists))
-                {
-                    File.Delete(target);
-                }
-
-                foreach (var target in replaced)
-                {
-                    File.Move(target + OldSuffix, target, true);
-                }
-
-                throw;
-            }
-        }
-
         private static void ClearLeftovers()
         {
-            if (!File.Exists(LeftoversPath))
-            {
-                return;
-            }
-
-            var remaining = new List<string>();
-
-            foreach (var old in File.ReadAllLines(LeftoversPath).Where(x => x.EndsWith(OldSuffix, StringComparison.Ordinal)))
+            foreach (var leftover in new[] { OldPath, NewPath })
             {
                 try
                 {
-                    File.Delete(old);
+                    File.Delete(leftover);
                 }
                 catch (Exception ex)
                 {
-                    remaining.Add(old);
-
-                    TvCore.LogError($"[Updater] Could not remove {old}: {ex.Message}");
+                    TvCore.LogError($"[Updater] Could not remove {leftover}: {ex.Message}");
                 }
-            }
-
-            if (remaining.Count > 0)
-            {
-                File.WriteAllLines(LeftoversPath, remaining);
-            }
-            else
-            {
-                File.Delete(LeftoversPath);
-            }
-        }
-
-        private static bool CanWrite()
-        {
-            var probe = Path.Combine(AppFolder, $"{StagingFolder}-probe");
-
-            try
-            {
-                File.WriteAllText(probe, string.Empty);
-                File.Delete(probe);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
             }
         }
     }
