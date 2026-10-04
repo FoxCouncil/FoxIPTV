@@ -137,6 +137,11 @@ namespace FoxIPTV.Playback
                 }
             }
 
+            if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+            {
+                candidates.Add("/app/lib");
+            }
+
             if (AppContext.GetData("NATIVE_DLL_SEARCH_DIRECTORIES") is string searchDirectories)
             {
                 candidates.AddRange(searchDirectories.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries));

@@ -14,6 +14,19 @@ jobs:
   ffmpeg:
     uses: ./.github/workflows/ffmpeg.yml
 
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-26.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: FoxIPTV-linux-x64.flatpak
+          manifest-path: flatpak/io.github.FoxCouncil.FoxIPTV.yml
+
   build:
     needs: ffmpeg
     strategy:

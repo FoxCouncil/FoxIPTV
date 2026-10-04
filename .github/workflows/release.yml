@@ -107,8 +107,21 @@ jobs:
           name: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
           path: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}*
 
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-26.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: FoxIPTV-${{ github.event.inputs.tag || github.ref_name }}-linux-x64.flatpak
+          manifest-path: flatpak/io.github.FoxCouncil.FoxIPTV.yml
+
   release:
-    needs: build
+    needs: [build, flatpak]
     runs-on: ubuntu-latest
     steps:
       - name: Determine version
@@ -140,6 +153,7 @@ jobs:
           files: |
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-windows-x64.exe
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-linux-x64
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-linux-x64.flatpak
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64.dmg
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64.zip
             artifacts/SHA256SUMS

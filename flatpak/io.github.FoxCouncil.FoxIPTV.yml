@@ -1,0 +1,81 @@
+id: io.github.FoxCouncil.FoxIPTV
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.dotnet10
+command: FoxIPTV
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=x11
+  - --socket=pulseaudio
+  - --device=dri
+build-options:
+  append-path: /usr/lib/sdk/dotnet10/bin
+  append-ld-library-path: /usr/lib/sdk/dotnet10/lib
+  env:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+    DOTNET_NOLOGO: 'true'
+modules:
+  - name: ffmpeg
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --disable-programs
+      - --disable-doc
+      - --disable-debug
+      - --disable-autodetect
+      - --disable-avdevice
+      - --enable-avfilter
+      - --enable-swscale
+      - --enable-swresample
+      - --enable-network
+      - --disable-everything
+      - --enable-decoder=h264,hevc,mpeg1video,mpeg2video,mpeg4,vp9,av1
+      - --enable-decoder=aac,aac_latm,ac3,eac3,mp2,mp2float,mp3,mp3float,opus,flac,vorbis,dca,truehd,mlp,pcm_s16le,pcm_s16be,pcm_s24le,pcm_bluray,pcm_dvd
+      - --enable-decoder=ccaption,subrip,ass,ssa,webvtt,movtext,dvbsub,dvdsub,pgssub
+      - --enable-parser=h264,hevc,mpegvideo,mpeg4video,vp9,av1,aac,aac_latm,ac3,mpegaudio,opus,flac,vorbis,dca,mlp,dvbsub,dvdsub
+      - --enable-demuxer=mpegts,mov,matroska,avi,flv,live_flv,ogg,wav,mpegps,aac,ac3,eac3,mp3,loas,rtsp,sdp,rtp
+      - --enable-protocol=file,tcp,udp,rtp,rtmp
+      - --enable-filter=bwdif,yadif,scale,format,null
+      - --enable-pthreads
+      - --enable-vaapi
+      - --enable-hwaccel=h264_vaapi,hevc_vaapi,mpeg2_vaapi,mpeg4_vaapi,vp9_vaapi,av1_vaapi
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+      - /share
+    sources:
+      - type: archive
+        url: https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz
+        sha256: cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635
+
+  - name: foxiptv
+    buildsystem: simple
+    build-options:
+      arch:
+        x86_64:
+          env:
+            RUNTIME: linux-x64
+        aarch64:
+          env:
+            RUNTIME: linux-arm64
+    build-commands:
+      - dotnet publish src/FoxIPTV/FoxIPTV.csproj -c Release -r $RUNTIME --self-contained --source ./nuget-sources --source /usr/lib/sdk/dotnet10/nuget/packages -o /app/bin
+      - install -Dm644 flatpak/io.github.FoxCouncil.FoxIPTV.desktop /app/share/applications/io.github.FoxCouncil.FoxIPTV.desktop
+      - install -Dm644 flatpak/io.github.FoxCouncil.FoxIPTV.metainfo.xml /app/share/metainfo/io.github.FoxCouncil.FoxIPTV.metainfo.xml
+      - install -Dm644 flatpak/io.github.FoxCouncil.FoxIPTV.png /app/share/icons/hicolor/256x256/apps/io.github.FoxCouncil.FoxIPTV.png
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .git
+          - .vs
+          - .claude
+          - local
+          - native
+          - src/FoxIPTV/bin
+          - src/FoxIPTV/obj
+          - tests
+      - nuget-sources.json

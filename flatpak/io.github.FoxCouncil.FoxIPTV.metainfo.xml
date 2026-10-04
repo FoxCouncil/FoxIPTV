@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.FoxCouncil.FoxIPTV</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>FoxIPTV</name>
+  <summary>Cross-platform IPTV client</summary>
+  <developer id="io.github.FoxCouncil">
+    <name>Fox Council</name>
+  </developer>
+  <description>
+    <p>The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.</p>
+    <ul>
+      <li>Provider picker: Pluto TV, Samsung TV Plus, Plex, Roku, IPTV.org, Free-TV, M3U</li>
+      <li>Program Guide as one scrollable surface</li>
+      <li>Channel Editor with favourites per provider</li>
+      <li>Stream tags, "(Ad)" readout during ad breaks, playback trace in the status bar</li>
+      <li>Follows the system light or dark theme</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.FoxCouncil.FoxIPTV.desktop</launchable>
+  <url type="homepage">https://github.com/FoxCouncil/FoxIPTV</url>
+  <url type="bugtracker">https://github.com/FoxCouncil/FoxIPTV/issues</url>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="3.0.0-alpha" date="2026-10-04" />
+  </releases>
+</component>
