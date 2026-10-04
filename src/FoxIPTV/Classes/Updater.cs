@@ -4,10 +4,12 @@ namespace FoxIPTV.Classes
 {
     using System;
     using System.IO;
+    using System.IO.Compression;
     using System.Linq;
     using System.Net.Http;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using System.Security.Cryptography;
     using System.Threading.Tasks;
     using Newtonsoft.Json.Linq;
@@ -43,6 +45,16 @@ namespace FoxIPTV.Classes
 
         private static string NewPath => ExePath + ".new";
 
+        private static string AppBundle
+        {
+            get
+            {
+                var bundle = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ExePath)));
+
+                return bundle != null && bundle.EndsWith(".app", StringComparison.OrdinalIgnoreCase) ? bundle : null;
+            }
+        }
+
         private static string AssetSuffix
         {
             get
@@ -59,9 +71,9 @@ namespace FoxIPTV.Classes
                     return "-linux-x64";
                 }
 
-                if (OperatingSystem.IsMacOS() && arch == Architecture.Arm64)
+                if (OperatingSystem.IsMacOS() && arch == Architecture.Arm64 && AppBundle != null)
                 {
-                    return "-macos-arm64";
+                    return "-macos-arm64.zip";
                 }
 
                 return null;
@@ -176,6 +188,24 @@ namespace FoxIPTV.Classes
                 throw new InvalidDataException($"{offer.Name} checksum {actual} does not match {offer.Checksum}");
             }
 
+            if (OperatingSystem.IsMacOS())
+            {
+                SwapBundle();
+            }
+            else
+            {
+                SwapExe();
+            }
+
+            Available = null;
+
+            AvailableChanged?.Invoke();
+
+            TvCore.LogInfo($"[Updater] {offer.Version} installed, it runs from the next start");
+        }
+
+        private static void SwapExe()
+        {
             if (!OperatingSystem.IsWindows())
             {
                 File.SetUnixFileMode(NewPath, File.GetUnixFileMode(ExePath));
@@ -193,12 +223,52 @@ namespace FoxIPTV.Classes
 
                 throw;
             }
+        }
 
-            Available = null;
+        [SupportedOSPlatform("macos")]
+        private static void SwapBundle()
+        {
+            var bundle = AppBundle;
+            var unpacked = bundle + ".new";
+            var old = bundle + ".old";
 
-            AvailableChanged?.Invoke();
+            try
+            {
+                ZipFile.ExtractToDirectory(NewPath, unpacked);
+            }
+            finally
+            {
+                File.Delete(NewPath);
+            }
 
-            TvCore.LogInfo($"[Updater] {offer.Version} installed, it runs from the next start");
+            var fresh = Path.Combine(unpacked, Path.GetFileName(bundle));
+            var binary = Path.Combine(fresh, "Contents", "MacOS", Path.GetFileName(ExePath));
+
+            if (!File.Exists(binary))
+            {
+                Directory.Delete(unpacked, true);
+
+                throw new InvalidDataException($"The update has no {Path.GetFileName(bundle)}/Contents/MacOS/{Path.GetFileName(ExePath)}");
+            }
+
+            File.SetUnixFileMode(binary, File.GetUnixFileMode(ExePath));
+
+            Directory.Move(bundle, old);
+
+            try
+            {
+                Directory.Move(fresh, bundle);
+            }
+            catch (Exception)
+            {
+                Directory.Move(old, bundle);
+
+                throw;
+            }
+            finally
+            {
+                Directory.Delete(unpacked, true);
+            }
         }
 
         public static bool IsNewer(string candidate, string current)
@@ -249,11 +319,21 @@ namespace FoxIPTV.Classes
 
         private static void ClearLeftovers()
         {
-            foreach (var leftover in new[] { OldPath, NewPath })
+            var bundle = OperatingSystem.IsMacOS() ? AppBundle : null;
+            var folders = bundle == null ? Array.Empty<string>() : new[] { bundle + ".old", bundle + ".new" };
+
+            foreach (var leftover in new[] { OldPath, NewPath }.Concat(folders))
             {
                 try
                 {
-                    File.Delete(leftover);
+                    if (Directory.Exists(leftover))
+                    {
+                        Directory.Delete(leftover, true);
+                    }
+                    else
+                    {
+                        File.Delete(leftover);
+                    }
                 }
                 catch (Exception ex)
                 {

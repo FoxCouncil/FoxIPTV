@@ -86,13 +86,26 @@ jobs:
           -o publish
 
       - name: Name the executable
+        if: runner.os != 'macOS'
         shell: bash
         run: cp publish/${{ matrix.binary }} FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}${{ matrix.ext }}
+
+      - name: Package the macOS app
+        if: runner.os == 'macOS'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          brew install create-dmg
+          bash build/macos/package.sh ${{ steps.version.outputs.version }} publish FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
-          path: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}${{ matrix.ext }}
+          path: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}*
 
   release:
     needs: build
@@ -127,5 +140,6 @@ jobs:
           files: |
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-windows-x64.exe
             artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-linux-x64
-            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64.dmg
+            artifacts/FoxIPTV-${{ steps.version.outputs.tag }}-macos-arm64.zip
             artifacts/SHA256SUMS
