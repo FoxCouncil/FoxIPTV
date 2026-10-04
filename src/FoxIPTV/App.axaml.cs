@@ -37,6 +37,8 @@ namespace FoxIPTV
 
         private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
         {
+            Updater.CheckInBackground();
+
             if (!await ProviderWindow.ChooseProvider())
             {
                 desktop.Shutdown();
@@ -49,8 +51,6 @@ namespace FoxIPTV
             desktop.MainWindow = main;
 
             main.Start();
-
-            Updater.UpdateInBackground();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)

@@ -92,6 +92,7 @@
                         <MenuItem x:Name="MenuItemChannelEditor" Header="Channel Editor" ToggleType="CheckBox" InputGesture="T" />
                         <Separator />
                         <MenuItem x:Name="MenuItemSwitchProvider" Header="Switch Provider..." />
+                        <MenuItem x:Name="MenuItemUpdate" Header="Check For Update" />
                         <MenuItem x:Name="MenuItemAbout" Header="_About" />
                         <MenuItem x:Name="MenuItemQuit" Header="Quit" />
                     </ContextMenu>

@@ -12,6 +12,7 @@ namespace FoxIPTV.Views
     using Avalonia.Layout;
     using Avalonia.Media;
     using Avalonia.Media.Imaging;
+    using Avalonia.Threading;
     using Classes;
     using Newtonsoft.Json.Linq;
     using Services;
@@ -75,7 +76,32 @@ namespace FoxIPTV.Views
 
             LoginButton.Click += LoginButton_Click;
 
-            Closed += (sender, args) => _result.TrySetResult(false);
+            VersionLabel.Text = $"Version: {TvCore.Version}";
+
+            UpdateLink.Click += async (sender, args) => await UpdatePrompt.Run(this, Restart);
+
+            Updater.AvailableChanged += ShowUpdate;
+
+            ShowUpdate();
+
+            Closed += (sender, args) =>
+            {
+                Updater.AvailableChanged -= ShowUpdate;
+
+                _result.TrySetResult(false);
+            };
+        }
+
+        private void ShowUpdate()
+        {
+            Dispatcher.UIThread.Post(() => UpdatePanel.IsVisible = Updater.Available != null);
+        }
+
+        private void Restart()
+        {
+            App.RestartRequested = true;
+
+            Close();
         }
 
         public static Task<bool> ChooseProvider()

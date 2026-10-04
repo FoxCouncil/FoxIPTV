@@ -23,6 +23,13 @@
         </Grid>
 
         <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="VersionLabel" Classes="muted" VerticalAlignment="Center" />
+                <StackPanel x:Name="UpdatePanel" Orientation="Horizontal" IsVisible="False">
+                    <TextBlock Text=" | " Classes="muted" VerticalAlignment="Center" />
+                    <Button x:Name="UpdateLink" Classes="link" Content="Update Available" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
             <Button x:Name="LoginButton" Grid.Column="1" Content="Start" Width="100" IsDefault="True" HorizontalContentAlignment="Center" />
         </Grid>
     </StackPanel>

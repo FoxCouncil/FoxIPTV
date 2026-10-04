@@ -50,6 +50,7 @@ namespace FoxIPTV.Views
             MenuItemGuide.Click += (sender, args) => ToggleGuideForm();
             MenuItemChannelEditor.Click += (sender, args) => ToggleChannelsForm();
             MenuItemSwitchProvider.Click += (sender, args) => SwitchProvider();
+            MenuItemUpdate.Click += async (sender, args) => await UpdatePrompt.Run(this, Restart);
 
             MenuItemAbout.Click += (sender, args) => new AboutWindow().ShowDialog(this);
             MenuItemQuit.Click += (sender, args) => Quit();
@@ -187,6 +188,9 @@ namespace FoxIPTV.Views
             {
                 submenu.IsChecked = stereoMode == int.Parse(submenu.Tag.ToString(), CultureInfo.InvariantCulture);
             }
+
+            MenuItemUpdate.IsVisible = Updater.IsEnabled;
+            MenuItemUpdate.Header = Updater.Available != null ? "Update Available" : "Check For Update";
 
             MenuItemGuide.IsChecked = _guideWindow?.IsVisible ?? false;
             MenuItemChannelEditor.IsChecked = _channelsWindow?.IsVisible ?? false;
@@ -453,6 +457,11 @@ namespace FoxIPTV.Views
         {
             TvCore.LogInfo("[.NET] Switching provider, restarting");
 
+            Restart();
+        }
+
+        private void Restart()
+        {
             App.RestartRequested = true;
 
             TvCore.Settings.Save();
