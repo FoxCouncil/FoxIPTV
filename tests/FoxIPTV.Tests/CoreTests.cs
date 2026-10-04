@@ -146,6 +146,30 @@ namespace FoxIPTV.Tests
             Assert.Equal("48KHZ", data.AudioRate);
         }
 
+        [Theory]
+        [InlineData("3.0.1", "3.0.0", true)]
+        [InlineData("3.0.0", "3.0.0-alpha", true)]
+        [InlineData("3.0.0-beta", "3.0.0-alpha", true)]
+        [InlineData("3.0.0-alpha", "3.0.0", false)]
+        [InlineData("3.0.0", "3.0.0", false)]
+        [InlineData("2.9.9", "3.0.0-alpha", false)]
+        [InlineData("garbage", "3.0.0", false)]
+        public void Updater_ComparesVersions(string candidate, string current, bool newer)
+        {
+            Assert.Equal(newer, Updater.IsNewer(candidate, current));
+        }
+
+        [Fact]
+        public void Updater_FindsThePackageChecksum()
+        {
+            const string sums = "aa11  FoxIPTV-v3.0.1-linux-x64.tar.gz\nBB22 *FoxIPTV-v3.0.1-windows-x64.zip\n";
+
+            Assert.Equal("BB22", Updater.ExpectedHash(sums, "FoxIPTV-v3.0.1-windows-x64.zip"));
+            Assert.Equal("aa11", Updater.ExpectedHash(sums, "FoxIPTV-v3.0.1-linux-x64.tar.gz"));
+            Assert.Null(Updater.ExpectedHash(sums, "FoxIPTV-v3.0.1-macos-arm64.tar.gz"));
+            Assert.False(Updater.IsEnabled);
+        }
+
         [Fact]
         public void CaptionText_StripsAssMarkup()
         {

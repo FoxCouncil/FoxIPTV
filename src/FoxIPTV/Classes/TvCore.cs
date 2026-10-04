@@ -214,7 +214,7 @@ namespace FoxIPTV.Classes
         {
             var besideExe = Path.Combine(ExePath, LogFilename);
 
-            if (!Updater.IsInstalled && CanAppend(besideExe))
+            if (CanAppend(besideExe))
             {
                 LogPath = besideExe;
             }

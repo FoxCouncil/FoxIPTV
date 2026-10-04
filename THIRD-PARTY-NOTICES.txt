@@ -36,10 +36,6 @@ FFmpeg.AutoGen
 License: MIT. Copyright (c) 2025 Ruslan Balanukhin (Rationale One).
 Source: https://github.com/Ruslan-B/FFmpeg.AutoGen
 
-Velopack (updates)
-------------------
-License: MIT. Copyright (c) Velopack Ltd. Source: https://github.com/velopack/velopack
-
 Avalonia
 --------
 License: MIT. Copyright 2013-2026 The AvaloniaUI Project.

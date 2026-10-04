@@ -16,6 +16,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns;Assets\Lists\**" />
     <EmbeddedResource Include="Assets\Lists\*.gz" LogicalName="FoxIPTV.Lists.%(Filename)%(Extension)" />
+    <AssemblyMetadata Include="SelfUpdate" Value="$(SelfUpdate)" Condition="'$(SelfUpdate)' == 'true'" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
@@ -56,8 +57,6 @@
     <PackageReference Include="ppy.SDL3-CS" Version="2026.722.0" />
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-
-    <PackageReference Include="Velopack" Version="1.2.161" />
 
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
   </ItemGroup>

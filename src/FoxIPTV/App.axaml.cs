@@ -50,7 +50,7 @@ namespace FoxIPTV
 
             main.Start();
 
-            Updater.DownloadInBackground();
+            Updater.UpdateInBackground();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)

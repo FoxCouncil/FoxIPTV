@@ -6,7 +6,6 @@ namespace FoxIPTV
     using System.Runtime.InteropServices;
     using Avalonia;
     using Classes;
-    using Velopack;
 
     public static class Program
     {
@@ -14,8 +13,6 @@ namespace FoxIPTV
         [STAThread]
         public static void Main(string[] args)
         {
-            VelopackApp.Build().Run();
-
             TvCore.LogInfo("[.NET] Main(): Starting Application...");
 
             if (OperatingSystem.IsMacOS())
