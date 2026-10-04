@@ -12,6 +12,8 @@ namespace FoxIPTV.Playback
 
     public static unsafe class FFmpegNative
     {
+        private const string NativePrefix = "FoxIPTV.Native/";
+
         private static readonly object Lock = new object();
 
         private static bool _initialized;
@@ -123,6 +125,18 @@ namespace FoxIPTV.Playback
             var wanted = FileName("avutil");
             var candidates = new List<string> { AppContext.BaseDirectory };
 
+            if (!File.Exists(Path.Combine(AppContext.BaseDirectory, wanted)))
+            {
+                try
+                {
+                    candidates.Add(Unpack());
+                }
+                catch (Exception ex)
+                {
+                    TvCore.LogError($"[Player] Unpacking the built-in FFmpeg failed: {ex.Message}");
+                }
+            }
+
             if (AppContext.GetData("NATIVE_DLL_SEARCH_DIRECTORIES") is string searchDirectories)
             {
                 candidates.AddRange(searchDirectories.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries));
@@ -139,6 +153,62 @@ namespace FoxIPTV.Playback
             TvCore.LogError($"[Player] {wanted} not found in {string.Join(", ", candidates)}; trying the system search path");
 
             return null;
+        }
+
+        private static string Unpack()
+        {
+            var assembly = typeof(FFmpegNative).Assembly;
+            var names = assembly.GetManifestResourceNames().Where(x => x.StartsWith(NativePrefix, StringComparison.Ordinal)).ToList();
+
+            if (names.Count == 0)
+            {
+                return null;
+            }
+
+            var parent = Path.Combine(TvCore.TempPath, "native");
+            var folder = Path.Combine(parent, assembly.ManifestModule.ModuleVersionId.ToString("N"));
+
+            foreach (var name in names)
+            {
+                var target = Path.Combine(folder, Path.Combine(name.Substring(NativePrefix.Length).Split('/', '\\')));
+
+                if (File.Exists(target))
+                {
+                    continue;
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
+
+                var partial = $"{target}.{Environment.ProcessId}.part";
+
+                using (var source = assembly.GetManifestResourceStream(name))
+                using (var file = File.Create(partial))
+                {
+                    source.CopyTo(file);
+                }
+
+                try
+                {
+                    File.Move(partial, target);
+                }
+                catch (IOException) when (File.Exists(target))
+                {
+                    File.Delete(partial);
+                }
+            }
+
+            foreach (var older in Directory.GetDirectories(parent).Where(x => !string.Equals(x, folder, StringComparison.OrdinalIgnoreCase)))
+            {
+                try
+                {
+                    Directory.Delete(older, true);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return folder;
         }
 
         private static void OnLog(void* avcl, int level, string format, byte* vl)

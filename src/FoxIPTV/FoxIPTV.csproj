@@ -11,10 +11,11 @@
     <Description>FoxIPTV - Cross-platform IPTV client</Description>
     <ApplicationIcon>Assets\FoxIPTV.ico</ApplicationIcon>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns;Assets\Lists\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\FoxIPTV.icns;Assets\Lists\**;Assets\Fonts\OFL.txt" />
     <EmbeddedResource Include="Assets\Lists\*.gz" LogicalName="FoxIPTV.Lists.%(Filename)%(Extension)" />
     <AssemblyMetadata Include="SelfUpdate" Value="$(SelfUpdate)" Condition="'$(SelfUpdate)' == 'true'" />
   </ItemGroup>
@@ -34,9 +35,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(FFmpegDir)**\*" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" Visible="false" />
-    <None Include="..\..\THIRD-PARTY-NOTICES.txt" Link="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
-    <None Include="Assets\Fonts\OFL.txt" Link="OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <EmbeddedResource Include="$(FFmpegDir)**\*" Exclude="$(FFmpegDir)FFMPEG-LICENSE.txt" LogicalName="FoxIPTV.Native/%(RecursiveDir)%(Filename)%(Extension)" Visible="false" />
+    <EmbeddedResource Include="$(FFmpegDir)FFMPEG-LICENSE.txt" LogicalName="FoxIPTV.Licenses.FFMPEG-LICENSE.txt" Condition="Exists('$(FFmpegDir)FFMPEG-LICENSE.txt')" Visible="false" />
+    <EmbeddedResource Include="..\..\THIRD-PARTY-NOTICES.txt" LogicalName="FoxIPTV.Licenses.THIRD-PARTY-NOTICES.txt" />
+    <EmbeddedResource Include="Assets\Fonts\OFL.txt" LogicalName="FoxIPTV.Licenses.OFL.txt" />
   </ItemGroup>
 
   <Target Name="CheckFFmpeg" BeforeTargets="Build" Condition="!Exists('$(FFmpegDir)')">
