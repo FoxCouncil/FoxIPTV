@@ -10,6 +10,25 @@ namespace FoxIPTV.Views
 
     public class InkTextBlock : TextBlock
     {
+        public static readonly StyledProperty<bool> AllCapsProperty = AvaloniaProperty.Register<InkTextBlock, bool>(nameof(AllCaps));
+
+        static InkTextBlock()
+        {
+            TextProperty.OverrideMetadata<InkTextBlock>(new StyledPropertyMetadata<string>(coerce: (sender, text) => sender is InkTextBlock { AllCaps: true } ? text?.ToUpperInvariant() : text));
+            AllCapsProperty.Changed.AddClassHandler<InkTextBlock>((sender, args) => sender.CoerceValue(TextProperty));
+        }
+
+        public InkTextBlock()
+        {
+            RenderOptions.SetTextRenderingMode(this, TextRenderingMode.Alias);
+        }
+
+        public bool AllCaps
+        {
+            get => GetValue(AllCapsProperty);
+            set => SetValue(AllCapsProperty, value);
+        }
+
         private double _shift = double.NaN;
 
         private (FontFamily Family, double Size, FontWeight Weight, FontStyle Style, FontStretch Stretch, double Scale) _shiftFor;

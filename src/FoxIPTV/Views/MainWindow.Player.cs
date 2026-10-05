@@ -54,7 +54,7 @@ namespace FoxIPTV.Views
             _player.CaptionChanged += caption => Ui(() => OnCaption(caption));
             _player.CaptionTracksChanged += () => Ui(ShowCaptionTracks);
             _player.PreferredCaption = TvCore.Settings.CaptionLanguage;
-            _player.BufferChanged += percent => Ui(() => BufferStatusProgressBar.Value = percent);
+            _player.BufferChanged += percent => Ui(() => BufferStatusLabel.Text = $"Buffer {percent}%");
 
             PlaybackTrace.StatusChanged += status => Ui(() => TraceStatusLabel.Text = status);
         }
@@ -116,7 +116,7 @@ namespace FoxIPTV.Views
                 flyout.Items.Add(item);
             }
 
-            CcOptionsButton.Content = tracks.FirstOrDefault(x => x.Id == selected)?.Name;
+            CcOptionsButton.Content = tracks.FirstOrDefault(x => x.Id == selected)?.Name?.ToUpperInvariant();
             CcOptionsButton.IsVisible = tracks.Count > 1;
         }
 
@@ -413,12 +413,13 @@ namespace FoxIPTV.Views
 
             _timer.Stop();
 
+            _adReel?.Dispose();
+
             await Task.Run(() =>
             {
                 try
                 {
                     _player.Dispose();
-                    _adReel?.Dispose();
                 }
                 catch (Exception ex)
                 {

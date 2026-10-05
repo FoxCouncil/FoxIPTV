@@ -93,6 +93,23 @@ namespace FoxIPTV.Tests
             Assert.Equal(new Avalonia.Rect(0, 0, 640, 480), VideoSurface.FillSource(640, 480, 4 / 3.0, 1600, 900, false));
         }
 
+        [AvaloniaFact]
+        public void StatusBarText_IsAllCaps()
+        {
+            var label = new InkTextBlock { AllCaps = true, Text = "Buffer 87%" };
+
+            Assert.Equal("BUFFER 87%", label.Text);
+
+            label.Text = "Playing";
+
+            Assert.Equal("PLAYING", label.Text);
+
+            label.AllCaps = false;
+            label.Text = "Playing";
+
+            Assert.Equal("Playing", label.Text);
+        }
+
         [Fact]
         public void AdStats_CountBreaksAdsAndTime()
         {

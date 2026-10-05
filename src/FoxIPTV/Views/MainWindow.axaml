@@ -14,12 +14,8 @@
         <Border x:Name="StatusBar" Classes="statusbar" DockPanel.Dock="Bottom">
             <Grid ColumnDefinitions="*,Auto">
                 <DockPanel Grid.Column="0" LastChildFill="True">
-                    <views:InkTextBlock x:Name="ChannelStatusLabel" DockPanel.Dock="Left" Text="Channels:" Margin="0,0,4,0" />
-                    <ProgressBar x:Name="ChannelStatusProgressBar" DockPanel.Dock="Left" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
-                    <views:InkTextBlock x:Name="GuideStatusLabel" DockPanel.Dock="Left" Text="Guide:" Margin="0,0,4,0" />
-                    <ProgressBar x:Name="GuideStatusProgressBar" DockPanel.Dock="Left" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
-                    <views:InkTextBlock x:Name="PlayerStatusLabel" DockPanel.Dock="Left" Text="Waiting" Width="80" Foreground="SeaGreen" />
-                    <views:InkTextBlock x:Name="TraceStatusLabel" Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                    <views:InkTextBlock x:Name="PlayerStatusLabel" DockPanel.Dock="Left" Text="Waiting" Width="90" Foreground="SeaGreen" AllCaps="True" />
+                    <views:InkTextBlock x:Name="TraceStatusLabel" Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" AllCaps="True" />
                 </DockPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="CcOptionsButton" IsVisible="False" Focusable="False" Padding="4,0" Margin="8,0,8,0" FontSize="12" FontFamily="{StaticResource OverlayFont}" VerticalAlignment="Center">
@@ -27,8 +23,8 @@
                             <MenuFlyout Placement="TopEdgeAlignedRight" />
                         </Button.Flyout>
                     </Button>
-                    <ProgressBar x:Name="BufferStatusProgressBar" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip.Tip="Buffer" />
-                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" Width="44" TextAlignment="Right" />
+                    <views:InkTextBlock x:Name="BufferStatusLabel" Text="Buffer 0%" Margin="0,0,12,0" AllCaps="True" />
+                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" TextAlignment="Right" AllCaps="True" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -136,35 +132,35 @@
                 </Panel>
 
                 <Border x:Name="AdTitleBox" Classes="osd" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="48" IsHitTestVisible="False" IsVisible="False">
-                    <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="48" TextAlignment="Center" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="51.2" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
 
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,12,9,0" Spacing="12">
                     <Border x:Name="ChannelLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
-                        <views:InkTextBlock x:Name="ChannelLabel" Classes="osd" FontSize="48" />
+                        <views:InkTextBlock x:Name="ChannelLabel" Classes="osd" FontSize="51.2" />
                     </Border>
                     <Border x:Name="ChannelNameLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
-                        <views:InkTextBlock x:Name="ChannelNameLabel" Classes="osd" FontSize="27" TextTrimming="CharacterEllipsis" />
+                        <views:InkTextBlock x:Name="ChannelNameLabel" Classes="osd" FontSize="30.72" TextTrimming="CharacterEllipsis" />
                     </Border>
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,9,0" Spacing="11">
                     <Border x:Name="MuteLabelBox" Classes="osd" HorizontalAlignment="Right" IsVisible="False">
-                        <views:InkTextBlock x:Name="MuteLabel" Classes="osd" FontSize="29" Text="MUTE" />
+                        <views:InkTextBlock x:Name="MuteLabel" Classes="osd" FontSize="30.72" Text="MUTE" />
                     </Border>
                     <StackPanel x:Name="TagPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" />
                 </StackPanel>
 
                 <Border x:Name="CaptionBox" Background="Black" Padding="12,2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,48" IsVisible="False">
-                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="{StaticResource OverlayFont}" FontSize="30" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="{StaticResource OverlayFont}" FontSize="30.72" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
                 </Border>
 
                 <Border x:Name="AdLabelBox" Background="Black" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="9,0,0,12" IsVisible="False">
-                    <views:InkTextBlock x:Name="AdLabel" FontFamily="{StaticResource OverlayFont}" FontSize="24" Foreground="Gold" />
+                    <views:InkTextBlock x:Name="AdLabel" FontFamily="{StaticResource OverlayFont}" FontSize="20.48" Foreground="Gold" />
                 </Border>
 
                 <Border x:Name="StatusMessageBox" Background="#404040" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="12,0,12,12" Padding="8" IsVisible="True">
-                    <views:InkTextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="{StaticResource OverlayFont}" FontSize="21" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="{StaticResource OverlayFont}" FontSize="20.48" Foreground="Lime" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
             </Panel>
         </Panel>

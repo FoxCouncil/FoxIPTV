@@ -55,6 +55,10 @@ namespace FoxIPTV.Views
 
         private bool _adBreakShown;
 
+        private double _channelsLoaded;
+
+        private double _guideLoaded;
+
         private DateTime _dimTitleUntil;
 
         private readonly Random _random = new Random();
@@ -146,13 +150,13 @@ namespace FoxIPTV.Views
 
             TvCore.ChannelLoadPercentageChanged += percentage => Ui(() =>
             {
-                ChannelStatusProgressBar.Value = percentage;
+                _channelsLoaded = percentage;
                 StatusMessage.Text = LoadingMessage();
             });
 
             TvCore.GuideLoadPercentageChanged += percentage => Ui(() =>
             {
-                GuideStatusProgressBar.Value = percentage;
+                _guideLoaded = percentage;
                 StatusMessage.Text = LoadingMessage();
             });
 
@@ -173,11 +177,6 @@ namespace FoxIPTV.Views
 
                 return;
             }
-
-            ChannelStatusLabel.IsVisible = false;
-            ChannelStatusProgressBar.IsVisible = false;
-            GuideStatusLabel.IsVisible = false;
-            GuideStatusProgressBar.IsVisible = false;
 
             StatusMessageBox.IsVisible = false;
 
@@ -209,7 +208,7 @@ namespace FoxIPTV.Views
 
         private string LoadingMessage()
         {
-            return $"Loading | Channels {ChannelStatusProgressBar.Value:0}% | Guide {GuideStatusProgressBar.Value:0}% | Please Wait...";
+            return $"Loading | Channels {_channelsLoaded:0}% | Guide {_guideLoaded:0}% | Please Wait...";
         }
 
         private GuideWindow GuideWindowInstance => _guideWindow ??= new GuideWindow();
