@@ -18,6 +18,8 @@
             <StackPanel x:Name="LicenseLinks" Spacing="4" Margin="0,8" HorizontalAlignment="Center" />
         </HeaderedContentControl>
 
+        <Button x:Name="PatreonButton" Classes="link" Content="Patreon" HorizontalAlignment="Center" />
+
         <Button x:Name="IconAttributionButton" Classes="link" Content="Some icons by Yusuke Kamiyamane" HorizontalAlignment="Center" />
 
         <Button x:Name="CloseButton" Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" />

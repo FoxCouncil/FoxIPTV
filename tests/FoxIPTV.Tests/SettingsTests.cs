@@ -7,6 +7,9 @@ namespace FoxIPTV.Tests
     using System.Text;
     using Avalonia.Controls;
     using Avalonia.Headless.XUnit;
+    using Avalonia.Markup.Xaml.Styling;
+    using Avalonia.Threading;
+    using Avalonia.VisualTree;
     using FoxIPTV.Classes;
     using FoxIPTV.Playback.Hls;
     using FoxIPTV.Views;
@@ -57,6 +60,28 @@ namespace FoxIPTV.Tests
             Assert.Equal(3, tabs.Items.Count);
             Assert.Equal(10, window.FindControl<ComboBox>("TransparencyCombo").ItemCount);
             Assert.Equal(5, window.FindControl<ComboBox>("LiveDelayCombo").ItemCount);
+        }
+
+        [AvaloniaFact]
+        public void MenuIcons_ShareTheCheckMarkColumn()
+        {
+            var plain = new MenuItem { Header = "Quit", Icon = new Image { Width = 16, Height = 16 } };
+            var check = new MenuItem { Header = "Guide", ToggleType = MenuItemToggleType.CheckBox, IsChecked = true };
+            var menu = new Menu { ItemsSource = new[] { new MenuItem { Header = "Top", ItemsSource = new[] { plain, check } } } };
+            var window = new Window { Content = menu, Width = 400, Height = 300 };
+
+            window.Styles.Add(new StyleInclude(new Uri("avares://FoxIPTV/")) { Source = new Uri("avares://FoxIPTV/Views/Styles.axaml") });
+            window.Show();
+
+            ((MenuItem)menu.ItemsSource.Cast<object>().First()).IsSubMenuOpen = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var icon = plain.GetVisualDescendants().OfType<ContentControl>().Single(x => x.Name == "PART_IconPresenter");
+            var tick = check.GetVisualDescendants().OfType<ContentControl>().Single(x => x.Name == "PART_ToggleIconPresenter");
+
+            Assert.Equal(0, Grid.GetColumn(icon));
+            Assert.Equal(0, Grid.GetColumn(tick));
+            Assert.Equal(icon.Bounds.X, tick.Bounds.X, 1);
         }
 
         [Fact]

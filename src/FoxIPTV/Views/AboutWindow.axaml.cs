@@ -20,17 +20,9 @@ namespace FoxIPTV.Views
 
             TitleLabel.Text += $" V{TvCore.Version}";
 
-            IconAttributionButton.Click += (sender, args) =>
-            {
-                try
-                {
-                    Process.Start(new ProcessStartInfo("http://p.yusukekamiyamane.com/") { UseShellExecute = true });
-                }
-                catch (Exception ex)
-                {
-                    TvCore.LogError($"[AboutWindow] Unable to open the link: {ex.Message}");
-                }
-            };
+            PatreonButton.Click += (sender, args) => OpenLink("https://www.patreon.com/FoxCouncil");
+
+            IconAttributionButton.Click += (sender, args) => OpenLink("http://p.yusukekamiyamane.com/");
 
             foreach (var resource in typeof(AboutWindow).Assembly.GetManifestResourceNames().Where(x => x.StartsWith(LicensePrefix, StringComparison.Ordinal)).OrderBy(x => x, StringComparer.Ordinal))
             {
@@ -44,6 +36,18 @@ namespace FoxIPTV.Views
             }
 
             CloseButton.Click += (sender, args) => Close();
+        }
+
+        private static void OpenLink(string address)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(address) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                TvCore.LogError($"[AboutWindow] Unable to open the link: {ex.Message}");
+            }
         }
 
         private static void OpenLicense(string resource, string name)
