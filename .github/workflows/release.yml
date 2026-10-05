@@ -92,12 +92,6 @@ jobs:
 
       - name: Package the macOS app
         if: runner.os == 'macOS'
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         run: |
           brew install create-dmg
           bash build/macos/package.sh ${{ steps.version.outputs.version }} publish FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
