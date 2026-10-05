@@ -18,11 +18,6 @@ namespace FoxIPTV.Views
             AllCapsProperty.Changed.AddClassHandler<InkTextBlock>((sender, args) => sender.CoerceValue(TextProperty));
         }
 
-        public InkTextBlock()
-        {
-            RenderOptions.SetTextRenderingMode(this, TextRenderingMode.Alias);
-        }
-
         public bool AllCaps
         {
             get => GetValue(AllCapsProperty);

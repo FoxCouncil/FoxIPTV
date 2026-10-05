@@ -132,35 +132,35 @@
                 </Panel>
 
                 <Border x:Name="AdTitleBox" Classes="osd" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="48" IsHitTestVisible="False" IsVisible="False">
-                    <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="51.2" TextAlignment="Center" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="48" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
 
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,12,9,0" Spacing="12">
                     <Border x:Name="ChannelLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
-                        <views:InkTextBlock x:Name="ChannelLabel" Classes="osd" FontSize="51.2" />
+                        <views:InkTextBlock x:Name="ChannelLabel" Classes="osd" FontSize="48" />
                     </Border>
                     <Border x:Name="ChannelNameLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">
-                        <views:InkTextBlock x:Name="ChannelNameLabel" Classes="osd" FontSize="30.72" TextTrimming="CharacterEllipsis" />
+                        <views:InkTextBlock x:Name="ChannelNameLabel" Classes="osd" FontSize="27" TextTrimming="CharacterEllipsis" />
                     </Border>
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,9,0" Spacing="11">
                     <Border x:Name="MuteLabelBox" Classes="osd" HorizontalAlignment="Right" IsVisible="False">
-                        <views:InkTextBlock x:Name="MuteLabel" Classes="osd" FontSize="30.72" Text="MUTE" />
+                        <views:InkTextBlock x:Name="MuteLabel" Classes="osd" FontSize="29" Text="MUTE" />
                     </Border>
                     <StackPanel x:Name="TagPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" />
                 </StackPanel>
 
                 <Border x:Name="CaptionBox" Background="Black" Padding="12,2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,48" IsVisible="False">
-                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="{StaticResource OverlayFont}" FontSize="30.72" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="CaptionLabel" FontFamily="{StaticResource OverlayFont}" FontSize="30" Foreground="White" TextAlignment="Left" TextWrapping="Wrap" />
                 </Border>
 
                 <Border x:Name="AdLabelBox" Background="Black" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="9,0,0,12" IsVisible="False">
-                    <views:InkTextBlock x:Name="AdLabel" FontFamily="{StaticResource OverlayFont}" FontSize="20.48" Foreground="Gold" />
+                    <views:InkTextBlock x:Name="AdLabel" FontFamily="{StaticResource OverlayFont}" FontSize="24" Foreground="Gold" />
                 </Border>
 
                 <Border x:Name="StatusMessageBox" Background="#404040" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="12,0,12,12" Padding="8" IsVisible="True">
-                    <views:InkTextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="{StaticResource OverlayFont}" FontSize="20.48" Foreground="Lime" TextAlignment="Center" TextWrapping="Wrap" />
+                    <views:InkTextBlock x:Name="StatusMessage" Text="Loading..." FontFamily="{StaticResource OverlayFont}" FontSize="21" Foreground="Lime" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
             </Panel>
         </Panel>

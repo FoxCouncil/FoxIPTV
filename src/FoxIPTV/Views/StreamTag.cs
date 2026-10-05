@@ -20,7 +20,7 @@ namespace FoxIPTV.Views
 
         private const double Radius = 6;
 
-        private const double FontPixels = 20.48;
+        private const double FontPixels = 20;
 
         private static readonly Typeface Face = new Typeface(new FontFamily("avares://FoxIPTV/Assets/Fonts#VCR OSD Mono"));
 
@@ -34,12 +34,6 @@ namespace FoxIPTV.Views
         {
             AffectsMeasure<StreamTag>(TextProperty);
             AffectsRender<StreamTag>(TextProperty);
-        }
-
-        public StreamTag()
-        {
-            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-            RenderOptions.SetTextRenderingMode(this, TextRenderingMode.Alias);
         }
 
         public string Text
