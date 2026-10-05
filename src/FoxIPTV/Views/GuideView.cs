@@ -56,6 +56,10 @@ namespace FoxIPTV.Views
 
         public ScrollBar ScrollBar { get; set; }
 
+        private ScrollBar _timeBar;
+
+        private DateTimeOffset _guideEndUtc;
+
         public GuideView()
         {
             Focusable = true;
@@ -128,6 +132,16 @@ namespace FoxIPTV.Views
             };
         }
 
+        public void AttachTimeBar(ScrollBar timeBar)
+        {
+            _timeBar = timeBar;
+            _timeBar.Margin = new Thickness(NumberWidth + NameWidth, 0, 0, 0);
+
+            timeBar.Scroll += (sender, args) => SetStart(EarliestUtc.AddMinutes(Math.Round(timeBar.Value) * StepMinutes));
+
+            QueueTimeBar();
+        }
+
         public void ResetView()
         {
             _startUtc = null;
@@ -183,6 +197,19 @@ namespace FoxIPTV.Views
 
         private DateTimeOffset StartUtc => _startUtc ?? Floor(DateTimeOffset.UtcNow, StepMinutes);
 
+        private static DateTimeOffset EarliestUtc => Floor(DateTimeOffset.UtcNow, StepMinutes).AddHours(-2);
+
+        private DateTimeOffset LatestStartUtc
+        {
+            get
+            {
+                var now = Floor(DateTimeOffset.UtcNow, StepMinutes);
+                var end = _guideEndUtc > now ? Floor(_guideEndUtc, StepMinutes).AddMinutes(StepMinutes - VisibleMinutes) : now.AddHours(24);
+
+                return end > now ? end : now;
+            }
+        }
+
         private static DateTimeOffset Floor(DateTimeOffset time, int minutes)
         {
             return new DateTimeOffset(time.Year, time.Month, time.Day, time.Hour, time.Minute / minutes * minutes, 0, time.Offset);
@@ -235,6 +262,8 @@ namespace FoxIPTV.Views
                 list.Sort((a, b) => a.Start.CompareTo(b.Start));
             }
 
+            _guideEndUtc = _byChannel.Values.Where(x => x.Count > 0).Select(x => x[x.Count - 1].Stop).DefaultIfEmpty(DateTimeOffset.MinValue).Max();
+
             _guideVersion = version;
         }
 
@@ -244,12 +273,12 @@ namespace FoxIPTV.Views
 
             _topChannel = Math.Max(0, Math.Min(_topChannel, max));
 
-            if (ScrollBar == null)
+            if (ScrollBar != null)
             {
-                return;
+                Dispatcher.UIThread.Post(UpdateScrollBar, DispatcherPriority.Background);
             }
 
-            Dispatcher.UIThread.Post(UpdateScrollBar, DispatcherPriority.Background);
+            QueueTimeBar();
         }
 
         private void UpdateScrollBar()
@@ -266,6 +295,26 @@ namespace FoxIPTV.Views
                 ScrollBar.Value = _topChannel;
             }
             ScrollBar.IsEnabled = ChannelCount > VisibleRows;
+        }
+
+        private void QueueTimeBar()
+        {
+            if (_timeBar != null)
+            {
+                Dispatcher.UIThread.Post(UpdateTimeBar, DispatcherPriority.Background);
+            }
+        }
+
+        private void UpdateTimeBar()
+        {
+            var visibleSteps = VisibleMinutes / (double)StepMinutes;
+
+            _timeBar.Minimum = 0;
+            _timeBar.Maximum = Math.Max(0, (LatestStartUtc - EarliestUtc).TotalMinutes / StepMinutes);
+            _timeBar.ViewportSize = visibleSteps;
+            _timeBar.LargeChange = visibleSteps;
+            _timeBar.SmallChange = 1;
+            _timeBar.Value = Math.Max(0, (StartUtc - EarliestUtc).TotalMinutes / StepMinutes);
         }
 
         private static void DrawText(DrawingContext g, string text, double size, FontWeight weight, Color colour, Rect box, TextAlignment alignment = TextAlignment.Left, bool centreVertically = true, bool wrap = false)
@@ -504,16 +553,24 @@ namespace FoxIPTV.Views
 
         private void ScrollTime(int steps)
         {
-            var start = StartUtc.AddMinutes(steps * StepMinutes);
-            var earliest = Floor(DateTimeOffset.UtcNow, StepMinutes).AddHours(-2);
+            SetStart(StartUtc.AddMinutes(steps * StepMinutes));
+        }
 
-            if (start < earliest)
+        private void SetStart(DateTimeOffset start)
+        {
+            if (start > LatestStartUtc)
             {
-                start = earliest;
+                start = LatestStartUtc;
+            }
+
+            if (start < EarliestUtc)
+            {
+                start = EarliestUtc;
             }
 
             _startUtc = start == Floor(DateTimeOffset.UtcNow, StepMinutes) ? (DateTimeOffset?)null : start;
 
+            QueueTimeBar();
             InvalidateVisual();
         }
 

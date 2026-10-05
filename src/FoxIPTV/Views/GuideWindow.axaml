@@ -18,9 +18,10 @@
             <Button x:Name="ResetViewButton" Grid.Column="2" Content="Reset View" HorizontalAlignment="Right" />
         </Grid>
 
-        <Grid ColumnDefinitions="*,Auto">
-            <views:GuideView x:Name="Guide" Grid.Column="0" />
-            <ScrollBar x:Name="GuideScrollBar" Grid.Column="1" Orientation="Vertical" AllowAutoHide="False" />
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+            <views:GuideView x:Name="Guide" Grid.Row="0" Grid.Column="0" />
+            <ScrollBar x:Name="GuideScrollBar" Grid.Row="0" Grid.Column="1" Orientation="Vertical" AllowAutoHide="False" />
+            <ScrollBar x:Name="GuideTimeBar" Grid.Row="1" Grid.Column="0" Orientation="Horizontal" AllowAutoHide="False" />
         </Grid>
     </DockPanel>
 </Window>

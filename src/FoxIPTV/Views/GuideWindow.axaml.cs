@@ -17,6 +17,7 @@ namespace FoxIPTV.Views
             InitializeComponent();
 
             Guide.AttachScrollBar(GuideScrollBar);
+            Guide.AttachTimeBar(GuideTimeBar);
 
             AddHandler(KeyDownEvent, (sender, args) =>
             {
