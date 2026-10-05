@@ -18,6 +18,10 @@ namespace FoxIPTV.Views
 
         private NativeMenuItem _trayMute;
 
+        private NativeMenuItem _trayGuide;
+
+        private static bool HasGuide => TvCore.Guide != null && TvCore.Guide.Count > 0;
+
         private void InitializeContextMenu()
         {
             MenuItemChannelUp.Click += (sender, args) => TvCore.ChangeChannel(true);
@@ -86,7 +90,7 @@ namespace FoxIPTV.Views
             _trayWindowState = Item("Hide Window", ToggleVisibility);
             _trayMute = Item("Mute", ToggleMute);
             menu.Items.Add(new NativeMenuItemSeparator());
-            Item("Guide", ToggleGuideForm);
+            _trayGuide = Item("Guide", ToggleGuideForm);
             Item("Channel Editor", ToggleChannelsForm);
             menu.Items.Add(new NativeMenuItemSeparator());
             Item("Switch Provider...", SwitchProvider);
@@ -97,6 +101,7 @@ namespace FoxIPTV.Views
             {
                 _trayWindowState.Header = IsVisible ? "Hide Window" : "Show Window";
                 _trayMute.Header = _player.Muted ? "Unmute" : "Mute";
+                _trayGuide.IsEnabled = HasGuide;
             };
 
             _trayIcon = new TrayIcon
@@ -145,7 +150,7 @@ namespace FoxIPTV.Views
 
             MenuItemChannelUp.IsEnabled = hasChannels;
             MenuItemChannelDown.IsEnabled = hasChannels;
-            MenuItemGuide.IsEnabled = hasChannels;
+            MenuItemGuide.IsEnabled = hasChannels && HasGuide;
             MenuItemChannelEditor.IsEnabled = hasChannels;
 
             MenuItemWindowState.IsChecked = IsVisible;
@@ -427,6 +432,11 @@ namespace FoxIPTV.Views
 
         private void ToggleGuideForm()
         {
+            if (!HasGuide)
+            {
+                return;
+            }
+
             ToggleToolWindow(() => GuideWindowInstance, open => TvCore.Settings.GuideOpen = open);
         }
 

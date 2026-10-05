@@ -174,7 +174,7 @@ namespace FoxIPTV.Views
                 ChannelsWindowInstance.Show(this);
             }
 
-            if (hasChannels && TvCore.Settings.GuideOpen)
+            if (hasChannels && HasGuide && TvCore.Settings.GuideOpen)
             {
                 GuideWindowInstance.Show(this);
             }
