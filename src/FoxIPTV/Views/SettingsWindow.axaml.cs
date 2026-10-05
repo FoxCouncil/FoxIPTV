@@ -206,11 +206,11 @@ namespace FoxIPTV.Views
 
             try
             {
-                StatusBarCheck.IsChecked = Host.StatusBarShown;
+                StatusBarCheck.IsChecked = Host?.StatusBarShown ?? TvCore.Settings.StatusBar;
                 CaptionsCheck.IsChecked = TvCore.Settings.CCEnabled;
                 BordersCheck.IsChecked = TvCore.Settings.Borders;
-                BordersCheck.IsEnabled = !Host.IsFullscreen;
-                AlwaysOnTopCheck.IsChecked = Host.Topmost;
+                BordersCheck.IsEnabled = Host == null || !Host.IsFullscreen;
+                AlwaysOnTopCheck.IsChecked = Host?.Topmost ?? TvCore.Settings.AlwaysOnTop;
 
                 TransparencyCombo.IsEnabled = WindowOpacity.IsSupported;
                 TransparencyCombo.SelectedIndex = Array.FindIndex(Opacities, x => Math.Abs(x - TvCore.Settings.Opacity) < 0.001);
@@ -219,7 +219,7 @@ namespace FoxIPTV.Views
 
                 LiveDelayCombo.SelectedIndex = Math.Max(0, Array.FindIndex(LiveDelays, x => Math.Abs(x.Seconds - TvCore.Settings.LiveDelay) < 0.001));
 
-                UpdatesCheck.IsVisible = Updater.IsEnabled;
+                UpdatesGroup.IsVisible = Updater.IsEnabled;
                 UpdatesCheck.IsChecked = TvCore.Settings.CheckForUpdates;
 
                 AdMuteCheck.IsChecked = TvCore.Settings.AdMute;
@@ -265,7 +265,7 @@ namespace FoxIPTV.Views
 
             _captionChoices = new List<string> { null };
 
-            foreach (var track in Host.CaptionTracks)
+            foreach (var track in Host?.CaptionTracks ?? Array.Empty<Playback.CaptionTrack>())
             {
                 var value = track.Language ?? track.Id;
 

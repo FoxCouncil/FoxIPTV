@@ -3,20 +3,69 @@
         x:Class="FoxIPTV.Views.SettingsWindow"
         Title="Settings - Fox IPTV"
         Icon="/Assets/FoxIPTV.ico"
-        Width="620" Height="600"
+        Width="620" Height="640"
         MinWidth="460" MinHeight="420">
 
-    <Window.Styles>
-        <Style Selector="TextBlock.heading">
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Margin" Value="0,10,0,0" />
-        </Style>
-        <Style Selector="TabItem">
-            <Setter Property="FontSize" Value="16" />
-        </Style>
-    </Window.Styles>
+    <Window.Resources>
+        <ControlTheme x:Key="SheetTabs" TargetType="TabControl">
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="6,0,0,-1" />
+                </ItemsPanelTemplate>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel>
+                        <ItemsPresenter Name="PART_ItemsPresenter" DockPanel.Dock="Top" ItemsPanel="{TemplateBinding ItemsPanel}" ZIndex="1" />
+                        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+                            <ContentPresenter Name="PART_SelectedContentHost" Content="{TemplateBinding SelectedContent}" ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                        </Border>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
 
-    <TabControl x:Name="Tabs" Margin="8,4">
+        <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+            <Setter Property="BorderThickness" Value="1,1,1,0" />
+            <Setter Property="CornerRadius" Value="4,4,0,0" />
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="Margin" Value="0,3,2,1" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_LayoutRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}" />
+            </Style>
+            <Style Selector="^:selected">
+                <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+                <Setter Property="Margin" Value="0,0,2,0" />
+                <Setter Property="Padding" Value="12,6,12,7" />
+            </Style>
+        </ControlTheme>
+
+        <ControlTheme x:Key="GroupBox" TargetType="HeaderedContentControl">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel>
+                        <Border Margin="0,9,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="12,16,12,12">
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </Border>
+                        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,0,0,0" Padding="4,0">
+                            <ContentPresenter Content="{TemplateBinding Header}" FontWeight="Bold" />
+                        </Border>
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Window.Resources>
+
+    <TabControl x:Name="Tabs" Theme="{StaticResource SheetTabs}" Margin="10">
         <TabItem>
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -25,20 +74,39 @@
                 </StackPanel>
             </TabItem.Header>
             <ScrollViewer>
-                <StackPanel Spacing="8" Margin="4,8">
-                    <CheckBox x:Name="StatusBarCheck" Content="Status Bar" />
-                    <CheckBox x:Name="CaptionsCheck" Content="Closed Captioning" />
-                    <CheckBox x:Name="BordersCheck" Content="Borders" />
-                    <CheckBox x:Name="AlwaysOnTopCheck" Content="Always On Top" />
-                    <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" Margin="0,6,0,0">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Transparency" VerticalAlignment="Center" />
-                        <ComboBox x:Name="TransparencyCombo" Grid.Row="0" Grid.Column="1" MinWidth="200" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Caption Language" VerticalAlignment="Center" />
-                        <ComboBox x:Name="CaptionLanguageCombo" Grid.Row="1" Grid.Column="1" MinWidth="200" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Live Delay" VerticalAlignment="Center" />
-                        <ComboBox x:Name="LiveDelayCombo" Grid.Row="2" Grid.Column="1" MinWidth="200" />
-                    </Grid>
-                    <CheckBox x:Name="UpdatesCheck" Content="Check For Updates On Start" />
+                <StackPanel Spacing="10">
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Window">
+                        <StackPanel Spacing="6">
+                            <CheckBox x:Name="StatusBarCheck" Content="Status Bar" />
+                            <CheckBox x:Name="BordersCheck" Content="Borders" />
+                            <CheckBox x:Name="AlwaysOnTopCheck" Content="Always On Top" />
+                            <Grid ColumnDefinitions="140,*">
+                                <TextBlock Grid.Column="0" Text="Transparency" VerticalAlignment="Center" />
+                                <ComboBox x:Name="TransparencyCombo" Grid.Column="1" MinWidth="200" />
+                            </Grid>
+                        </StackPanel>
+                    </HeaderedContentControl>
+
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Captions">
+                        <StackPanel Spacing="6">
+                            <CheckBox x:Name="CaptionsCheck" Content="Closed Captioning" />
+                            <Grid ColumnDefinitions="140,*">
+                                <TextBlock Grid.Column="0" Text="Caption Language" VerticalAlignment="Center" />
+                                <ComboBox x:Name="CaptionLanguageCombo" Grid.Column="1" MinWidth="200" />
+                            </Grid>
+                        </StackPanel>
+                    </HeaderedContentControl>
+
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Playback">
+                        <Grid ColumnDefinitions="140,*">
+                            <TextBlock Grid.Column="0" Text="Live Delay" VerticalAlignment="Center" />
+                            <ComboBox x:Name="LiveDelayCombo" Grid.Column="1" MinWidth="200" />
+                        </Grid>
+                    </HeaderedContentControl>
+
+                    <HeaderedContentControl x:Name="UpdatesGroup" Theme="{StaticResource GroupBox}" Header="Updates">
+                        <CheckBox x:Name="UpdatesCheck" Content="Check For Updates On Start" />
+                    </HeaderedContentControl>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
@@ -51,28 +119,35 @@
                 </StackPanel>
             </TabItem.Header>
             <ScrollViewer>
-                <StackPanel Spacing="8" Margin="4,8">
-                    <CheckBox x:Name="AdMuteCheck" Content="Mute During Ads" />
-                    <CheckBox x:Name="AdLabelCheck" Content="Show Ad Label" />
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                        <CheckBox x:Name="AdDimCheck" Grid.Column="0" Content="Dim Picture During Ads" />
-                        <Slider x:Name="AdDimSlider" Grid.Column="1" Minimum="0.2" Maximum="1" VerticalAlignment="Center" />
-                    </Grid>
+                <StackPanel Spacing="10">
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="During Ads">
+                        <StackPanel Spacing="6">
+                            <CheckBox x:Name="AdMuteCheck" Content="Mute During Ads" />
+                            <CheckBox x:Name="AdLabelCheck" Content="Show Ad Label" />
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                <CheckBox x:Name="AdDimCheck" Grid.Column="0" Content="Dim Picture During Ads" />
+                                <Slider x:Name="AdDimSlider" Grid.Column="1" Minimum="0.2" Maximum="1" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </HeaderedContentControl>
 
-                    <TextBlock Classes="heading" Text="Ad Media" />
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
-                        <TextBox x:Name="AdFolderText" Grid.Column="0" IsReadOnly="True" />
-                        <Button x:Name="AdFolderBrowseButton" Grid.Column="1" Content="Browse..." />
-                        <Button x:Name="AdFolderClearButton" Grid.Column="2" Content="Clear" />
-                    </Grid>
-                    <CheckBox x:Name="AdSoundCheck" Content="Play Media Sound" />
-                    <CheckBox x:Name="AdTitleCheck" Content="Show Title Over Media" />
-                    <ListBox x:Name="AdTitlesList" Height="110" />
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
-                        <TextBox x:Name="AdTitleText" Grid.Column="0" />
-                        <Button x:Name="AdTitleAddButton" Grid.Column="1" Content="Add" />
-                        <Button x:Name="AdTitleRemoveButton" Grid.Column="2" Content="Remove" />
-                    </Grid>
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Ad Media">
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                <TextBox x:Name="AdFolderText" Grid.Column="0" IsReadOnly="True" />
+                                <Button x:Name="AdFolderBrowseButton" Grid.Column="1" Content="Browse..." />
+                                <Button x:Name="AdFolderClearButton" Grid.Column="2" Content="Clear" />
+                            </Grid>
+                            <CheckBox x:Name="AdSoundCheck" Content="Play Media Sound" />
+                            <CheckBox x:Name="AdTitleCheck" Content="Show Title Over Media" />
+                            <ListBox x:Name="AdTitlesList" Height="140" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" />
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                <TextBox x:Name="AdTitleText" Grid.Column="0" />
+                                <Button x:Name="AdTitleAddButton" Grid.Column="1" Content="Add" />
+                                <Button x:Name="AdTitleRemoveButton" Grid.Column="2" Content="Remove" />
+                            </Grid>
+                        </StackPanel>
+                    </HeaderedContentControl>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
@@ -84,20 +159,29 @@
                     <TextBlock Text="Stats" VerticalAlignment="Center" />
                 </StackPanel>
             </TabItem.Header>
-            <ScrollViewer>
-                <StackPanel Spacing="8" Margin="4,8">
-                    <TextBlock Classes="heading" Text="Ads" Margin="0" />
-                    <TextBlock x:Name="AdStatsTotal" />
-                    <ItemsControl x:Name="AdStatsChannels" />
+            <DockPanel>
+                <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+                    <Button x:Name="StatsResetButton" Grid.Column="0" Content="Reset Stats" />
+                    <Button x:Name="OpenLogButton" Grid.Column="2" Classes="link" Content="Open Log File" VerticalAlignment="Center" />
+                </Grid>
+                <ScrollViewer>
+                    <StackPanel Spacing="10">
+                        <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Ads">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Name="AdStatsTotal" />
+                                <ItemsControl x:Name="AdStatsChannels" />
+                            </StackPanel>
+                        </HeaderedContentControl>
 
-                    <TextBlock Classes="heading" Text="Channel Changes" />
-                    <TextBlock x:Name="TuneStatsTotal" />
-                    <ItemsControl x:Name="TuneStatsRecent" />
-
-                    <Button x:Name="StatsResetButton" Content="Reset Stats" Margin="0,10,0,0" />
-                    <Button x:Name="OpenLogButton" Classes="link" Content="Open Log File" />
-                </StackPanel>
-            </ScrollViewer>
+                        <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Channel Changes">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Name="TuneStatsTotal" />
+                                <ItemsControl x:Name="TuneStatsRecent" />
+                            </StackPanel>
+                        </HeaderedContentControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
         </TabItem>
     </TabControl>
 </Window>
