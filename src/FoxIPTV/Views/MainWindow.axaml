@@ -43,8 +43,16 @@
                         <MenuItem x:Name="MenuItemChannelNumber" Header="&lt;ChannelNumber&gt;" FontWeight="Bold" />
                         <MenuItem x:Name="MenuItemChannelName" Header="&lt;ChannelName&gt;" />
                         <Separator />
-                        <MenuItem x:Name="MenuItemChannelUp" Header="Channel Up" InputGesture="PageUp" />
-                        <MenuItem x:Name="MenuItemChannelDown" Header="Channel Down" InputGesture="PageDown" />
+                        <MenuItem x:Name="MenuItemChannelUp" Header="Channel Up" InputGesture="PageUp">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/arrow-090.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemChannelDown" Header="Channel Down" InputGesture="PageDown">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/arrow-270.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                         <Separator />
                         <MenuItem x:Name="MenuItemWindowState" Header="Show Window" ToggleType="CheckBox" InputGesture="H" />
                         <MenuItem x:Name="MenuItemMute" Header="_Mute" ToggleType="CheckBox" InputGesture="Space" />
@@ -68,6 +76,9 @@
                             <MenuItem Header="90%" Tag=".1" ToggleType="Radio" />
                         </MenuItem>
                         <MenuItem x:Name="MenuItemAspectRatio" Header="Aspect Ratio">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/image-resize.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
                             <MenuItem Header="Default" Tag="null" ToggleType="Radio" />
                             <MenuItem Header="16:9" Tag="16:9" ToggleType="Radio" />
                             <MenuItem Header="4:3" Tag="4:3" ToggleType="Radio" />
@@ -79,6 +90,9 @@
                             <MenuItem Header="5:4" Tag="5:4" ToggleType="Radio" />
                         </MenuItem>
                         <MenuItem x:Name="MenuItemStereoMode" Header="Stereo Mode">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/speaker.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
                             <MenuItem Header="Surround (5.1+)" Tag="5" ToggleType="Radio" />
                             <Separator />
                             <MenuItem Header="Stereo" Tag="1" ToggleType="Radio" />
@@ -90,13 +104,41 @@
                         <Separator />
                         <MenuItem x:Name="MenuItemGuide" Header="Guide" ToggleType="CheckBox" InputGesture="G" />
                         <MenuItem x:Name="MenuItemChannelEditor" Header="Channel Editor" ToggleType="CheckBox" InputGesture="T" />
+                        <MenuItem x:Name="MenuItemSettings" Header="Settings" ToggleType="CheckBox" InputGesture="Ctrl+OemComma" />
                         <Separator />
-                        <MenuItem x:Name="MenuItemSwitchProvider" Header="Switch Provider..." />
-                        <MenuItem x:Name="MenuItemUpdate" Header="Check For Update" />
-                        <MenuItem x:Name="MenuItemAbout" Header="_About" />
-                        <MenuItem x:Name="MenuItemQuit" Header="Quit" />
+                        <MenuItem x:Name="MenuItemSwitchProvider" Header="Switch Provider...">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/arrow-switch.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemUpdate" Header="Check For Update">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/arrow-circle-double.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemAbout" Header="_About">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/question-white.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem x:Name="MenuItemQuit" Header="Quit">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/Icons/door--arrow.png" Width="16" Height="16" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </ContextMenu>
                 </Panel.ContextMenu>
+
+                <Border x:Name="AdDimLayer" Background="Black" IsHitTestVisible="False" IsVisible="False" />
+
+                <Panel x:Name="AdMediaPanel" Background="Black" IsHitTestVisible="False" IsVisible="False">
+                    <Image x:Name="AdImage" Stretch="Uniform" IsVisible="False" />
+                    <video:VideoSurface x:Name="AdVideo" IsVisible="False" />
+                </Panel>
+
+                <Border x:Name="AdTitleBox" Classes="osd" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24" IsHitTestVisible="False" IsVisible="False">
+                    <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="48" TextAlignment="Center" TextWrapping="Wrap" />
+                </Border>
 
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,12,9,0" Spacing="12">
                     <Border x:Name="ChannelLabelBox" Classes="osd" HorizontalAlignment="Left" IsVisible="False">

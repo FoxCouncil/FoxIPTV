@@ -35,6 +35,10 @@ namespace FoxIPTV.Playback
 
         public bool IsLive { get; set; } = true;
 
+        public double LiveDelay { get; set; }
+
+        public bool Quiet { get; set; }
+
         public string Label { get; set; }
 
         public override string ToString() => Label ?? Uri?.ToString();

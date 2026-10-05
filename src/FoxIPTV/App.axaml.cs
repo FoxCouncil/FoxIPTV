@@ -37,7 +37,10 @@ namespace FoxIPTV
 
         private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Updater.CheckInBackground();
+            if (TvCore.Settings.CheckForUpdates)
+            {
+                Updater.CheckInBackground();
+            }
 
             if (!await ProviderWindow.ChooseProvider())
             {

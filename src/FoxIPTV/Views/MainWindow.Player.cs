@@ -3,6 +3,7 @@
 namespace FoxIPTV.Views
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Avalonia.Controls;
     using System.Threading.Tasks;
@@ -119,6 +120,25 @@ namespace FoxIPTV.Views
             CcOptionsButton.IsVisible = tracks.Count > 1;
         }
 
+        internal IReadOnlyList<CaptionTrack> CaptionTracks => _player.CaptionTracks;
+
+        internal void SetCaptionLanguage(string language)
+        {
+            TvCore.LogInfo($"[CC] Preferred language set to {language ?? "automatic"}");
+
+            TvCore.Settings.CaptionLanguage = language;
+            TvCore.Settings.Save();
+
+            _player.PreferredCaption = language;
+
+            var track = language == null ? null : _player.CaptionTracks.FirstOrDefault(x => x.Matches(language));
+
+            if (track != null)
+            {
+                _player.SelectCaption(track.Id);
+            }
+        }
+
         private void ChooseCaption(CaptionTrack track)
         {
             TvCore.LogInfo($"[CC] Chose {track}");
@@ -203,7 +223,7 @@ namespace FoxIPTV.Views
 
             PlaybackTrace.Mark("play", channel.Stream.Host);
 
-            return new MediaRequest { Uri = channel.Stream, IsLive = true, Label = $"{channel.Index} {channel.Name}" };
+            return new MediaRequest { Uri = channel.Stream, IsLive = true, LiveDelay = TvCore.Settings.LiveDelay, Label = $"{channel.Index} {channel.Name}" };
         }
 
         private void OnPictureShown(int width, int height)
@@ -398,6 +418,7 @@ namespace FoxIPTV.Views
                 try
                 {
                     _player.Dispose();
+                    _adReel?.Dispose();
                 }
                 catch (Exception ex)
                 {

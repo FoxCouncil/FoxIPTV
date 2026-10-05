@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FoxIPTV.Views.SettingsWindow"
+        Title="Settings - Fox IPTV"
+        Icon="/Assets/FoxIPTV.ico"
+        Width="620" Height="600"
+        MinWidth="460" MinHeight="420">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,10,0,0" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+    </Window.Styles>
+
+    <TabControl x:Name="Tabs" Margin="8,4">
+        <TabItem>
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Image Source="/Assets/Icons/wrench-screwdriver.png" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="General" VerticalAlignment="Center" />
+                </StackPanel>
+            </TabItem.Header>
+            <ScrollViewer>
+                <StackPanel Spacing="8" Margin="4,8">
+                    <CheckBox x:Name="StatusBarCheck" Content="Status Bar" />
+                    <CheckBox x:Name="CaptionsCheck" Content="Closed Captioning" />
+                    <CheckBox x:Name="BordersCheck" Content="Borders" />
+                    <CheckBox x:Name="AlwaysOnTopCheck" Content="Always On Top" />
+                    <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" Margin="0,6,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Transparency" VerticalAlignment="Center" />
+                        <ComboBox x:Name="TransparencyCombo" Grid.Row="0" Grid.Column="1" MinWidth="200" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Caption Language" VerticalAlignment="Center" />
+                        <ComboBox x:Name="CaptionLanguageCombo" Grid.Row="1" Grid.Column="1" MinWidth="200" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Live Delay" VerticalAlignment="Center" />
+                        <ComboBox x:Name="LiveDelayCombo" Grid.Row="2" Grid.Column="1" MinWidth="200" />
+                    </Grid>
+                    <CheckBox x:Name="UpdatesCheck" Content="Check For Updates On Start" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <TabItem>
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Image Source="/Assets/Icons/cross-shield.png" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Ad Blocker" VerticalAlignment="Center" />
+                </StackPanel>
+            </TabItem.Header>
+            <ScrollViewer>
+                <StackPanel Spacing="8" Margin="4,8">
+                    <CheckBox x:Name="AdMuteCheck" Content="Mute During Ads" />
+                    <CheckBox x:Name="AdLabelCheck" Content="Show Ad Label" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <CheckBox x:Name="AdDimCheck" Grid.Column="0" Content="Dim Picture During Ads" />
+                        <Slider x:Name="AdDimSlider" Grid.Column="1" Minimum="0.2" Maximum="1" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <TextBlock Classes="heading" Text="Ad Media" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                        <TextBox x:Name="AdFolderText" Grid.Column="0" IsReadOnly="True" />
+                        <Button x:Name="AdFolderBrowseButton" Grid.Column="1" Content="Browse..." />
+                        <Button x:Name="AdFolderClearButton" Grid.Column="2" Content="Clear" />
+                    </Grid>
+                    <CheckBox x:Name="AdSoundCheck" Content="Play Media Sound" />
+                    <CheckBox x:Name="AdTitleCheck" Content="Show Title Over Media" />
+                    <ListBox x:Name="AdTitlesList" Height="110" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                        <TextBox x:Name="AdTitleText" Grid.Column="0" />
+                        <Button x:Name="AdTitleAddButton" Grid.Column="1" Content="Add" />
+                        <Button x:Name="AdTitleRemoveButton" Grid.Column="2" Content="Remove" />
+                    </Grid>
+
+                    <TextBlock Classes="heading" Text="Ad Stats" />
+                    <TextBlock x:Name="AdStatsTotal" />
+                    <ItemsControl x:Name="AdStatsChannels" />
+                    <Button x:Name="AdStatsResetButton" Content="Reset Stats" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <TabItem x:Name="LogTab">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Image Source="/Assets/Icons/script-text.png" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Log" VerticalAlignment="Center" />
+                </StackPanel>
+            </TabItem.Header>
+            <DockPanel Margin="4,8">
+                <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,0,0,6">
+                    <CheckBox x:Name="TimingOnlyCheck" Grid.Column="0" Content="Timing Only" />
+                    <TextBlock x:Name="TraceStatusText" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Classes="muted" />
+                    <Button x:Name="OpenLogButton" Grid.Column="2" Content="Open Log File" />
+                </Grid>
+                <TextBox x:Name="LogText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="Consolas, Menlo, monospace" FontSize="12" />
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</Window>

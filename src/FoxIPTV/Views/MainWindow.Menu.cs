@@ -7,6 +7,8 @@ namespace FoxIPTV.Views
     using System.Linq;
     using Avalonia.Controls;
     using Avalonia.Input;
+    using Avalonia.Media.Imaging;
+    using Avalonia.Platform;
     using Classes;
     using Playback;
 
@@ -53,6 +55,7 @@ namespace FoxIPTV.Views
 
             MenuItemGuide.Click += (sender, args) => ToggleGuideForm();
             MenuItemChannelEditor.Click += (sender, args) => ToggleChannelsForm();
+            MenuItemSettings.Click += (sender, args) => ToggleSettingsForm();
             MenuItemSwitchProvider.Click += (sender, args) => SwitchProvider();
             MenuItemUpdate.Click += async (sender, args) => await UpdatePrompt.Run(this, Restart);
 
@@ -68,9 +71,17 @@ namespace FoxIPTV.Views
         {
             var menu = new NativeMenu();
 
-            NativeMenuItem Item(string header, Action action)
+            NativeMenuItem Item(string header, Action action, string icon = null)
             {
                 var item = new NativeMenuItem(header);
+
+                if (icon != null)
+                {
+                    using (var stream = AssetLoader.Open(new Uri($"avares://FoxIPTV/Assets/Icons/{icon}.png")))
+                    {
+                        item.Icon = new Bitmap(stream);
+                    }
+                }
 
                 item.Click += (sender, args) =>
                 {
@@ -84,18 +95,19 @@ namespace FoxIPTV.Views
                 return item;
             }
 
-            Item("Channel Up", () => TvCore.ChangeChannel(true));
-            Item("Channel Down", () => TvCore.ChangeChannel(false));
+            Item("Channel Up", () => TvCore.ChangeChannel(true), "arrow-090");
+            Item("Channel Down", () => TvCore.ChangeChannel(false), "arrow-270");
             menu.Items.Add(new NativeMenuItemSeparator());
             _trayWindowState = Item("Hide Window", ToggleVisibility);
             _trayMute = Item("Mute", ToggleMute);
             menu.Items.Add(new NativeMenuItemSeparator());
             _trayGuide = Item("Guide", ToggleGuideForm);
             Item("Channel Editor", ToggleChannelsForm);
+            Item("Settings", ToggleSettingsForm);
             menu.Items.Add(new NativeMenuItemSeparator());
-            Item("Switch Provider...", SwitchProvider);
-            Item("About", () => new AboutWindow().Show());
-            Item("Quit", Quit);
+            Item("Switch Provider...", SwitchProvider, "arrow-switch");
+            Item("About", () => new AboutWindow().Show(), "question-white");
+            Item("Quit", Quit, "door--arrow");
 
             menu.Opening += (sender, args) =>
             {
@@ -199,6 +211,7 @@ namespace FoxIPTV.Views
 
             MenuItemGuide.IsChecked = _guideWindow?.IsVisible ?? false;
             MenuItemChannelEditor.IsChecked = _channelsWindow?.IsVisible ?? false;
+            MenuItemSettings.IsChecked = _settingsWindow?.IsVisible ?? false;
         }
 
         /// <summary>The right click menu Opacity change handler</summary>
@@ -214,7 +227,7 @@ namespace FoxIPTV.Views
             SetOpacity(opacityVal);
         }
 
-        private void SetOpacity(double opacity)
+        internal void SetOpacity(double opacity)
         {
             opacity = Math.Round(Math.Max(0.1, Math.Min(1, opacity)), 1);
 
@@ -266,6 +279,17 @@ namespace FoxIPTV.Views
 
         private void HotKey(KeyEventArgs e)
         {
+            if (!e.Handled && e.Key == Key.OemComma && (e.KeyModifiers == KeyModifiers.Control || e.KeyModifiers == KeyModifiers.Meta))
+            {
+                TvCore.LogInfo("[UI] Key Ctrl+Comma");
+
+                ToggleSettingsForm();
+
+                e.Handled = true;
+
+                return;
+            }
+
             if (e.Handled || e.KeyModifiers != KeyModifiers.None && e.KeyModifiers != KeyModifiers.Shift)
             {
                 return;
@@ -440,6 +464,20 @@ namespace FoxIPTV.Views
             ToggleToolWindow(() => GuideWindowInstance, open => TvCore.Settings.GuideOpen = open);
         }
 
+        private void ToggleSettingsForm()
+        {
+            var window = SettingsWindowInstance;
+
+            if (window.IsVisible)
+            {
+                window.Hide();
+            }
+            else
+            {
+                window.Show(this);
+            }
+        }
+
         private void ToggleToolWindow(Func<Window> window, Action<bool> remember)
         {
             if (TvCore.Channels == null || TvCore.Channels.Count == 0)
@@ -479,7 +517,9 @@ namespace FoxIPTV.Views
             Quit();
         }
 
-        private void ToggleStatusStrip()
+        internal bool StatusBarShown => StatusBar.IsVisible;
+
+        internal void ToggleStatusStrip()
         {
             StatusBar.IsVisible = !StatusBar.IsVisible;
 
@@ -489,7 +529,7 @@ namespace FoxIPTV.Views
             AspectRatioResizeLater();
         }
 
-        private void ToggleBorders()
+        internal void ToggleBorders()
         {
             if (IsFullscreen)
             {
@@ -505,7 +545,7 @@ namespace FoxIPTV.Views
             AspectRatioResizeLater();
         }
 
-        private void ToggleAlwaysOnTop()
+        internal void ToggleAlwaysOnTop()
         {
             Topmost = !Topmost;
 
@@ -557,7 +597,7 @@ namespace FoxIPTV.Views
         }
 
         /// <summary>Toggle Closed Captioning on or off</summary>
-        private void ToggleClosedCaptioning()
+        internal void ToggleClosedCaptioning()
         {
             TvCore.Settings.CCEnabled = !TvCore.Settings.CCEnabled;
             TvCore.Settings.Save();

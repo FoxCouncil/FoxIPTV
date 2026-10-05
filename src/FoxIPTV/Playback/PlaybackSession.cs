@@ -267,7 +267,7 @@ namespace FoxIPTV.Playback
             {
                 _owner.Report(this, PlayerState.Opening, null);
 
-                PlaybackTrace.Mark("open", _request.Uri.Host);
+                Trace("open", _request.Uri.Host);
 
                 _opened = await OpenedSource.Open(_request, _token).ConfigureAwait(false);
 
@@ -278,7 +278,7 @@ namespace FoxIPTV.Playback
 
                 if (_opened.Playlist != null)
                 {
-                    PlaybackTrace.Mark("playlist", _opened.Playlist.IsMaster ? $"{_opened.Playlist.Variants.Count} qualities" : $"{_opened.Playlist.Segments.Count} pieces");
+                    Trace("playlist", _opened.Playlist.IsMaster ? $"{_opened.Playlist.Variants.Count} qualities" : $"{_opened.Playlist.Segments.Count} pieces");
 
                     Interlocked.Exchange(ref _lastPlaylistAt, _age.ElapsedMilliseconds);
 
@@ -298,7 +298,7 @@ namespace FoxIPTV.Playback
                 }
                 else if (_opened.Reader != null)
                 {
-                    PlaybackTrace.Mark("plain stream");
+                    Trace("plain stream");
 
                     _opened.Reader.OnBytes = count => Interlocked.Add(ref _bytes, count);
 
@@ -374,7 +374,7 @@ namespace FoxIPTV.Playback
 
             TvCore.LogError($"[Player] Session {Id} failed: {why}");
 
-            PlaybackTrace.Mark("failed", why);
+            Trace("failed", why);
 
             _owner.Report(this, PlayerState.Failed, why);
 
@@ -390,7 +390,7 @@ namespace FoxIPTV.Playback
 
             TvCore.LogInfo($"[Player] Session {Id}: copy-protected ({why})");
 
-            PlaybackTrace.Mark("copy-protected", why);
+            Trace("copy-protected", why);
 
             _owner.Report(this, PlayerState.Protected, why);
 
@@ -418,7 +418,7 @@ namespace FoxIPTV.Playback
             Interlocked.Increment(ref _pieces);
             Interlocked.Exchange(ref _lastPieceAt, _age.ElapsedMilliseconds);
 
-            PlaybackTrace.MarkOnce($"first {track} piece", $"{chunk.Data.Length / 1024}KB in {took.TotalMilliseconds:0}ms");
+            TraceOnce($"first {track} piece", $"{chunk.Data.Length / 1024}KB in {took.TotalMilliseconds:0}ms");
 
             if (chunk.Duration > 0 && took.TotalSeconds > chunk.Duration)
             {
@@ -430,7 +430,7 @@ namespace FoxIPTV.Playback
         {
             _variant = description;
 
-            PlaybackTrace.Quality(description);
+            TraceQuality(description);
         }
 
         private double RefillTarget => _hls != null ? RebufferSeconds : 1.5;
@@ -803,7 +803,7 @@ namespace FoxIPTV.Playback
                 {
                     firstPacket = false;
 
-                    PlaybackTrace.MarkOnce("first packet", demuxer.FormatName);
+                    TraceOnce("first packet", demuxer.FormatName);
                 }
 
                 if (reader != null && !double.IsNaN(mapped))
@@ -891,11 +891,40 @@ namespace FoxIPTV.Playback
 
         private void AddAdMark(double at, Action fire)
         {
+            if (_request.Quiet)
+            {
+                return;
+            }
+
             lock (_adMarks)
             {
                 var index = _adMarks.FindIndex(x => x.At > at);
 
                 _adMarks.Insert(index < 0 ? _adMarks.Count : index, (at, fire));
+            }
+        }
+
+        private void Trace(string stage, string detail = null)
+        {
+            if (!_request.Quiet)
+            {
+                PlaybackTrace.Mark(stage, detail);
+            }
+        }
+
+        private void TraceOnce(string stage, string detail = null)
+        {
+            if (!_request.Quiet)
+            {
+                PlaybackTrace.MarkOnce(stage, detail);
+            }
+        }
+
+        private void TraceQuality(string description)
+        {
+            if (!_request.Quiet)
+            {
+                PlaybackTrace.Quality(description);
             }
         }
 
@@ -1212,7 +1241,7 @@ namespace FoxIPTV.Playback
             {
                 _videoReady = true;
 
-                PlaybackTrace.Mark("first picture decoded", $"{keep->width}x{keep->height}");
+                Trace("first picture decoded", $"{keep->width}x{keep->height}");
             }
         }
 
@@ -1408,7 +1437,7 @@ namespace FoxIPTV.Playback
             {
                 _audioReady = true;
 
-                PlaybackTrace.Mark("sound ready");
+                Trace("sound ready");
             }
         }
 
@@ -1598,7 +1627,7 @@ namespace FoxIPTV.Playback
                 _wall.Start(double.IsNaN(Frames.FirstTime) ? 0 : Frames.FirstTime);
             }
 
-            PlaybackTrace.Mark("playing", _audioClock ? "timed by the sound" : "timed by the wall clock");
+            Trace("playing", _audioClock ? "timed by the sound" : "timed by the wall clock");
 
             _owner.Report(this, PlayerState.Playing, null);
         }
@@ -1737,7 +1766,7 @@ namespace FoxIPTV.Playback
                 }
             }
 
-            if (pieces != null)
+            if (pieces != null && !_request.Quiet)
             {
                 foreach (var piece in pieces)
                 {
@@ -1974,7 +2003,7 @@ namespace FoxIPTV.Playback
 
             TvCore.LogInfo($"[Player] Session {Id}: played to the end. {Stats}");
 
-            PlaybackTrace.Mark("end reached");
+            Trace("end reached");
 
             _owner.Report(this, PlayerState.Ended, null);
         }

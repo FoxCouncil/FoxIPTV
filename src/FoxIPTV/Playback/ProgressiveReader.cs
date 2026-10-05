@@ -33,7 +33,7 @@ namespace FoxIPTV.Playback
 
             if (scheme != "http" && scheme != "https")
             {
-                return new OpenedSource { Url = request.Uri.ToString() };
+                return new OpenedSource { Url = request.Uri.IsFile ? request.Uri.LocalPath : request.Uri.ToString() };
             }
 
             HttpResponseMessage response;

@@ -47,6 +47,16 @@ namespace FoxIPTV.Views
 
         private ChannelsWindow _channelsWindow;
 
+        private SettingsWindow _settingsWindow;
+
+        private AdReel _adReel;
+
+        private DateTime _lastAdTick = DateTime.UtcNow;
+
+        private bool _adBreakShown;
+
+        private readonly Random _random = new Random();
+
         public bool IsFullscreen { get; private set; }
 
         public MainWindow()
@@ -199,6 +209,8 @@ namespace FoxIPTV.Views
         private GuideWindow GuideWindowInstance => _guideWindow ??= new GuideWindow();
 
         private ChannelsWindow ChannelsWindowInstance => _channelsWindow ??= new ChannelsWindow();
+
+        private SettingsWindow SettingsWindowInstance => _settingsWindow ??= new SettingsWindow { Host = this };
 
         private void InitializeFormDefaults()
         {
@@ -452,6 +464,8 @@ namespace FoxIPTV.Views
 
             TimerTvIcons();
 
+            TimerAdBreak();
+
             TimerAdLabel();
 
             TimerUiFade();
@@ -466,9 +480,52 @@ namespace FoxIPTV.Views
             MuteLabel.IsVisible = _player.Muted;
         }
 
+        private void TimerAdBreak()
+        {
+            var now = DateTime.UtcNow;
+            var elapsed = (now - _lastAdTick).TotalSeconds;
+
+            _lastAdTick = now;
+
+            var inAd = AdDetector.InAd && _isPlaying;
+
+            AdStats.Observe(TvCore.CurrentChannel?.Name, inAd, AdDetector.AdNumber, elapsed);
+
+            _adReel ??= new AdReel(AdImage, AdVideo);
+
+            if (inAd && !_adBreakShown)
+            {
+                _adBreakShown = true;
+
+                var titles = TvCore.Settings.AdTitles;
+
+                AdTitleLabel.Text = titles != null && titles.Count > 0 ? titles[_random.Next(titles.Count)] : string.Empty;
+
+                _adReel.Start(TvCore.Settings.AdMediaFolder);
+            }
+            else if (!inAd && _adBreakShown)
+            {
+                _adBreakShown = false;
+
+                _adReel.Stop();
+            }
+
+            var showingMedia = _adReel.IsRunning;
+
+            _adReel.Muted = _player.Muted || !TvCore.Settings.AdMediaSound;
+            _player.Ducked = inAd && (TvCore.Settings.AdMute || showingMedia && TvCore.Settings.AdMediaSound);
+
+            AdMediaPanel.IsVisible = showingMedia;
+            AdTitleBox.IsVisible = showingMedia && TvCore.Settings.AdTitle && !string.IsNullOrEmpty(AdTitleLabel.Text);
+            AdDimLayer.IsVisible = inAd && !showingMedia && TvCore.Settings.AdDim;
+            AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
+
+            _adReel.Tick();
+        }
+
         private void TimerAdLabel()
         {
-            if (!AdDetector.InAd || !_isPlaying)
+            if (!AdDetector.InAd || !_isPlaying || !TvCore.Settings.AdLabel)
             {
                 AdLabelBox.IsVisible = false;
 

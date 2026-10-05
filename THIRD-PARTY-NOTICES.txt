@@ -66,6 +66,11 @@ License: MIT. Copyright (c) Tom Deseyn. Source: https://github.com/tmds/Tmds.DBu
 License: MIT. Copyright (c) .NET Foundation and Contributors.
 Source: https://github.com/dotnet/runtime
 
+Fugue Icons 3.5.6 (menu and settings icons)
+-------------------------------------------
+License: Creative Commons Attribution 3.0. (C) 2013 Yusuke Kamiyamane.
+Source: https://p.yusukekamiyamane.com/ License: http://creativecommons.org/licenses/by/3.0/
+
 VCR OSD Mono font 1.001 (captions)
 ----------------------------------
 License: free, including commercial use. By Riciery Leal (mrmanet). Listed as

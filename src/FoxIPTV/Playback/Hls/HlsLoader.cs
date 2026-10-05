@@ -247,7 +247,7 @@ namespace FoxIPTV.Playback.Hls
                     continue;
                 }
 
-                next ??= StartSequence(playlist);
+                next ??= StartSequence(playlist, _request.LiveDelay);
 
                 var segment = playlist.Segments.FirstOrDefault(x => x.Sequence == next.Value);
 
@@ -258,7 +258,7 @@ namespace FoxIPTV.Playback.Hls
 
                     if (next.Value < head.Sequence || next.Value > tail.Sequence + 1 + playlist.Segments.Count)
                     {
-                        var restart = StartSequence(playlist);
+                        var restart = StartSequence(playlist, _request.LiveDelay);
 
                         TvCore.LogError($"[Player] HLS {name}: wanted piece #{next} but the playlist holds #{head.Sequence}-#{tail.Sequence}; moving to #{restart}");
 
@@ -443,7 +443,7 @@ namespace FoxIPTV.Playback.Hls
             return _variantIndex;
         }
 
-        private static long StartSequence(HlsPlaylist playlist)
+        public static long StartSequence(HlsPlaylist playlist, double liveDelay)
         {
             if (!playlist.IsLive)
             {
@@ -451,6 +451,19 @@ namespace FoxIPTV.Playback.Hls
             }
 
             var index = Math.Max(0, playlist.Segments.Count - StartPieces);
+
+            if (liveDelay > 0)
+            {
+                var behind = 0.0;
+
+                index = playlist.Segments.Count - 1;
+
+                while (index > 0 && behind + playlist.Segments[index].Duration < liveDelay)
+                {
+                    behind += playlist.Segments[index].Duration;
+                    index--;
+                }
+            }
 
             return playlist.Segments[index].Sequence;
         }

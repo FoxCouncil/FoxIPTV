@@ -3,6 +3,7 @@
 namespace FoxIPTV.Classes
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading;
     using Newtonsoft.Json;
@@ -46,6 +47,27 @@ namespace FoxIPTV.Classes
         public int StereoMode { get; set; } = 1;
 
         public bool StatusBar { get; set; } = true;
+
+        public bool CheckForUpdates { get; set; } = true;
+
+        public double LiveDelay { get; set; }
+
+        public bool AdMute { get; set; }
+
+        public bool AdLabel { get; set; } = true;
+
+        public bool AdDim { get; set; }
+
+        public double AdDimLevel { get; set; } = 0.7;
+
+        public string AdMediaFolder { get; set; }
+
+        public bool AdMediaSound { get; set; }
+
+        public bool AdTitle { get; set; } = true;
+
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+        public List<string> AdTitles { get; set; } = new List<string> { "We'll be right back", "Let's all goto the lobby" };
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();

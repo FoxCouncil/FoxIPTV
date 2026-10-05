@@ -52,6 +52,12 @@ namespace FoxIPTV.Classes
 
         private static readonly BlockingCollection<string> _logQueue = new BlockingCollection<string>();
 
+        private const int LogTailLength = 2000;
+
+        private static readonly Queue<string> LogTailLines = new Queue<string>();
+
+        public static event Action<string> LogLineAdded;
+
         private static readonly Thread _logThread = new Thread(LogWriterLoop) { IsBackground = true, Name = "Log writer" };
 
         /// <summary>The in-memory image server black list, to avoid hitting servers that return non 200 responses</summary>
@@ -641,6 +647,14 @@ namespace FoxIPTV.Classes
             };
         }
 
+        public static string[] LogTail()
+        {
+            lock (LogTailLines)
+            {
+                return LogTailLines.ToArray();
+            }
+        }
+
         private static void LogWriterLoop()
         {
             try
@@ -667,12 +681,29 @@ namespace FoxIPTV.Classes
         /// <param name="message">The log message</param>
         private static void Log(TvCoreLogLevel logLevel, string message)
         {
-            if (logLevel == TvCoreLogLevel.None || logLevel == TvCoreLogLevel.All || logLevel > CurrentLogLevel)
+            if (logLevel == TvCoreLogLevel.None || logLevel == TvCoreLogLevel.All)
             {
                 return;
             }
 
             var logLine = $"[{DateTime.UtcNow:O}]-[{logLevel.ToString().ToUpper().PadLeft(7)}]: {message}";
+
+            lock (LogTailLines)
+            {
+                LogTailLines.Enqueue(logLine);
+
+                while (LogTailLines.Count > LogTailLength)
+                {
+                    LogTailLines.Dequeue();
+                }
+            }
+
+            LogLineAdded?.Invoke(logLine);
+
+            if (logLevel > CurrentLogLevel)
+            {
+                return;
+            }
 
             try
             {
