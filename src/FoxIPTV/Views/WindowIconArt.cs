@@ -11,9 +11,12 @@ namespace FoxIPTV.Views
     using Avalonia.Platform;
     using Avalonia.Styling;
     using Avalonia.Threading;
+    using Classes;
 
     public static unsafe class WindowIconArt
     {
+        private const uint WmGetIcon = 0x007F;
+
         private const uint WmSetIcon = 0x0080;
 
         private const uint WmSettingChange = 0x001A;
@@ -21,6 +24,8 @@ namespace FoxIPTV.Views
         private const int IconSmall = 0;
 
         private const int IconBig = 1;
+
+        private const int IconSmall2 = 2;
 
         private const int MetricIconWidth = 11;
 
@@ -177,15 +182,21 @@ namespace FoxIPTV.Views
                 return IntPtr.Zero;
             }
 
+            if (message == WmGetIcon)
+            {
+                var asked = IconForWindow(window, wParam == (IntPtr)IconBig, lParam == IntPtr.Zero ? GetDpiForWindow(handle) : (uint)lParam);
+
+                handled = asked != IntPtr.Zero && (wParam == (IntPtr)IconSmall || wParam == (IntPtr)IconBig || wParam == (IntPtr)IconSmall2);
+
+                return handled ? asked : IntPtr.Zero;
+            }
+
             if (message != WmSetIcon)
             {
                 return IntPtr.Zero;
             }
 
-            var big = wParam == (IntPtr)IconBig;
-            var white = big ? TrayIconArt.TaskbarIsDark() : window.ActualThemeVariant == ThemeVariant.Dark;
-            var size = GetSystemMetricsForDpi(big ? MetricIconWidth : MetricSmallIconWidth, GetDpiForWindow(handle));
-            var icon = IconFor(size, white);
+            var icon = IconForWindow(window, wParam == (IntPtr)IconBig, GetDpiForWindow(handle));
 
             if (icon == IntPtr.Zero)
             {
@@ -197,6 +208,13 @@ namespace FoxIPTV.Views
             handled = true;
 
             return DefWindowProcW(handle, WmSetIcon, wParam, icon);
+        }
+
+        private static IntPtr IconForWindow(Window window, bool big, uint dpi)
+        {
+            var white = big ? TrayIconArt.TaskbarIsDark() : window.ActualThemeVariant == ThemeVariant.Dark;
+
+            return IconFor(GetSystemMetricsForDpi(big ? MetricIconWidth : MetricSmallIconWidth, dpi), white);
         }
 
         private static void Refresh(Window window)
@@ -234,8 +252,10 @@ namespace FoxIPTV.Views
 
                 icon = white ? Whiten(IconFor(size, false), size) : LoadIcon(_file, size);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                TvCore.LogError($"[Icons] Making the {size}px {(white ? "white" : "plain")} icon failed: {ex.GetType().Name}: {ex.Message}");
+
                 icon = IntPtr.Zero;
             }
 
