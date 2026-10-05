@@ -151,6 +151,7 @@
         <Setter Property="Padding" Value="6,2" />
     </Style>
     <Style Selector="Border.statusbar TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource OverlayFont}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>

@@ -238,8 +238,6 @@ namespace FoxIPTV.Views
 
             Topmost = TvCore.Settings.AlwaysOnTop;
 
-            CcStatusLabel.Opacity = TvCore.Settings.CCEnabled ? 1 : 0.35;
-
             Opened += (sender, args) =>
             {
                 WindowOpacity.Apply(this, TvCore.Settings.Opacity);

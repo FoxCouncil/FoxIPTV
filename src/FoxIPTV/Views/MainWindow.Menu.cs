@@ -604,8 +604,6 @@ namespace FoxIPTV.Views
 
             TvCore.LogInfo($"[CC] Setting turned {(TvCore.Settings.CCEnabled ? "on" : "off")}");
 
-            CcStatusLabel.Opacity = TvCore.Settings.CCEnabled ? 1 : 0.35;
-
             ShowCaption();
         }
 

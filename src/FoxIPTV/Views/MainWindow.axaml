@@ -12,24 +12,23 @@
 
     <DockPanel>
         <Border x:Name="StatusBar" Classes="statusbar" DockPanel.Dock="Bottom">
-            <Grid ColumnDefinitions="*,Auto,*">
+            <Grid ColumnDefinitions="*,Auto">
                 <DockPanel Grid.Column="0" LastChildFill="True">
                     <views:InkTextBlock x:Name="ChannelStatusLabel" DockPanel.Dock="Left" Text="Channels:" Margin="0,0,4,0" />
                     <ProgressBar x:Name="ChannelStatusProgressBar" DockPanel.Dock="Left" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
                     <views:InkTextBlock x:Name="GuideStatusLabel" DockPanel.Dock="Left" Text="Guide:" Margin="0,0,4,0" />
                     <ProgressBar x:Name="GuideStatusProgressBar" DockPanel.Dock="Left" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" />
-                    <views:InkTextBlock x:Name="PlayerStatusLabel" DockPanel.Dock="Left" Text="Waiting" Width="80" FontFamily="Consolas, Menlo, monospace" FontWeight="Bold" Foreground="SeaGreen" />
+                    <views:InkTextBlock x:Name="PlayerStatusLabel" DockPanel.Dock="Left" Text="Waiting" Width="80" Foreground="SeaGreen" />
                     <views:InkTextBlock x:Name="TraceStatusLabel" Classes="muted" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
                 </DockPanel>
-                <views:InkTextBlock x:Name="CcStatusLabel" Grid.Column="1" Text="CC" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="CcOptionsButton" IsVisible="False" Focusable="False" Padding="4,0" Margin="8,0,8,0" FontSize="12" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="CcOptionsButton" IsVisible="False" Focusable="False" Padding="4,0" Margin="8,0,8,0" FontSize="12" FontFamily="{StaticResource OverlayFont}" VerticalAlignment="Center">
                         <Button.Flyout>
                             <MenuFlyout Placement="TopEdgeAlignedRight" />
                         </Button.Flyout>
                     </Button>
                     <ProgressBar x:Name="BufferStatusProgressBar" Width="100" Minimum="0" Maximum="100" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip.Tip="Buffer" />
-                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" Width="44" TextAlignment="Right" FontFamily="Consolas, Menlo, monospace" />
+                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" Width="44" TextAlignment="Right" />
                 </StackPanel>
             </Grid>
         </Border>
