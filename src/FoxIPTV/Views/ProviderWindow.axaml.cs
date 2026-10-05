@@ -72,7 +72,7 @@ namespace FoxIPTV.Views
             ServicesComboBox.ItemsSource = TvCore.Services;
             ServicesComboBox.SelectionChanged += (sender, args) => BuildFields();
 
-            ServicesComboBox.SelectedIndex = 0;
+            ServicesComboBox.SelectedIndex = Math.Max(0, TvCore.Services.FindIndex(x => x.Id == TvCore.Settings.Provider));
 
             LoginButton.Click += LoginButton_Click;
 
@@ -270,6 +270,9 @@ namespace FoxIPTV.Views
             }
 
             TvCore.SelectService(service.Id);
+
+            TvCore.Settings.Provider = service.Id;
+            TvCore.Settings.Save();
 
             service.Data = FieldValues;
 
