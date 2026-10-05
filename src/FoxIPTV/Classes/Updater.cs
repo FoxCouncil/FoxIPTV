@@ -290,7 +290,27 @@ namespace FoxIPTV.Classes
                 return candidateLabel.Length == 0 && currentLabel.Length > 0;
             }
 
-            return string.CompareOrdinal(candidateLabel, currentLabel) > 0;
+            return CompareLabels(candidateLabel, currentLabel) > 0;
+        }
+
+        private static int CompareLabels(string left, string right)
+        {
+            var leftParts = left.Split('.');
+            var rightParts = right.Split('.');
+
+            for (var i = 0; i < Math.Min(leftParts.Length, rightParts.Length); i++)
+            {
+                var leftNumber = int.TryParse(leftParts[i], out var leftValue);
+                var rightNumber = int.TryParse(rightParts[i], out var rightValue);
+                var order = leftNumber && rightNumber ? leftValue.CompareTo(rightValue) : leftNumber != rightNumber ? (leftNumber ? -1 : 1) : string.CompareOrdinal(leftParts[i], rightParts[i]);
+
+                if (order != 0)
+                {
+                    return order;
+                }
+            }
+
+            return leftParts.Length.CompareTo(rightParts.Length);
         }
 
         private static bool TrySplit(string version, out Version core, out string label)

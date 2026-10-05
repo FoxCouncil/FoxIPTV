@@ -154,6 +154,10 @@ namespace FoxIPTV.Tests
         [InlineData("3.0.0", "3.0.0", false)]
         [InlineData("2.9.9", "3.0.0-alpha", false)]
         [InlineData("garbage", "3.0.0", false)]
+        [InlineData("3.0.0-rc.10", "3.0.0-rc.9", true)]
+        [InlineData("3.0.0-rc.2", "3.0.0-rc.10", false)]
+        [InlineData("3.0.0-rc.1", "3.0.0-alpha.9", true)]
+        [InlineData("3.0.0-rc.1.1", "3.0.0-rc.1", true)]
         public void Updater_ComparesVersions(string candidate, string current, bool newer)
         {
             Assert.Equal(newer, Updater.IsNewer(candidate, current));
