@@ -343,6 +343,24 @@ namespace FoxIPTV.Classes
             }
         }
 
+        public static void ObserveAdProgress(AdProgress progress)
+        {
+            if (progress == null)
+            {
+                return;
+            }
+
+            lock (Lock)
+            {
+                if (!InAd)
+                {
+                    return;
+                }
+
+                _adEndsAt = DateTime.UtcNow.AddSeconds(Math.Max(0, progress.Length - progress.Elapsed));
+            }
+        }
+
         private static void StartSignalledBreak(double seconds, string why)
         {
             if (!InAd || !_cued)

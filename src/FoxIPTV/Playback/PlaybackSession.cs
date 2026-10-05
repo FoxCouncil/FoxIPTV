@@ -52,7 +52,7 @@ namespace FoxIPTV.Playback
 
         private readonly List<CaptionTrack> _captionTracks = new List<CaptionTrack>();
 
-        private readonly List<SpliceSignal> _signalMarks = new List<SpliceSignal>();
+        private readonly List<(double At, Action Fire)> _adMarks = new List<(double At, Action Fire)>();
 
         private readonly SubtitleTrack _subtitles = new SubtitleTrack();
 
@@ -863,12 +863,7 @@ namespace FoxIPTV.Playback
 
                 TvCore.LogInfo($"[Ads] SCTE-35 {signal}, plays at {signal.PlayAt:0.000}s");
 
-                lock (_signalMarks)
-                {
-                    var at = _signalMarks.FindIndex(x => x.PlayAt > signal.PlayAt);
-
-                    _signalMarks.Insert(at < 0 ? _signalMarks.Count : at, signal);
-                }
+                AddAdMark(signal.PlayAt, () => AdDetector.ObserveSignal(signal));
 
                 return;
             }
@@ -884,6 +879,23 @@ namespace FoxIPTV.Playback
                 var mapped = double.IsNaN(seconds) ? double.NaN : seconds + _timeline.Offset(state.Key, seconds);
 
                 TvCore.LogInfo($"[Ads] ID3 at {mapped:0.000}s: {text}");
+
+                var progress = Scte35.ReadPlutoProgress(data);
+
+                if (progress != null)
+                {
+                    AddAdMark(mapped, () => AdDetector.ObserveAdProgress(progress));
+                }
+            }
+        }
+
+        private void AddAdMark(double at, Action fire)
+        {
+            lock (_adMarks)
+            {
+                var index = _adMarks.FindIndex(x => x.At > at);
+
+                _adMarks.Insert(index < 0 ? _adMarks.Count : index, (at, fire));
             }
         }
 
@@ -1738,23 +1750,23 @@ namespace FoxIPTV.Playback
                 }
             }
 
-            List<SpliceSignal> signals = null;
+            List<Action> adMarks = null;
 
-            lock (_signalMarks)
+            lock (_adMarks)
             {
-                while (_signalMarks.Count > 0 && (_signalMarks[0].PlayAt <= clock || double.IsNaN(_signalMarks[0].PlayAt)))
+                while (_adMarks.Count > 0 && (_adMarks[0].At <= clock || double.IsNaN(_adMarks[0].At)))
                 {
-                    (signals ??= new List<SpliceSignal>()).Add(_signalMarks[0]);
+                    (adMarks ??= new List<Action>()).Add(_adMarks[0].Fire);
 
-                    _signalMarks.RemoveAt(0);
+                    _adMarks.RemoveAt(0);
                 }
             }
 
-            if (signals != null)
+            if (adMarks != null)
             {
-                foreach (var signal in signals)
+                foreach (var fire in adMarks)
                 {
-                    AdDetector.ObserveSignal(signal);
+                    fire();
                 }
             }
 

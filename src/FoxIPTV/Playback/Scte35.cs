@@ -49,8 +49,21 @@ namespace FoxIPTV.Playback
         public override string ToString() => $"command 0x{Command:X2}{(Time.HasValue ? $" at {Time.Value / Scte35.Hz:0.000}s" : " now")}{(OutOfNetwork ? " out" : string.Empty)}{(InToNetwork ? " in" : string.Empty)}{(BreakSeconds > 0 ? $" break {BreakSeconds:0.###}s" : string.Empty)}{(Segments.Count > 0 ? "; " + string.Join("; ", Segments) : string.Empty)}";
     }
 
+    public sealed class AdProgress
+    {
+        public string Creative { get; set; }
+
+        public double Elapsed { get; set; }
+
+        public double Length { get; set; }
+
+        public override string ToString() => $"creative {Creative} at {Elapsed:0}s of {Length:0}s";
+    }
+
     public static class Scte35
     {
+        private const string PlutoTracking = "www.pluto.tv:clik:";
+
         public const double Hz = 90000;
 
         private const long PtsWrap = 1L << 33;
@@ -294,6 +307,87 @@ namespace FoxIPTV.Playback
             }
 
             return string.Join("; ", frames);
+        }
+
+        public static AdProgress ReadPlutoProgress(ReadOnlySpan<byte> data)
+        {
+            if (data.Length < 10 || data[0] != 'I' || data[1] != 'D' || data[2] != '3')
+            {
+                return null;
+            }
+
+            var text = Encoding.ASCII.GetString(data);
+            var start = text.IndexOf(PlutoTracking, StringComparison.Ordinal);
+
+            if (start < 0)
+            {
+                return null;
+            }
+
+            start += PlutoTracking.Length;
+
+            var end = text.IndexOf('\0', start);
+            byte[] fields;
+
+            try
+            {
+                fields = Convert.FromBase64String(text.Substring(start, (end < 0 ? text.Length : end) - start));
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+
+            var progress = new AdProgress();
+
+            for (var i = 0; i + 5 <= fields.Length;)
+            {
+                var key = Encoding.ASCII.GetString(fields, i, 4);
+                var length = fields[i + 4];
+                var value = i + 5;
+
+                if (value + length > fields.Length)
+                {
+                    break;
+                }
+
+                switch (key)
+                {
+                    case "crid":
+                    {
+                        progress.Creative = Convert.ToHexString(fields, value, length).ToLowerInvariant();
+                    }
+                    break;
+
+                    case "cidx":
+                    {
+                        progress.Elapsed = Number(fields, value, length);
+                    }
+                    break;
+
+                    case "midx":
+                    {
+                        progress.Length = Number(fields, value, length);
+                    }
+                    break;
+                }
+
+                i = value + length;
+            }
+
+            return progress.Creative != null && progress.Length > 0 ? progress : null;
+        }
+
+        private static long Number(byte[] data, int start, int length)
+        {
+            long value = 0;
+
+            for (var i = 0; i < length; i++)
+            {
+                value = (value << 8) | data[start + i];
+            }
+
+            return value;
         }
 
         private static string FrameText(string id, ReadOnlySpan<byte> frame)

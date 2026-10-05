@@ -48,6 +48,25 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void PlutoProgress_CountsDownTheCurrentAd()
+        {
+            AdDetector.Reset();
+
+            AdDetector.ObserveAdProgress(new AdProgress { Creative = "6abec2e1ac612a761b08e646", Elapsed = 0, Length = 30 });
+
+            Assert.Null(AdDetector.AdSecondsLeft);
+
+            AdDetector.ObserveSegment("https://cdn.example/_ad/creative/6abec2e1ac612a761b08e646_ad/720p/seg1.ts");
+            AdDetector.ObserveAdProgress(new AdProgress { Creative = "6abec2e1ac612a761b08e646", Elapsed = 10, Length = 30 });
+
+            Assert.InRange(AdDetector.AdSecondsLeft.Value, 19, 20);
+
+            AdDetector.ObserveSegment("https://cdn.example/show/episode/seg40.ts");
+
+            Assert.Null(AdDetector.AdSecondsLeft);
+        }
+
+        [Fact]
         public void Signals_SpliceOutCountsDownTheBreakAndSpliceInEndsIt()
         {
             AdDetector.Reset();
