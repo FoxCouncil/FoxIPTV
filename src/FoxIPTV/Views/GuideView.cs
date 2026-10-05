@@ -445,11 +445,9 @@ namespace FoxIPTV.Views
             e.Handled = true;
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        public bool Navigate(Key key)
         {
-            base.OnKeyDown(e);
-
-            switch (e.Key)
+            switch (key)
             {
                 case Key.Up:
                 {
@@ -495,12 +493,13 @@ namespace FoxIPTV.Views
 
                 default:
                 {
-                    return;
+                    return false;
                 }
             }
 
-            e.Handled = true;
             InvalidateVisual();
+
+            return true;
         }
 
         private void ScrollTime(int steps)

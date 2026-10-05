@@ -4,6 +4,7 @@ namespace FoxIPTV.Views
 {
     using System;
     using Avalonia.Controls;
+    using Avalonia.Interactivity;
     using Avalonia.Threading;
     using Classes;
 
@@ -16,6 +17,14 @@ namespace FoxIPTV.Views
             InitializeComponent();
 
             Guide.AttachScrollBar(GuideScrollBar);
+
+            AddHandler(KeyDownEvent, (sender, args) =>
+            {
+                if (!(args.Source is TextBox) && Guide.Navigate(args.Key))
+                {
+                    args.Handled = true;
+                }
+            }, RoutingStrategies.Tunnel);
 
             ResetViewButton.Click += (sender, args) => Guide.ResetView();
 
