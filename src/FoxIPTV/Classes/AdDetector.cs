@@ -219,7 +219,10 @@ namespace FoxIPTV.Classes
 
                     if (!overdue)
                     {
-                        SetBreakLeft(_cueLength > 0 ? Math.Max(0, _cueLength - _cuePlayed) : (double?)null);
+                        if (!_signalled || breakElapsed >= 0)
+                        {
+                            SetBreakLeft(_cueLength > 0 ? Math.Max(0, _cueLength - _cuePlayed) : (double?)null);
+                        }
 
                         _cuePlayed += duration;
 
