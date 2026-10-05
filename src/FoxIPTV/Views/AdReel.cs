@@ -15,7 +15,7 @@ namespace FoxIPTV.Views
 
     public sealed class AdReel : IDisposable
     {
-        private const double PictureSeconds = 8;
+        public const double PictureSeconds = 8;
 
         private static readonly HashSet<string> PictureTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp" };
 

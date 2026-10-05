@@ -55,6 +55,8 @@ namespace FoxIPTV.Views
 
         private bool _adBreakShown;
 
+        private DateTime _dimTitleUntil;
+
         private readonly Random _random = new Random();
 
         private static readonly Avalonia.Layout.HorizontalAlignment[] AdTitleAcross = { Avalonia.Layout.HorizontalAlignment.Left, Avalonia.Layout.HorizontalAlignment.Center, Avalonia.Layout.HorizontalAlignment.Right };
@@ -520,8 +522,21 @@ namespace FoxIPTV.Views
             _player.Ducked = inAd && (TvCore.Settings.AdMute || showingMedia && TvCore.Settings.AdMediaSound);
 
             AdMediaPanel.IsVisible = showingMedia;
-            AdTitleBox.IsVisible = showingMedia && TvCore.Settings.AdTitle && !string.IsNullOrEmpty(AdTitleLabel.Text);
-            AdDimLayer.IsVisible = inAd && !showingMedia && TvCore.Settings.AdDim;
+            var dimmed = inAd && !showingMedia && TvCore.Settings.AdDim;
+
+            if (dimmed && DateTime.UtcNow >= _dimTitleUntil)
+            {
+                _dimTitleUntil = DateTime.UtcNow.AddSeconds(AdReel.PictureSeconds);
+
+                MoveAdTitle();
+            }
+            else if (!dimmed)
+            {
+                _dimTitleUntil = DateTime.MinValue;
+            }
+
+            AdTitleBox.IsVisible = (showingMedia || dimmed) && TvCore.Settings.AdTitle && !string.IsNullOrEmpty(AdTitleLabel.Text);
+            AdDimLayer.IsVisible = dimmed;
             AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
 
             _adReel.Tick();
