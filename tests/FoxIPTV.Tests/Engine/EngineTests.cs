@@ -262,6 +262,38 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Subtitles_UseThePreferredLanguageAndLoadOnlyThatTrack()
+        {
+            ServeClips("low", 4);
+
+            for (var i = 0; i < 4; i++)
+            {
+                _server.Serve($"/subs-en/{i}.vtt", Cue(Clip($"low/{i}.ts"), $"Line {i}"));
+                _server.Serve($"/subs-es/{i}.vtt", Cue(Clip($"low/{i}.ts"), $"Linea {i}"));
+            }
+
+            _server.Serve("/low.m3u8", Vod(Pieces("low", 4)));
+            _server.Serve("/subs-en.m3u8", Vod(Pieces("subs-en", 4, "vtt")));
+            _server.Serve("/subs-es.m3u8", Vod(Pieces("subs-es", 4, "vtt")));
+            _server.Serve("/master.m3u8", "#EXTM3U\n" +
+                                          "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"English\",LANGUAGE=\"en\",DEFAULT=YES,URI=\"subs-en.m3u8\"\n" +
+                                          "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"Espanol\",LANGUAGE=\"es-US\",URI=\"subs-es.m3u8\"\n" +
+                                          "#EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=160x90,CODECS=\"avc1.42c00c,mp4a.40.2\",SUBTITLES=\"subs\"\nlow.m3u8\n");
+
+            using var run = Play("/master.m3u8", false, "spa");
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 20), run.Describe());
+
+            var shown = run.Captions.Where(x => !string.IsNullOrEmpty(x.Text)).Select(x => x.Text).ToList();
+
+            Assert.Equal(new[] { "Linea 0", "Linea 1", "Linea 2", "Linea 3" }, shown);
+            Assert.Equal(new[] { "English", "Espanol" }, run.Player.CaptionTracks.Select(x => x.Name));
+            Assert.EndsWith("subs-es.m3u8", run.Player.SelectedCaption);
+            Assert.DoesNotContain(_server.Requests, x => x.Path.StartsWith("/subs-en", StringComparison.Ordinal));
+            AssertPolite();
+        }
+
+        [Fact]
         public void Subtitles_FollowTheVideoThroughAnAdBreak()
         {
             var pieces = new[]
@@ -348,9 +380,9 @@ namespace FoxIPTV.Tests.Engine
             AssertPolite();
         }
 
-        private PlayerRun Play(string path, bool live)
+        private PlayerRun Play(string path, bool live, string preferredCaption = null)
         {
-            return new PlayerRun(new MediaRequest { Uri = _server.Url(path), IsLive = live, Label = path });
+            return new PlayerRun(new MediaRequest { Uri = _server.Url(path), IsLive = live, Label = path }, preferredCaption);
         }
 
         private static byte[] Clip(string path)

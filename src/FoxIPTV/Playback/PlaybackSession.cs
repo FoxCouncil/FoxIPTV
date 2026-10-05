@@ -46,7 +46,11 @@ namespace FoxIPTV.Playback
 
         private readonly List<Tuple<double, MediaChunk>> _pieceMarks = new List<Tuple<double, MediaChunk>>();
 
-        private readonly List<Tuple<double, string>> _captionMarks = new List<Tuple<double, string>>();
+        private static readonly string[] EmbeddedCaptionIds = { "cc1", "cc3" };
+
+        private readonly List<(double Time, string Track, string Text)> _captionMarks = new List<(double Time, string Track, string Text)>();
+
+        private readonly List<CaptionTrack> _captionTracks = new List<CaptionTrack>();
 
         private readonly SubtitleTrack _subtitles = new SubtitleTrack();
 
@@ -90,9 +94,11 @@ namespace FoxIPTV.Playback
 
         private volatile bool _posterTaken;
 
-        private volatile bool _embeddedCaptions;
+        private volatile string _selectedCaption;
 
-        private volatile bool _subtitlesFound;
+        private bool _captionChosen;
+
+        private volatile ChunkQueue _subtitleQueue;
 
         private double _readySince = double.NaN;
 
@@ -149,6 +155,31 @@ namespace FoxIPTV.Playback
 
                 return _audioClock ? _audio.Clock : _wall.Now;
             }
+        }
+
+        public IReadOnlyList<CaptionTrack> CaptionTracks
+        {
+            get
+            {
+                lock (_captionTracks)
+                {
+                    return _captionTracks.ToList();
+                }
+            }
+        }
+
+        public string SelectedCaption => _selectedCaption;
+
+        public void SelectCaption(string id)
+        {
+            lock (_captionTracks)
+            {
+                _captionChosen = true;
+            }
+
+            SelectCaptionTrack(id);
+
+            _owner.ReportCaptionTracks(this);
         }
 
         public PlayerStats Stats
@@ -261,10 +292,7 @@ namespace FoxIPTV.Playback
                         StartThread("demux audio", () => DemuxChunks(_hls.Audio, false, true, false));
                     }
 
-                    if (_hls.Subtitles != null)
-                    {
-                        StartThread("subtitles", () => ReadSubtitles(_hls.Subtitles));
-                    }
+                    OfferSubtitleTracks();
                 }
                 else if (_opened.Reader != null)
                 {
@@ -746,7 +774,7 @@ namespace FoxIPTV.Playback
                     {
                         state.LastVideo = mapped;
 
-                        if (reader != null && _hls?.Subtitles != null)
+                        if (reader != null && _hls != null && _hls.SubtitleTracks.Count > 0)
                         {
                             _subtitles.NoteVideo(key, seconds, mapped);
                         }
@@ -830,7 +858,7 @@ namespace FoxIPTV.Playback
             VideoDecoder decoder = null;
             AVCodecParameters* parameters = null;
             var frame = ffmpeg.av_frame_alloc();
-            var captions = CaptionDecoder.Open();
+            var captions = new[] { CaptionDecoder.Open(0), CaptionDecoder.Open(1) };
             var errors = 0;
             var state = new VideoState();
 
@@ -944,7 +972,10 @@ namespace FoxIPTV.Playback
                 Frames.Complete();
 
                 decoder?.Dispose();
-                captions?.Dispose();
+                foreach (var decoder608 in captions)
+                {
+                    decoder608?.Dispose();
+                }
 
                 if (parameters != null)
                 {
@@ -984,7 +1015,7 @@ namespace FoxIPTV.Playback
             }
         }
 
-        private unsafe void Drain(VideoDecoder decoder, AVFrame* frame, CaptionDecoder captions, VideoState state)
+        private unsafe void Drain(VideoDecoder decoder, AVFrame* frame, CaptionDecoder[] captions, VideoState state)
         {
             if (decoder == null)
             {
@@ -996,7 +1027,7 @@ namespace FoxIPTV.Playback
             Receive(decoder, frame, captions, state);
         }
 
-        private unsafe void Receive(VideoDecoder decoder, AVFrame* frame, CaptionDecoder captions, VideoState state)
+        private unsafe void Receive(VideoDecoder decoder, AVFrame* frame, CaptionDecoder[] captions, VideoState state)
         {
             if (decoder == null)
             {
@@ -1016,7 +1047,7 @@ namespace FoxIPTV.Playback
             }
         }
 
-        private unsafe void OnVideoFrame(VideoDecoder decoder, AVFrame* frame, CaptionDecoder captions, VideoState state)
+        private unsafe void OnVideoFrame(VideoDecoder decoder, AVFrame* frame, CaptionDecoder[] captions, VideoState state)
         {
             var stamp = frame->best_effort_timestamp;
             var rate = decoder.Codec->framerate;
@@ -1027,17 +1058,25 @@ namespace FoxIPTV.Playback
 
             var caption = ffmpeg.av_frame_get_side_data(frame, AVFrameSideDataType.AV_FRAME_DATA_A53_CC);
 
-            if (caption != null && captions != null && caption->size > 0)
+            if (caption != null && caption->size > 0)
             {
-                _embeddedCaptions = true;
-
-                var text = captions.Decode(caption->data, (int)caption->size, stamp);
-
-                if (text != null)
+                for (var field = 0; field < captions.Length; field++)
                 {
+                    var text = captions[field]?.Decode(caption->data, (int)caption->size, stamp);
+
+                    if (text == null)
+                    {
+                        continue;
+                    }
+
                     lock (_captionMarks)
                     {
-                        _captionMarks.Add(Tuple.Create(time, text));
+                        _captionMarks.Add((time, EmbeddedCaptionIds[field], text));
+                    }
+
+                    if (text.Trim().Length > 0)
+                    {
+                        OfferEmbeddedCaptions(field);
                     }
                 }
 
@@ -1635,13 +1674,17 @@ namespace FoxIPTV.Playback
 
             string caption = null;
             var changed = false;
+            var selected = _selectedCaption;
 
             lock (_captionMarks)
             {
-                while (_captionMarks.Count > 0 && _captionMarks[0].Item1 <= clock)
+                while (_captionMarks.Count > 0 && _captionMarks[0].Time <= clock)
                 {
-                    caption = _captionMarks[0].Item2;
-                    changed = true;
+                    if (_captionMarks[0].Track == selected)
+                    {
+                        caption = _captionMarks[0].Text;
+                        changed = true;
+                    }
 
                     _captionMarks.RemoveAt(0);
                 }
@@ -1654,7 +1697,7 @@ namespace FoxIPTV.Playback
                 _owner.ReportCaption(this, caption);
             }
 
-            if (_subtitlesFound && !_embeddedCaptions)
+            if (selected != null && selected.StartsWith(SubtitlePrefix, StringComparison.Ordinal))
             {
                 var text = _subtitles.TextAt(clock);
 
@@ -1667,15 +1710,118 @@ namespace FoxIPTV.Playback
             }
         }
 
+        private const string SubtitlePrefix = "vtt:";
+
+        private static string SubtitleId(HlsRendition rendition) => SubtitlePrefix + rendition.Uri;
+
+        private void OfferSubtitleTracks()
+        {
+            lock (_captionTracks)
+            {
+                foreach (var rendition in _hls.SubtitleTracks)
+                {
+                    _captionTracks.Add(new CaptionTrack { Id = SubtitleId(rendition), Name = rendition.Name ?? rendition.Language ?? rendition.GroupId, Language = rendition.Language });
+                }
+            }
+
+            ChooseCaption();
+        }
+
+        private void OfferEmbeddedCaptions(int field)
+        {
+            var id = EmbeddedCaptionIds[field];
+
+            lock (_captionTracks)
+            {
+                if (_captionTracks.Any(x => x.Id == id))
+                {
+                    return;
+                }
+
+                var label = _hls?.CaptionLabels.FirstOrDefault(x => string.Equals(x.InstreamId, id, StringComparison.OrdinalIgnoreCase));
+
+                _captionTracks.Add(new CaptionTrack { Id = id, Name = label?.Name ?? id.ToUpperInvariant(), Language = label?.Language });
+
+                TvCore.LogInfo($"[Player] Session {Id}: captions in the video on {id.ToUpperInvariant()}{(label == null ? string.Empty : $" ({label.Name}, {label.Language})")}");
+            }
+
+            ChooseCaption();
+        }
+
+        private void ChooseCaption()
+        {
+            string pick;
+
+            lock (_captionTracks)
+            {
+                if (_captionChosen && _captionTracks.Any(x => x.Id == _selectedCaption))
+                {
+                    pick = _selectedCaption;
+                }
+                else
+                {
+                    var preferred = _owner.PreferredCaption;
+
+                    pick = _captionTracks.FirstOrDefault(x => x.Matches(preferred))?.Id
+                        ?? _captionTracks.FirstOrDefault(x => x.Id == EmbeddedCaptionIds[0])?.Id
+                        ?? _captionTracks.FirstOrDefault(x => x.Id == EmbeddedCaptionIds[1])?.Id
+                        ?? (_hls?.DefaultSubtitles != null ? SubtitleId(_hls.DefaultSubtitles) : null);
+                }
+            }
+
+            SelectCaptionTrack(pick);
+
+            _owner.ReportCaptionTracks(this);
+        }
+
+        private void SelectCaptionTrack(string id)
+        {
+            HlsRendition load;
+
+            lock (_captionTracks)
+            {
+                if (id == _selectedCaption || id != null && _captionTracks.All(x => x.Id != id))
+                {
+                    return;
+                }
+
+                _selectedCaption = id;
+
+                load = id != null && id.StartsWith(SubtitlePrefix, StringComparison.Ordinal) ? _hls?.SubtitleTracks.FirstOrDefault(x => SubtitleId(x) == id) : null;
+            }
+
+            TvCore.LogInfo($"[Player] Session {Id}: captions from {id ?? "nothing"}");
+
+            _subtitles.Clear();
+            _lastCaption = null;
+            _owner.ReportCaption(this, null);
+
+            if (load != null)
+            {
+                var queue = _hls.LoadSubtitles(load);
+
+                _subtitleQueue = queue;
+
+                StartThread("subtitles", () => ReadSubtitles(queue));
+            }
+            else if (_subtitleQueue != null)
+            {
+                _subtitleQueue = null;
+
+                _hls?.StopSubtitles();
+            }
+        }
+
         private void ReadSubtitles(ChunkQueue queue)
         {
             var refused = false;
+            var found = false;
 
             while (!_token.IsCancellationRequested)
             {
                 var chunk = queue.Peek(_token);
 
-                if (chunk == null)
+                if (chunk == null || !ReferenceEquals(queue, _subtitleQueue))
                 {
                     break;
                 }
@@ -1696,9 +1842,9 @@ namespace FoxIPTV.Playback
                     continue;
                 }
 
-                if (!_subtitlesFound)
+                if (!found)
                 {
-                    _subtitlesFound = true;
+                    found = true;
 
                     TvCore.LogInfo($"[Player] Session {Id}: subtitles found in their own track");
 

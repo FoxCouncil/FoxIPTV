@@ -76,6 +76,16 @@ namespace FoxIPTV.Playback
             }
         }
 
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _waiting.Clear();
+                _placed.Clear();
+                _known.Clear();
+            }
+        }
+
         public string TextAt(double clock)
         {
             lock (_lock)

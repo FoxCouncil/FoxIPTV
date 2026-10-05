@@ -3,6 +3,7 @@
 namespace FoxIPTV.Playback
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Classes;
     using FFmpeg.AutoGen;
@@ -30,6 +31,30 @@ namespace FoxIPTV.Playback
         public event Action<string> CaptionChanged;
 
         public event Action<int> BufferChanged;
+
+        public event Action CaptionTracksChanged;
+
+        public string PreferredCaption { get; set; }
+
+        public IReadOnlyList<CaptionTrack> CaptionTracks => Current?.CaptionTracks ?? Array.Empty<CaptionTrack>();
+
+        public string SelectedCaption => Current?.SelectedCaption;
+
+        private PlaybackSession Current
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _session;
+                }
+            }
+        }
+
+        public void SelectCaption(string id)
+        {
+            Current?.SelectCaption(id);
+        }
 
         public PlayerState State { get; private set; } = PlayerState.Idle;
 
@@ -153,6 +178,7 @@ namespace FoxIPTV.Playback
 
             Info = new StreamInfo();
             InfoChanged?.Invoke(Info);
+            CaptionTracksChanged?.Invoke();
 
             session.Start();
         }
@@ -174,6 +200,7 @@ namespace FoxIPTV.Playback
 
             Caption = null;
             CaptionChanged?.Invoke(null);
+            CaptionTracksChanged?.Invoke();
 
             SetState(PlayerState.Idle, null);
         }
@@ -259,6 +286,14 @@ namespace FoxIPTV.Playback
             Caption = string.IsNullOrWhiteSpace(caption) ? null : caption;
 
             CaptionChanged?.Invoke(Caption);
+        }
+
+        internal void ReportCaptionTracks(PlaybackSession session)
+        {
+            if (IsCurrent(session))
+            {
+                CaptionTracksChanged?.Invoke();
+            }
         }
 
         internal void ReportBuffer(PlaybackSession session, int percent)

@@ -301,7 +301,7 @@ namespace FoxIPTV.Playback
 
         private AVPacket* _packet;
 
-        public static CaptionDecoder Open()
+        public static CaptionDecoder Open(int field)
         {
             var codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_EIA_608);
 
@@ -319,6 +319,7 @@ namespace FoxIPTV.Playback
             decoder._context->pkt_timebase = new AVRational { num = 1, den = ffmpeg.AV_TIME_BASE };
 
             ffmpeg.av_opt_set_int(decoder._context, "real_time", 1, ffmpeg.AV_OPT_SEARCH_CHILDREN);
+            ffmpeg.av_opt_set_int(decoder._context, "data_field", field, ffmpeg.AV_OPT_SEARCH_CHILDREN);
 
             if (ffmpeg.avcodec_open2(decoder._context, codec, null) < 0)
             {

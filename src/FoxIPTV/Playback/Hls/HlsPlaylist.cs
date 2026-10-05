@@ -54,6 +54,8 @@ namespace FoxIPTV.Playback.Hls
 
         public bool IsForced { get; set; }
 
+        public string InstreamId { get; set; }
+
         public Uri Uri { get; set; }
 
         public override string ToString() => $"{Type} {GroupId} {Name} {Language}{(IsDefault ? " default" : string.Empty)}{(IsForced ? " forced" : string.Empty)}";
@@ -308,6 +310,7 @@ namespace FoxIPTV.Playback.Hls
                                 IsDefault = string.Equals(Text(attributes, "DEFAULT"), "YES", StringComparison.OrdinalIgnoreCase),
                                 AutoSelect = string.Equals(Text(attributes, "AUTOSELECT"), "YES", StringComparison.OrdinalIgnoreCase),
                                 IsForced = string.Equals(Text(attributes, "FORCED"), "YES", StringComparison.OrdinalIgnoreCase),
+                                InstreamId = Text(attributes, "INSTREAM-ID"),
                                 Uri = string.IsNullOrEmpty(mediaUri) ? null : Resolve(uri, mediaUri)
                             });
                         }

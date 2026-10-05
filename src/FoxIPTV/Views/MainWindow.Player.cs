@@ -3,6 +3,8 @@
 namespace FoxIPTV.Views
 {
     using System;
+    using System.Linq;
+    using Avalonia.Controls;
     using System.Threading.Tasks;
     using Classes;
     using Playback;
@@ -49,6 +51,8 @@ namespace FoxIPTV.Views
             _player.StateChanged += (state, detail) => Ui(() => OnPlayerState(state, detail));
             _player.InfoChanged += info => Ui(() => OnStreamInfo(info));
             _player.CaptionChanged += caption => Ui(() => OnCaption(caption));
+            _player.CaptionTracksChanged += () => Ui(ShowCaptionTracks);
+            _player.PreferredCaption = TvCore.Settings.CaptionLanguage;
             _player.BufferChanged += percent => Ui(() => BufferStatusProgressBar.Value = percent);
 
             PlaybackTrace.StatusChanged += status => Ui(() => TraceStatusLabel.Text = status);
@@ -92,6 +96,38 @@ namespace FoxIPTV.Views
 
             CcOptionsButton.IsVisible = false;
             CaptionBox.IsVisible = false;
+        }
+
+        private void ShowCaptionTracks()
+        {
+            var tracks = _player.CaptionTracks;
+            var selected = _player.SelectedCaption;
+            var flyout = (MenuFlyout)CcOptionsButton.Flyout;
+
+            flyout.Items.Clear();
+
+            foreach (var track in tracks)
+            {
+                var item = new MenuItem { Header = track.Name, ToggleType = MenuItemToggleType.Radio, GroupName = "captions", IsChecked = track.Id == selected };
+
+                item.Click += (sender, args) => ChooseCaption(track);
+
+                flyout.Items.Add(item);
+            }
+
+            CcOptionsButton.Content = tracks.FirstOrDefault(x => x.Id == selected)?.Name;
+            CcOptionsButton.IsVisible = tracks.Count > 1;
+        }
+
+        private void ChooseCaption(CaptionTrack track)
+        {
+            TvCore.LogInfo($"[CC] Chose {track}");
+
+            TvCore.Settings.CaptionLanguage = track.Language ?? track.Id;
+            TvCore.Settings.Save();
+
+            _player.PreferredCaption = TvCore.Settings.CaptionLanguage;
+            _player.SelectCaption(track.Id);
         }
 
         private void ReleaseMedia()

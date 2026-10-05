@@ -4,6 +4,7 @@ namespace FoxIPTV.Playback
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
 
     public enum PlayerState
     {
@@ -37,6 +38,39 @@ namespace FoxIPTV.Playback
         public string Label { get; set; }
 
         public override string ToString() => Label ?? Uri?.ToString();
+    }
+
+    public sealed class CaptionTrack
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Language { get; set; }
+
+        public bool Matches(string preferred)
+        {
+            if (string.IsNullOrEmpty(preferred))
+            {
+                return false;
+            }
+
+            return string.Equals(Id, preferred, StringComparison.OrdinalIgnoreCase) || Language != null && LanguageCode(Language) == LanguageCode(preferred);
+        }
+
+        public static string LanguageCode(string language)
+        {
+            try
+            {
+                return CultureInfo.GetCultureInfo(language.Trim()).TwoLetterISOLanguageName;
+            }
+            catch (CultureNotFoundException)
+            {
+                return language.Trim().ToLowerInvariant();
+            }
+        }
+
+        public override string ToString() => $"{Id} {Name} {Language}";
     }
 
     public sealed class StreamInfo : IEquatable<StreamInfo>

@@ -55,6 +55,8 @@ namespace FoxIPTV.Playback.Hls
 
         private readonly Stopwatch _sinceSwitch = Stopwatch.StartNew();
 
+        private CancellationTokenSource _subtitleLoad;
+
         public HlsLoader(MediaRequest request, ISourceEvents events, CancellationToken token)
         {
             _request = request;
@@ -66,7 +68,11 @@ namespace FoxIPTV.Playback.Hls
 
         public ChunkQueue Audio { get; private set; }
 
-        public ChunkQueue Subtitles { get; private set; }
+        public IReadOnlyList<HlsRendition> SubtitleTracks { get; private set; } = Array.Empty<HlsRendition>();
+
+        public IReadOnlyList<HlsRendition> CaptionLabels { get; private set; } = Array.Empty<HlsRendition>();
+
+        public HlsRendition DefaultSubtitles { get; private set; }
 
         public bool IsLive { get; private set; } = true;
 
@@ -74,7 +80,6 @@ namespace FoxIPTV.Playback.Hls
         {
             var main = entry;
             Uri audioUri = null;
-            Uri subtitleUri = null;
 
             if (entry.IsMaster)
             {
@@ -107,19 +112,18 @@ namespace FoxIPTV.Playback.Hls
                     TvCore.LogInfo($"[Player] HLS audio comes from its own playlist: {audio}");
                 }
 
-                var subtitles = Subtitle(entry, chosen);
+                SubtitleTracks = IsPackaged(chosen) ? Array.Empty<HlsRendition>() : entry.Renditions.Where(x => string.Equals(x.Type, "SUBTITLES", StringComparison.OrdinalIgnoreCase) && x.GroupId == chosen.SubtitleGroup && chosen.SubtitleGroup != null && x.Uri != null && !x.IsForced).ToList();
+                CaptionLabels = entry.Renditions.Where(x => string.Equals(x.Type, "CLOSED-CAPTIONS", StringComparison.OrdinalIgnoreCase) && x.GroupId == chosen.ClosedCaptions && x.InstreamId != null).ToList();
+                DefaultSubtitles = Subtitle(entry, chosen);
 
-                if (subtitles != null)
+                if (SubtitleTracks.Count > 0)
                 {
-                    subtitleUri = subtitles.Uri;
-                    Subtitles = new ChunkQueue();
-
-                    TvCore.LogInfo($"[Player] HLS subtitles come from their own playlist: {subtitles}");
+                    TvCore.LogInfo($"[Player] HLS subtitle tracks: {string.Join("; ", SubtitleTracks)}");
                 }
 
                 main = null;
 
-                _ = Task.Run(() => RunTrack("video", Main, chosen.Uri, null, true, true));
+                _ = Task.Run(() => RunTrack("video", Main, chosen.Uri, null, true, true, _token));
             }
             else
             {
@@ -127,26 +131,44 @@ namespace FoxIPTV.Playback.Hls
 
                 TvCore.LogInfo($"[Player] HLS {entry.Describe()}");
 
-                _ = Task.Run(() => RunTrack("video", Main, entry.Uri, main, true, true));
+                _ = Task.Run(() => RunTrack("video", Main, entry.Uri, main, true, true, _token));
             }
 
             if (audioUri != null)
             {
-                _ = Task.Run(() => RunTrack("audio", Audio, audioUri, null, false, true));
+                _ = Task.Run(() => RunTrack("audio", Audio, audioUri, null, false, true, _token));
             }
+        }
 
-            if (subtitleUri != null)
-            {
-                _ = Task.Run(() => RunTrack("subtitles", Subtitles, subtitleUri, null, false, false));
-            }
+        public ChunkQueue LoadSubtitles(HlsRendition rendition)
+        {
+            _subtitleLoad?.Cancel();
+            _subtitleLoad = CancellationTokenSource.CreateLinkedTokenSource(_token);
+
+            var queue = new ChunkQueue();
+            var token = _subtitleLoad.Token;
+
+            TvCore.LogInfo($"[Player] HLS subtitles come from their own playlist: {rendition}");
+
+            _ = Task.Run(() => RunTrack("subtitles", queue, rendition.Uri, null, false, false, token));
+
+            return queue;
+        }
+
+        public void StopSubtitles()
+        {
+            _subtitleLoad?.Cancel();
+        }
+
+        private static bool IsPackaged(HlsVariant variant)
+        {
+            return !string.IsNullOrEmpty(variant.Codecs) && variant.Codecs.Split(',').Any(x => x.Trim().StartsWith("stpp", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("wvtt", StringComparison.OrdinalIgnoreCase));
         }
 
         public static HlsRendition Subtitle(HlsPlaylist master, HlsVariant variant)
         {
             var embedded = !string.IsNullOrEmpty(variant.ClosedCaptions) && !string.Equals(variant.ClosedCaptions, "NONE", StringComparison.OrdinalIgnoreCase);
-            var packaged = !string.IsNullOrEmpty(variant.Codecs) && variant.Codecs.Split(',').Any(x => x.Trim().StartsWith("stpp", StringComparison.OrdinalIgnoreCase) || x.Trim().StartsWith("wvtt", StringComparison.OrdinalIgnoreCase));
-
-            if (string.IsNullOrEmpty(variant.SubtitleGroup) || embedded || packaged)
+            if (string.IsNullOrEmpty(variant.SubtitleGroup) || embedded || IsPackaged(variant))
             {
                 return null;
             }
@@ -156,18 +178,18 @@ namespace FoxIPTV.Playback.Hls
             return group.FirstOrDefault(x => x.IsDefault) ?? group.FirstOrDefault(x => x.Language != null && x.Language.StartsWith("en", StringComparison.OrdinalIgnoreCase)) ?? group.FirstOrDefault(x => x.AutoSelect) ?? group.FirstOrDefault();
         }
 
-        private async Task RunTrack(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist first, bool isMain, bool required)
+        private async Task RunTrack(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist first, bool isMain, bool required, CancellationToken token)
         {
             try
             {
-                await Track(name, queue, playlistUri, first, isMain, required).ConfigureAwait(false);
+                await Track(name, queue, playlistUri, first, isMain, required, token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
             {
-                if (!_token.IsCancellationRequested)
+                if (!token.IsCancellationRequested)
                 {
                     TvCore.LogError($"[Player] HLS {name} track stopped: {ex.GetType().Name}: {ex.Message}");
 
@@ -183,7 +205,7 @@ namespace FoxIPTV.Playback.Hls
             }
         }
 
-        private async Task Track(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist playlist, bool isMain, bool required)
+        private async Task Track(string name, ChunkQueue queue, Uri playlistUri, HlsPlaylist playlist, bool isMain, bool required, CancellationToken token)
         {
             long? next = null;
             var period = 0;
@@ -195,7 +217,7 @@ namespace FoxIPTV.Playback.Hls
             var forceReload = playlist == null;
             var switched = false;
 
-            while (!_token.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
                 if (forceReload)
                 {
@@ -203,7 +225,7 @@ namespace FoxIPTV.Playback.Hls
 
                     loadedAt.Restart();
 
-                    playlist = await LoadPlaylist(name, playlistUri).ConfigureAwait(false);
+                    playlist = await LoadPlaylist(name, playlistUri, token).ConfigureAwait(false);
 
                     changed = previous == null || previous.Segments.Count != playlist.Segments.Count || previous.MediaSequence != playlist.MediaSequence || previous.EndList != playlist.EndList;
                     forceReload = false;
@@ -216,7 +238,7 @@ namespace FoxIPTV.Playback.Hls
 
                 if (playlist.Segments.Count == 0)
                 {
-                    await Wait(Math.Max(1, playlist.TargetDuration / 2), loadedAt).ConfigureAwait(false);
+                    await Wait(Math.Max(1, playlist.TargetDuration / 2), loadedAt, token).ConfigureAwait(false);
 
                     forceReload = true;
 
@@ -253,7 +275,7 @@ namespace FoxIPTV.Playback.Hls
                         return;
                     }
 
-                    await Wait(changed ? Math.Max(1, tail.Duration) : Math.Max(0.5, playlist.TargetDuration / 2), loadedAt).ConfigureAwait(false);
+                    await Wait(changed ? Math.Max(1, tail.Duration) : Math.Max(0.5, playlist.TargetDuration / 2), loadedAt, token).ConfigureAwait(false);
 
                     forceReload = true;
 
@@ -292,9 +314,9 @@ namespace FoxIPTV.Playback.Hls
 
                 if (segment.Map != null && (lastMap != segment.Map.Id || discontinuity || switched))
                 {
-                    var init = await FetchMap(segment.Map).ConfigureAwait(false);
+                    var init = await FetchMap(segment.Map, token).ConfigureAwait(false);
 
-                    queue.Add(new MediaChunk { Data = init, IsInit = true, Period = period, Discontinuity = segment.DiscontinuitySequence, Url = segment.Map.Uri.ToString() }, _token);
+                    queue.Add(new MediaChunk { Data = init, IsInit = true, Period = period, Discontinuity = segment.DiscontinuitySequence, Url = segment.Map.Uri.ToString() }, token);
                 }
 
                 lastMap = segment.Map?.Id;
@@ -307,11 +329,11 @@ namespace FoxIPTV.Playback.Hls
 
                 try
                 {
-                    data = await FetchSegment(segment).ConfigureAwait(false);
+                    data = await FetchSegment(segment, token).ConfigureAwait(false);
 
                     failingSince = null;
                 }
-                catch (Exception ex) when (!(ex is OperationCanceledException) || !_token.IsCancellationRequested)
+                catch (Exception ex) when (!(ex is OperationCanceledException) || !token.IsCancellationRequested)
                 {
                     failingSince ??= Stopwatch.StartNew();
 
@@ -329,7 +351,7 @@ namespace FoxIPTV.Playback.Hls
                     }
                     else
                     {
-                        await Task.Delay(1000, _token).ConfigureAwait(false);
+                        await Task.Delay(1000, token).ConfigureAwait(false);
                     }
 
                     continue;
@@ -349,7 +371,7 @@ namespace FoxIPTV.Playback.Hls
 
                 _events.OnPiece(name, chunk, clock.Elapsed);
 
-                queue.Add(chunk, _token);
+                queue.Add(chunk, token);
 
                 next++;
 
@@ -431,17 +453,17 @@ namespace FoxIPTV.Playback.Hls
             return playlist.Segments[index].Sequence;
         }
 
-        private async Task Wait(double seconds, Stopwatch since)
+        private async Task Wait(double seconds, Stopwatch since, CancellationToken token)
         {
             var remaining = TimeSpan.FromSeconds(seconds) - since.Elapsed;
 
             if (remaining > TimeSpan.Zero)
             {
-                await Task.Delay(remaining, _token).ConfigureAwait(false);
+                await Task.Delay(remaining, token).ConfigureAwait(false);
             }
         }
 
-        private async Task<HlsPlaylist> LoadPlaylist(string name, Uri uri)
+        private async Task<HlsPlaylist> LoadPlaylist(string name, Uri uri, CancellationToken token)
         {
             var failing = Stopwatch.StartNew();
             var attempt = 0;
@@ -452,7 +474,7 @@ namespace FoxIPTV.Playback.Hls
 
                 try
                 {
-                    var (data, finalUri) = await MediaHttp.GetBytes(uri, _request.Headers, PlaylistTimeout, _token).ConfigureAwait(false);
+                    var (data, finalUri) = await MediaHttp.GetBytes(uri, _request.Headers, PlaylistTimeout, token).ConfigureAwait(false);
                     var text = Web.Decode(data);
 
                     if (!HlsPlaylist.LooksLikePlaylist(text))
@@ -466,7 +488,7 @@ namespace FoxIPTV.Playback.Hls
 
                     return playlist;
                 }
-                catch (Exception ex) when (!_token.IsCancellationRequested && !(ex is PlayerException && failing.Elapsed > FailureBudget))
+                catch (Exception ex) when (!token.IsCancellationRequested && !(ex is PlayerException && failing.Elapsed > FailureBudget))
                 {
                     attempt++;
 
@@ -477,23 +499,23 @@ namespace FoxIPTV.Playback.Hls
 
                     TvCore.LogError($"[Player] HLS {name}: playlist load failed (try {attempt}): {ex.Message}");
 
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(4, attempt)), _token).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(4, attempt)), token).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task<byte[]> FetchMap(HlsMap map)
+        private async Task<byte[]> FetchMap(HlsMap map, CancellationToken token)
         {
             if (_maps.TryGetValue(map.Id, out var cached))
             {
                 return cached;
             }
 
-            var (data, _) = await MediaHttp.GetBytes(map.Uri, _request.Headers, TimeSpan.FromSeconds(15), _token, map.Length.HasValue ? map.Offset ?? 0 : (long?)null, map.Length).ConfigureAwait(false);
+            var (data, _) = await MediaHttp.GetBytes(map.Uri, _request.Headers, TimeSpan.FromSeconds(15), token, map.Length.HasValue ? map.Offset ?? 0 : (long?)null, map.Length).ConfigureAwait(false);
 
             if (map.Key != null && map.Key.IsAes128)
             {
-                data = await Decrypt(data, map.Key, 0).ConfigureAwait(false);
+                data = await Decrypt(data, map.Key, 0, token).ConfigureAwait(false);
             }
 
             _maps[map.Id] = data;
@@ -501,7 +523,7 @@ namespace FoxIPTV.Playback.Hls
             return data;
         }
 
-        private async Task<byte[]> FetchSegment(HlsSegment segment)
+        private async Task<byte[]> FetchSegment(HlsSegment segment, CancellationToken token)
         {
             var timeout = TimeSpan.FromSeconds(Math.Max(10, segment.Duration * 4));
 
@@ -509,26 +531,26 @@ namespace FoxIPTV.Playback.Hls
             {
                 try
                 {
-                    var (data, _) = await MediaHttp.GetBytes(segment.Uri, _request.Headers, timeout, _token, segment.Offset, segment.Length).ConfigureAwait(false);
+                    var (data, _) = await MediaHttp.GetBytes(segment.Uri, _request.Headers, timeout, token, segment.Offset, segment.Length).ConfigureAwait(false);
 
                     if (segment.Key != null && segment.Key.IsAes128)
                     {
-                        data = await Decrypt(data, segment.Key, segment.Sequence).ConfigureAwait(false);
+                        data = await Decrypt(data, segment.Key, segment.Sequence, token).ConfigureAwait(false);
                     }
 
                     return data;
                 }
-                catch (HttpRequestException ex) when (attempt < 2 && ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.Gone && !_token.IsCancellationRequested)
+                catch (HttpRequestException ex) when (attempt < 2 && ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.Gone && !token.IsCancellationRequested)
                 {
-                    await Task.Delay(300, _token).ConfigureAwait(false);
+                    await Task.Delay(300, token).ConfigureAwait(false);
                 }
-                catch (TimeoutException) when (attempt < 2 && !_token.IsCancellationRequested)
+                catch (TimeoutException) when (attempt < 2 && !token.IsCancellationRequested)
                 {
                 }
             }
         }
 
-        private async Task<byte[]> Decrypt(byte[] data, HlsKey key, long sequence)
+        private async Task<byte[]> Decrypt(byte[] data, HlsKey key, long sequence, CancellationToken token)
         {
             if (key.Uri == null)
             {
@@ -537,7 +559,7 @@ namespace FoxIPTV.Playback.Hls
 
             if (!_keys.TryGetValue(key.Uri, out var secret))
             {
-                var (bytes, _) = await MediaHttp.GetBytes(key.Uri, _request.Headers, TimeSpan.FromSeconds(10), _token).ConfigureAwait(false);
+                var (bytes, _) = await MediaHttp.GetBytes(key.Uri, _request.Headers, TimeSpan.FromSeconds(10), token).ConfigureAwait(false);
 
                 if (bytes.Length != 16)
                 {

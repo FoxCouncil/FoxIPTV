@@ -37,9 +37,9 @@ namespace FoxIPTV.Tests.Engine
             }
         }
 
-        public PlayerRun(MediaRequest request)
+        public PlayerRun(MediaRequest request, string preferredCaption = null)
         {
-            Player = new Player { WantsCpuFrames = true };
+            Player = new Player { WantsCpuFrames = true, PreferredCaption = preferredCaption };
 
             Player.StateChanged += (state, detail) =>
             {

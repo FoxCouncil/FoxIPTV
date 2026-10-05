@@ -18,6 +18,8 @@ namespace FoxIPTV.Classes
         /// <summary>Is Closed Captioning enabled</summary>
         public bool CCEnabled { get; set; } = false;
 
+        public string CaptionLanguage { get; set; }
+
         public int? WindowLeft { get; set; }
 
         public int? WindowTop { get; set; }

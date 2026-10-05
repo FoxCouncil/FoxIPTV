@@ -9,6 +9,64 @@ namespace FoxIPTV.Tests
 
     public class SubtitleTests
     {
+        private static byte Odd(int value)
+        {
+            var bits = 0;
+
+            for (var i = 0; i < 7; i++)
+            {
+                bits += (value >> i) & 1;
+            }
+
+            return (byte)(bits % 2 == 0 ? value | 0x80 : value);
+        }
+
+        private static unsafe string Feed(CaptionDecoder decoder, (int Hi, int Lo)[] pairs, int field)
+        {
+            string text = null;
+            var pts = 0L;
+
+            foreach (var (hi, lo) in pairs)
+            {
+                var data = new byte[] { (byte)(field == 0 ? 0xFC : 0xFD), Odd(hi), Odd(lo), (byte)(field == 0 ? 0xFD : 0xFC), Odd(0), Odd(0) };
+
+                fixed (byte* bytes = data)
+                {
+                    text = decoder.Decode(bytes, data.Length, pts) ?? text;
+                }
+
+                pts += 300000;
+            }
+
+            return text;
+        }
+
+        [Fact]
+        public void Cc3_IsReadFromTheSecondField()
+        {
+            Assert.True(FFmpegNative.Initialize(), FFmpegNative.Failure);
+
+            var hola = new[] { (0x15, 0x25), ('H', 'O'), ('L', 'A'), (0x00, 0x00) };
+
+            using var first = CaptionDecoder.Open(0);
+            using var second = CaptionDecoder.Open(1);
+
+            Assert.Null(Feed(first, hola, 1));
+            Assert.Equal("HOLA", Feed(second, hola, 1)?.Trim());
+        }
+
+        [Theory]
+        [InlineData("es-US", null, "spa", true)]
+        [InlineData("en", null, "eng", true)]
+        [InlineData("es", null, "en", false)]
+        [InlineData(null, "cc3", "cc3", true)]
+        [InlineData(null, "cc1", "cc3", false)]
+        [InlineData("en", null, null, false)]
+        public void CaptionTrack_MatchesThePreferredLanguage(string language, string id, string preferred, bool matches)
+        {
+            Assert.Equal(matches, new CaptionTrack { Id = id ?? "vtt:x", Language = language }.Matches(preferred));
+        }
+
         private static readonly Uri Base = new Uri("https://cdn.example/live/master.m3u8");
 
         [Theory]
