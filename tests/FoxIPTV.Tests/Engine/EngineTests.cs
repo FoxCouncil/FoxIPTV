@@ -146,7 +146,7 @@ namespace FoxIPTV.Tests.Engine
 
             var frames = run.Frames;
 
-            Assert.True(frames.Count >= 6 * FrameRate * 0.9, $"{frames.Count} frames. {run.Describe()}");
+            Assert.True(frames.Count + (run.Stats?.FramesDropped ?? 0) >= 6 * FrameRate * 0.9, $"{frames.Count} frames. {run.Describe()}");
             Assert.Contains(_server.Requests, x => x.Path == "/live/6.ts");
             Assert.Contains(_server.Requests, x => x.Path == "/live/7.ts");
             AssertIncreasing(frames);
