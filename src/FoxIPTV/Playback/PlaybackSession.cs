@@ -1741,6 +1741,11 @@ namespace FoxIPTV.Playback
             {
                 foreach (var piece in pieces)
                 {
+                    if (piece.StartsDiscontinuity || piece.Marks != null && piece.Marks.Count > 0)
+                    {
+                        TvCore.LogInfo($"[Ads] Piece {(piece.StartsDiscontinuity ? "after a discontinuity" : "with tags")}: {piece.Url}{(piece.Title != null ? $" title {piece.Title}" : string.Empty)}{(piece.Marks != null && piece.Marks.Count > 0 ? $" tags {string.Join(" | ", piece.Marks)}" : string.Empty)}");
+                    }
+
                     AdDetector.ObserveSegment(piece.Url, piece.Title, piece.Marks, piece.Duration);
 
                     if (piece.StartsDiscontinuity)

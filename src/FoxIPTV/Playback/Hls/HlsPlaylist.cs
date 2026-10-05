@@ -146,6 +146,8 @@ namespace FoxIPTV.Playback.Hls
 
         public List<HlsSegment> Segments { get; } = new List<HlsSegment>();
 
+        public Dictionary<string, string> UnreadTags { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
         public bool IsLive => !EndList && !string.Equals(PlaylistType, "VOD", StringComparison.OrdinalIgnoreCase);
 
         public double TotalDuration => Segments.Sum(x => x.Duration);
@@ -426,6 +428,12 @@ namespace FoxIPTV.Playback.Hls
                         case "#EXT-X-AD-START":
                         {
                             marks.Add(line);
+                        }
+                        break;
+
+                        default:
+                        {
+                            playlist.UnreadTags.TryAdd(tag, line);
                         }
                         break;
                     }

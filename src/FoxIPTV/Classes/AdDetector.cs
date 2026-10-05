@@ -11,9 +11,9 @@ namespace FoxIPTV.Classes
 
     public static class AdDetector
     {
-        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|unified-ad-segment-cdn|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|unified-ad-segment-cdn|osm-ads\.delivery\.roku\.com/|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static readonly Regex Creative = new Regex(@"creative/([0-9a-f]{16,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex Creative = new Regex(@"creative/([0-9a-f]{16,})|osm-ads\.delivery\.roku\.com/([^/?]+)/", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex CueOut = new Regex(@"cue-out-(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -59,13 +59,24 @@ namespace FoxIPTV.Classes
 
         private static DateTime? _adEndsAt;
 
+        private static DateTime? _breakEndsAt;
+
         private static bool _signalled;
 
         public static bool InAd { get; private set; }
 
         public static int AdNumber { get; private set; }
 
-        public static double? SecondsLeft { get; private set; }
+        public static double? SecondsLeft
+        {
+            get
+            {
+                lock (Lock)
+                {
+                    return _breakEndsAt.HasValue ? Math.Max(0, (_breakEndsAt.Value - DateTime.UtcNow).TotalSeconds) : (double?)null;
+                }
+            }
+        }
 
         public static int AdTotal { get; private set; }
 
@@ -95,7 +106,7 @@ namespace FoxIPTV.Classes
             InAd = false;
             AdNumber = 0;
             AdTotal = 0;
-            SecondsLeft = null;
+            _breakEndsAt = null;
             _adEndsAt = null;
             _signalled = false;
             _lastCreative = null;
@@ -171,8 +182,29 @@ namespace FoxIPTV.Classes
                     TvCore.LogInfo($"[Ads] Cue-out, break{(breakLength > 0 ? $" of {breakLength:0}s" : string.Empty)} started: {Short(url)}");
                 }
 
+                if (_cued && _signalled && !isAd && _lastCreative != null)
+                {
+                    TvCore.LogInfo($"[Ads] Programme piece after the signalled ads, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s and {AdNumber} ad(s): {Short(url)}");
+
+                    Finish();
+                }
+
                 if (_cued)
                 {
+                    var adId = _signalled && isAd ? AdId(url) : null;
+
+                    if (adId != null && adId != _lastCreative)
+                    {
+                        if (_lastCreative != null)
+                        {
+                            AdNumber++;
+
+                            TvCore.LogInfo($"[Ads] Next ad in the break, #{AdNumber}: {Short(url)}");
+                        }
+
+                        _lastCreative = adId;
+                    }
+
                     if (breakLength > 0)
                     {
                         _cueLength = breakLength;
@@ -187,7 +219,7 @@ namespace FoxIPTV.Classes
 
                     if (!overdue)
                     {
-                        SecondsLeft = _cueLength > 0 ? Math.Max(0, _cueLength - _cuePlayed) : (double?)null;
+                        SetBreakLeft(_cueLength > 0 ? Math.Max(0, _cueLength - _cuePlayed) : (double?)null);
 
                         _cuePlayed += duration;
 
@@ -241,8 +273,7 @@ namespace FoxIPTV.Classes
                     return;
                 }
 
-                var match = Creative.Match(url);
-                var creative = match.Success ? match.Groups[1].Value.ToLowerInvariant() : null;
+                var creative = AdId(url);
 
                 if (!InAd)
                 {
@@ -273,7 +304,7 @@ namespace FoxIPTV.Classes
 
                 if (_breakSeconds > 0)
                 {
-                    SecondsLeft = Math.Max(0, _breakSeconds - _fetchedSeconds);
+                    SetBreakLeft(Math.Max(0, _breakSeconds - _fetchedSeconds));
 
                     if (length.Success)
                     {
@@ -365,13 +396,19 @@ namespace FoxIPTV.Classes
         {
             if (!InAd || !_cued)
             {
+                var adPlaying = InAd && !_held;
+                var creative = _lastCreative;
+                var started = _breakStarted;
+                var number = AdNumber;
+
                 Clear();
 
                 InAd = true;
-                AdNumber = 1;
+                AdNumber = adPlaying ? number : 1;
                 _cued = true;
                 _signalled = true;
-                _breakStarted = DateTime.UtcNow;
+                _breakStarted = adPlaying ? started : DateTime.UtcNow;
+                _lastCreative = adPlaying ? creative : null;
 
                 TvCore.LogInfo($"[Ads] Signalled break started: {why}");
             }
@@ -381,8 +418,25 @@ namespace FoxIPTV.Classes
             if (seconds > 0)
             {
                 _cueLength = seconds;
-                SecondsLeft = Math.Max(0, _cueLength - _cuePlayed);
+                SetBreakLeft(Math.Max(0, _cueLength - _cuePlayed));
             }
+        }
+
+        private static string AdId(string url)
+        {
+            var match = Creative.Match(url);
+
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            return (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value).ToLowerInvariant();
+        }
+
+        private static void SetBreakLeft(double? seconds)
+        {
+            _breakEndsAt = seconds.HasValue ? DateTime.UtcNow.AddSeconds(seconds.Value) : (DateTime?)null;
         }
 
         public static void ObserveDiscontinuity()

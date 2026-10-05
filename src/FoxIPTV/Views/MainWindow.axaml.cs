@@ -480,7 +480,7 @@ namespace FoxIPTV.Views
 
             if (left != null)
             {
-                var span = TimeSpan.FromSeconds(left.Value);
+                var span = TimeSpan.FromSeconds(Math.Ceiling(left.Value));
 
                 text += $" · {(int)span.TotalMinutes}:{span.Seconds:00}";
             }

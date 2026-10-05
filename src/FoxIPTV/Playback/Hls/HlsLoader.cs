@@ -45,6 +45,8 @@ namespace FoxIPTV.Playback.Hls
 
         private readonly Dictionary<string, byte[]> _maps = new Dictionary<string, byte[]>();
 
+        private readonly HashSet<string> _unreadTagsSeen = new HashSet<string>(StringComparer.Ordinal);
+
         private List<HlsVariant> _variants = new List<HlsVariant>();
 
         private int _variantIndex = -1;
@@ -484,6 +486,8 @@ namespace FoxIPTV.Playback.Hls
 
                     var playlist = HlsPlaylist.Parse(text, finalUri);
 
+                    ReportUnreadTags(name, playlist);
+
                     _events.OnPlaylist(name, playlist, clock.Elapsed);
 
                     return playlist;
@@ -500,6 +504,24 @@ namespace FoxIPTV.Playback.Hls
                     TvCore.LogError($"[Player] HLS {name}: playlist load failed (try {attempt}): {ex.Message}");
 
                     await Task.Delay(TimeSpan.FromSeconds(Math.Min(4, attempt)), token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private void ReportUnreadTags(string name, HlsPlaylist playlist)
+        {
+            foreach (var tag in playlist.UnreadTags)
+            {
+                bool added;
+
+                lock (_unreadTagsSeen)
+                {
+                    added = _unreadTagsSeen.Add(tag.Key);
+                }
+
+                if (added)
+                {
+                    TvCore.LogInfo($"[Player] HLS {name}: unread tag {tag.Value}");
                 }
             }
         }

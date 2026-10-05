@@ -74,9 +74,40 @@ namespace FoxIPTV.Tests
             AdDetector.ObserveSignal(new SpliceSignal { Command = 5, OutOfNetwork = true, BreakSeconds = 60 });
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(60, AdDetector.SecondsLeft);
+            Assert.Equal(60, AdDetector.SecondsLeft.Value, 1);
 
             AdDetector.ObserveSignal(new SpliceSignal { Command = 5, InToNetwork = true });
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
+        public void Roku_SignalledBreakCountsAdsByAddressAndEndsOnProgramme()
+        {
+            AdDetector.Reset();
+
+            AdDetector.ObserveSegment("https://live1250.delivery.roku.com/0c24a9ef/t2-origin/out/v1/live_1080/00188/live_1080_07150.ts", duration: 2);
+            AdDetector.ObserveSegment("https://osm-ads.delivery.roku.com/TRC_FightInc_15_16x9.mp4_v2_1_re/hls/transcode_segment_0_0000.ts", duration: 2);
+            AdDetector.ObserveDiscontinuity();
+            AdDetector.ObserveSignal(new SpliceSignal { Command = 5, OutOfNetwork = true, BreakSeconds = 150 });
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(1, AdDetector.AdNumber);
+            Assert.Equal(150, AdDetector.SecondsLeft.Value, 1);
+
+            AdDetector.ObserveSegment("https://osm-ads.delivery.roku.com/TRC_FightInc_15_16x9.mp4_v2_1_re/hls/transcode_segment_0_0001.ts", duration: 2);
+            AdDetector.ObserveSegment("https://osm-ads.delivery.roku.com/d8ddc091-7b60-4b05-a7d1-834891db9047/hls/transcode_segment_0_0000.ts", duration: 2);
+            AdDetector.ObserveDiscontinuity();
+
+            Assert.Equal(2, AdDetector.AdNumber);
+
+            AdDetector.ObserveSegment("https://osm-ads.delivery.roku.com/c7ec0a30-6cd9-4f81-ba72-2f662dd82d67/hls/transcode_segment_0_0000.ts", duration: 2);
+            AdDetector.ObserveDiscontinuity();
+
+            Assert.Equal(3, AdDetector.AdNumber);
+
+            AdDetector.ObserveSegment("https://live1250.delivery.roku.com/0c24a9ef/t2-origin/out/v1/live_1080/00188/live_1080_07227.ts", duration: 2);
+            AdDetector.ObserveDiscontinuity();
 
             Assert.False(AdDetector.InAd);
         }
@@ -124,11 +155,11 @@ namespace FoxIPTV.Tests
             AdDetector.ObserveSegment("https://amagi.example/ad/cue-out-60.000000/a.ts?media_type=A&dur=6.0");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(60, AdDetector.SecondsLeft);
+            Assert.Equal(60, AdDetector.SecondsLeft.Value, 1);
 
             AdDetector.ObserveSegment("https://amagi.example/ad/cue-out-60.000000/b.ts?media_type=A&dur=6.0");
 
-            Assert.Equal(54, AdDetector.SecondsLeft);
+            Assert.Equal(54, AdDetector.SecondsLeft.Value, 1);
         }
 
         [Fact]
@@ -254,17 +285,17 @@ namespace FoxIPTV.Tests
             Tagged(string.Format(RokuPiece, 2216971), 2.2, "#EXT-OATCLS-SCTE35:/DCaAAAAAAAAAP/wFAUAAZSnf+//PA9Fqf4ApMt/", "#EXT-X-ASSET:CAID=0x6C6177616E646372696D655F6C696E656172", "#EXT-X-CUE-OUT:120.000");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(120, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(120, AdDetector.SecondsLeft.Value, 1);
 
             Tagged(string.Format(RokuPiece, 2216972), 4.0, "#EXT-X-CUE-OUT-CONT:CAID=0x6C6177616E646372696D655F6C696E656172,ElapsedTime=2.200,Duration=120.000,SCTE35=/DCzAAAAAAAAAACwBQb/PA9FqQCdAiZDVUVJ");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(117.8, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(117.8, AdDetector.SecondsLeft.Value, 1);
 
             Tagged(string.Format(RokuPiece, 2217001), 1.8, "#EXT-X-CUE-OUT-CONT:CAID=0x6C6177616E646372696D655F6C696E656172,ElapsedTime=118.200,Duration=120.000,SCTE35=/DCzAAAAAAAAAACwBQb/PA9FqQCdAiZDVUVJ");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(1.8, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(1.8, AdDetector.SecondsLeft.Value, 1);
             Assert.Equal(1, AdDetector.AdNumber);
 
             Tagged(string.Format(RokuPiece, 2217002), 2.2, "#EXT-OATCLS-SCTE35:/DAgAAAAAAAAAP/wDwUAAZSnf0//PLQRKQAAAAAAADZm0SY=", "#EXT-X-CUE-IN");
@@ -281,7 +312,7 @@ namespace FoxIPTV.Tests
             Tagged("https://bec-spin-1-us.plex.wurl.tv/5/hls-v3/2208084-1.ts", 6.006, "#EXT-X-CUE-OUT-CONT:ElapsedTime=30.03,Duration=120,SCTE35=WURL1790497008");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(89.97, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(89.97, AdDetector.SecondsLeft.Value, 1);
 
             Tagged("https://bec-spin-1-us.plex.wurl.tv/5/hls-v3/2208100-1.ts", 6.006, "#EXT-X-CUE-IN");
 
@@ -297,7 +328,7 @@ namespace FoxIPTV.Tests
             AdDetector.ObserveDiscontinuity();
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(179.996, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(179.996, AdDetector.SecondsLeft.Value, 1);
 
             Tagged("https://dai.google.com/linear/pods/v1/seg/ad/2.ts", 4.992);
             AdDetector.ObserveDiscontinuity();
@@ -323,7 +354,7 @@ namespace FoxIPTV.Tests
             Tagged(string.Format(beacon, 488992), 6.673, start);
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(120, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(120, AdDetector.SecondsLeft.Value, 1);
 
             Tagged(string.Format(beacon, 488993), 6.673, start);
 
@@ -363,7 +394,7 @@ namespace FoxIPTV.Tests
 
             Assert.True(AdDetector.InAd);
             Assert.Equal(2, AdDetector.AdNumber);
-            Assert.Equal(15, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(15, AdDetector.SecondsLeft.Value, 1);
 
             Tagged(string.Format(beacon, 489006), 6.673);
             Tagged(string.Format(beacon, 489007), 6.673);
@@ -388,7 +419,7 @@ namespace FoxIPTV.Tests
             Tagged(string.Format(RokuPiece, 2), 4.0, "#EXT-X-CUE-IN", "#EXT-X-CUE-OUT:DURATION=60");
 
             Assert.True(AdDetector.InAd);
-            Assert.Equal(60, AdDetector.SecondsLeft.Value, 3);
+            Assert.Equal(60, AdDetector.SecondsLeft.Value, 1);
         }
     }
 }
