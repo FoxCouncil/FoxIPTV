@@ -505,10 +505,6 @@ namespace FoxIPTV.Views
             {
                 _adBreakShown = true;
 
-                var messages = TvCore.Settings.AdMessages;
-
-                AdTitleLabel.Text = messages != null && messages.Count > 0 ? messages[_random.Next(messages.Count)] : string.Empty;
-
                 _adReel.Start(TvCore.Settings.AdMediaFolder);
             }
             else if (!inAd && _adBreakShown)
@@ -533,6 +529,10 @@ namespace FoxIPTV.Views
 
         private void MoveAdTitle()
         {
+            var messages = TvCore.Settings.AdMessages?.Where(x => x != AdTitleLabel.Text).ToList();
+
+            AdTitleLabel.Text = messages != null && messages.Count > 0 ? messages[_random.Next(messages.Count)] : TvCore.Settings.AdMessages?.FirstOrDefault() ?? string.Empty;
+
             AdTitleBox.HorizontalAlignment = AdTitleAcross[_random.Next(AdTitleAcross.Length)];
             AdTitleBox.VerticalAlignment = AdTitleDown[_random.Next(AdTitleDown.Length)];
         }
