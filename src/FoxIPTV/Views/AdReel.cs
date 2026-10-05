@@ -47,6 +47,8 @@ namespace FoxIPTV.Views
             _surface = surface;
         }
 
+        public event Action ItemShown;
+
         public bool IsRunning { get; private set; }
 
         public bool Muted
@@ -175,6 +177,8 @@ namespace FoxIPTV.Views
 
                 if (PictureTypes.Contains(Path.GetExtension(path)) ? ShowPicture(path) : PlayVideo(path))
                 {
+                    ItemShown?.Invoke();
+
                     return;
                 }
             }

@@ -67,7 +67,49 @@ namespace FoxIPTV.Classes
         public bool AdTitle { get; set; } = true;
 
         [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-        public List<string> AdTitles { get; set; } = new List<string> { "We'll be right back", "Let's all goto the lobby" };
+        public List<string> AdMessages { get; set; } = new List<string>
+        {
+            "We'll be right back",
+            "Let's all goto the lobby",
+            "Stay tuned",
+            "Don't touch that dial",
+            "Please stand by",
+            "Please do not adjust your set",
+            "Back in a flash",
+            "Hang tight",
+            "Don't go anywhere",
+            "Intermission",
+            "Taking five",
+            "BRB",
+            "The show will resume shortly",
+            "Coming up next: more TV",
+            "Grab a snack",
+            "Snack o'clock",
+            "Popcorn refill time",
+            "Refill your drink",
+            "Go hydrate",
+            "Bathroom break!",
+            "Stretch those legs",
+            "Time for a quick dance break",
+            "Pet your pet",
+            "Feed the cat",
+            "Check on the kettle",
+            "Go text your mom",
+            "Meanwhile, in the lobby...",
+            "Be kind, rewind",
+            "Rewinding the VHS",
+            "Adjusting the rabbit ears",
+            "Warming up the tubes",
+            "Recharging the cathode rays",
+            "The fox is fetching the next tape",
+            "Signal's on a coffee break",
+            "Loading more show...",
+            "Ad-free zone",
+            "Nothing to see here",
+            "Smile, you're skipping the ads",
+            "This break brought to you by nobody",
+            "Technical difficulties (not really)"
+        };
 
         /// <summary>The synchronizing object for thread safe access to save and load functions</summary>
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();

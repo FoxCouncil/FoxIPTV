@@ -95,6 +95,8 @@ namespace FoxIPTV.Playback.Video
 
         public string Renderer { get; private set; } = "starting";
 
+        public bool Fill { get; set; }
+
         public event Action<int, int> PictureShown;
 
         private bool _announced;
@@ -377,6 +379,27 @@ namespace FoxIPTV.Playback.Video
             return PixelSize.FromSize(Bounds.Size, scale);
         }
 
+        public static Rect FillSource(double width, double height, double aspect, double outputWidth, double outputHeight, bool fill)
+        {
+            if (!fill || outputWidth <= 0 || outputHeight <= 0 || aspect <= 0)
+            {
+                return new Rect(0, 0, width, height);
+            }
+
+            var outputAspect = outputWidth / outputHeight;
+
+            if (aspect > outputAspect)
+            {
+                var visible = Math.Round(width * outputAspect / aspect);
+
+                return new Rect(Math.Floor((width - visible) / 2), 0, visible, height);
+            }
+
+            var shown = Math.Round(height * aspect / outputAspect);
+
+            return new Rect(0, Math.Floor((height - shown) / 2), width, shown);
+        }
+
         public static double ParseAspect(string ratio)
         {
             if (string.IsNullOrWhiteSpace(ratio))
@@ -398,7 +421,7 @@ namespace FoxIPTV.Playback.Video
         {
             if (_d3d != null)
             {
-                return _d3d.Present(frame, PixelSizeNow(), ParseAspect(_aspectRatio));
+                return _d3d.Present(frame, PixelSizeNow(), ParseAspect(_aspectRatio), Fill);
             }
 
             return ShowBitmap(frame);
@@ -459,6 +482,14 @@ namespace FoxIPTV.Playback.Video
             }
 
             var bounds = new Rect(Bounds.Size);
+
+            if (Fill)
+            {
+                context.DrawImage(_bitmap, FillSource(_bitmapRect.Width, _bitmapRect.Height, _bitmapAspect, bounds.Width, bounds.Height, true), bounds);
+
+                return;
+            }
+
             var width = bounds.Width;
             var height = width / _bitmapAspect;
 

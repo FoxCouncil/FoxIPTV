@@ -81,7 +81,7 @@ namespace FoxIPTV.Playback.Video
             return new D3D11Presenter(interop, surface, d3d);
         }
 
-        public unsafe bool Present(VideoFrame frame, PixelSize size, double forcedAspect)
+        public unsafe bool Present(VideoFrame frame, PixelSize size, double forcedAspect, bool fill)
         {
             if (_lost || size.Width <= 0 || size.Height <= 0 || frame?.Frame == null)
             {
@@ -153,7 +153,7 @@ namespace FoxIPTV.Playback.Video
 
                 try
                 {
-                    Configure(av, interlaced, size, frame.DisplayAspect(forcedAspect));
+                    Configure(av, interlaced, size, frame.DisplayAspect(forcedAspect), fill);
 
                     result = _d3d.Blt(_processor, target.OutputView, input, (uint)(frame.Number & 0xFFFFFFF));
 
@@ -362,15 +362,20 @@ namespace FoxIPTV.Playback.Video
             _enumerator = IntPtr.Zero;
         }
 
-        private unsafe void Configure(AVFrame* frame, bool interlaced, PixelSize output, double aspect)
+        private unsafe void Configure(AVFrame* frame, bool interlaced, PixelSize output, double aspect, bool fill)
         {
             var width = frame->width;
             var height = frame->height;
+            var source = VideoSurface.FillSource(width, height, aspect, output.Width, output.Height, fill);
 
             var fitWidth = output.Width;
             var fitHeight = (int)Math.Round(output.Width / aspect);
 
-            if (fitHeight > output.Height)
+            if (fill)
+            {
+                fitHeight = output.Height;
+            }
+            else if (fitHeight > output.Height)
             {
                 fitHeight = output.Height;
                 fitWidth = (int)Math.Round(output.Height * aspect);
@@ -383,7 +388,7 @@ namespace FoxIPTV.Playback.Video
 
             _d3d.SetStreamFrameFormat(_processor, format);
             _d3d.SetStreamOutputRate(_processor, interlaced ? Direct3D.OutputRateHalf : Direct3D.OutputRateNormal);
-            _d3d.SetStreamSourceRect(_processor, new Direct3D.Rect(0, 0, width, height));
+            _d3d.SetStreamSourceRect(_processor, new Direct3D.Rect((int)source.X, (int)source.Y, (int)(source.X + source.Width), (int)(source.Y + source.Height)));
             _d3d.SetStreamDestRect(_processor, new Direct3D.Rect(left, top, left + fitWidth, top + fitHeight));
             _d3d.SetOutputTargetRect(_processor, new Direct3D.Rect(0, 0, output.Width, output.Height));
             _d3d.SetStreamColorSpace(_processor, ColorSpace(frame));

@@ -26,6 +26,8 @@ namespace FoxIPTV.Classes
 
         public static string Status { get; private set; } = string.Empty;
 
+        private static string _what;
+
         public static event Action<string> StatusChanged;
 
         public static void Begin(string what)
@@ -33,6 +35,7 @@ namespace FoxIPTV.Classes
             lock (Lock)
             {
                 _id++;
+                _what = what;
                 _pictureSeen = false;
                 _quality = null;
                 Marks.Clear();
@@ -115,6 +118,9 @@ namespace FoxIPTV.Classes
         public static void Picture(string detail)
         {
             string summary;
+            string what;
+            string slowestStage;
+            long slowestMs;
             int id;
             long total;
 
@@ -142,7 +148,12 @@ namespace FoxIPTV.Classes
                 var slowest = Marks.Select((m, i) => Tuple.Create(m.Item1 - (i == 0 ? 0 : Marks[i - 1].Item1), m.Item2)).OrderByDescending(x => x.Item1).First();
 
                 summary = $"{text}total {total}ms, slowest: {slowest.Item2} ({slowest.Item1}ms)";
+                what = _what;
+                slowestStage = slowest.Item2;
+                slowestMs = slowest.Item1;
             }
+
+            TuneStats.Add(what, total, slowestStage, slowestMs);
 
             TvCore.LogInfo($"[Trace #{id}] picture after {total}ms: {detail}");
             TvCore.LogInfo($"[Trace #{id}] summary: {summary}");

@@ -133,10 +133,10 @@
 
                 <Panel x:Name="AdMediaPanel" Background="Black" IsHitTestVisible="False" IsVisible="False">
                     <Image x:Name="AdImage" Stretch="Uniform" IsVisible="False" />
-                    <video:VideoSurface x:Name="AdVideo" IsVisible="False" />
+                    <video:VideoSurface x:Name="AdVideo" Fill="True" IsVisible="False" />
                 </Panel>
 
-                <Border x:Name="AdTitleBox" Classes="osd" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24" IsHitTestVisible="False" IsVisible="False">
+                <Border x:Name="AdTitleBox" Classes="osd" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="48" IsHitTestVisible="False" IsVisible="False">
                     <views:InkTextBlock x:Name="AdTitleLabel" Classes="osd" FontSize="48" TextAlignment="Center" TextWrapping="Wrap" />
                 </Border>
 

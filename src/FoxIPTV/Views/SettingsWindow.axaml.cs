@@ -3,7 +3,6 @@
 namespace FoxIPTV.Views
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
@@ -14,17 +13,11 @@ namespace FoxIPTV.Views
 
     public partial class SettingsWindow : Window
     {
-        private const int LogLinesShown = 500;
-
         private static readonly (string Label, double Seconds)[] LiveDelays = { ("Default", 0), ("10 Seconds", 10), ("20 Seconds", 20), ("30 Seconds", 30), ("60 Seconds", 60) };
 
         private static readonly double[] Opacities = { 1.0, .9, .8, .7, .6, .5, .4, .3, .2, .1 };
 
-        private readonly ConcurrentQueue<string> _newLines = new ConcurrentQueue<string>();
-
-        private readonly List<string> _shownLines = new List<string>();
-
-        private readonly DispatcherTimer _refresh = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        private readonly DispatcherTimer _refresh = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
 
         private List<string> _captionChoices = new List<string>();
 
@@ -142,21 +135,20 @@ namespace FoxIPTV.Views
             {
                 if (AdTitlesList.SelectedItem is string title)
                 {
-                    TvCore.Settings.AdTitles.Remove(title);
+                    TvCore.Settings.AdMessages.Remove(title);
                     TvCore.Settings.Save();
 
                     ShowTitles();
                 }
             };
 
-            AdStatsResetButton.Click += (sender, args) =>
+            StatsResetButton.Click += (sender, args) =>
             {
                 AdStats.Reset();
+                TuneStats.Reset();
 
                 ShowStats();
             };
-
-            TimingOnlyCheck.IsCheckedChanged += (sender, args) => ShowLog();
 
             OpenLogButton.Click += (sender, args) =>
             {
@@ -170,15 +162,7 @@ namespace FoxIPTV.Views
                 }
             };
 
-            TvCore.LogLineAdded += line =>
-            {
-                if (_refresh.IsEnabled)
-                {
-                    _newLines.Enqueue(line);
-                }
-            };
-
-            _refresh.Tick += (sender, args) => Refresh();
+            _refresh.Tick += (sender, args) => ShowStats();
 
             PropertyChanged += (sender, args) =>
             {
@@ -190,7 +174,6 @@ namespace FoxIPTV.Views
                 if (IsVisible)
                 {
                     LoadState();
-                    ShowLog();
 
                     _refresh.Start();
                 }
@@ -212,9 +195,9 @@ namespace FoxIPTV.Views
             return span.TotalHours >= 1 ? $"{(int)span.TotalHours}:{span.Minutes:00}:{span.Seconds:00}" : $"{span.Minutes}:{span.Seconds:00}";
         }
 
-        private static bool IsTiming(string line)
+        private static string Seconds(long milliseconds)
         {
-            return line.Contains("[Trace #", StringComparison.Ordinal);
+            return $"{milliseconds / 1000.0:0.00}s";
         }
 
         private void LoadState()
@@ -309,19 +292,19 @@ namespace FoxIPTV.Views
 
         private void ShowTitles()
         {
-            AdTitlesList.ItemsSource = TvCore.Settings.AdTitles.ToList();
+            AdTitlesList.ItemsSource = TvCore.Settings.AdMessages.ToList();
         }
 
         private void AddTitle()
         {
             var title = AdTitleText.Text?.Trim();
 
-            if (string.IsNullOrEmpty(title) || TvCore.Settings.AdTitles.Contains(title))
+            if (string.IsNullOrEmpty(title) || TvCore.Settings.AdMessages.Contains(title))
             {
                 return;
             }
 
-            TvCore.Settings.AdTitles.Add(title);
+            TvCore.Settings.AdMessages.Add(title);
             TvCore.Settings.Save();
 
             AdTitleText.Text = string.Empty;
@@ -335,63 +318,11 @@ namespace FoxIPTV.Views
 
             AdStatsTotal.Text = $"{total.Breaks} breaks, {total.Ads} ads, {Time(total.Seconds)} of ads";
             AdStatsChannels.ItemsSource = AdStats.PerChannel().Select(x => $"{x.Channel}: {x.Breaks} breaks, {x.Ads} ads, {Time(x.Seconds)}").ToList();
-        }
 
-        private void ShowLog()
-        {
-            while (_newLines.TryDequeue(out _))
-            {
-            }
+            var tunes = TuneStats.Summary();
 
-            var timingOnly = TimingOnlyCheck.IsChecked == true;
-
-            _shownLines.Clear();
-            _shownLines.AddRange(TvCore.LogTail().Where(x => !timingOnly || IsTiming(x)).TakeLast(LogLinesShown));
-
-            WriteLog();
-        }
-
-        private void WriteLog()
-        {
-            LogText.Text = string.Join(Environment.NewLine, _shownLines);
-            LogText.CaretIndex = LogText.Text.Length;
-        }
-
-        private void Refresh()
-        {
-            var timingOnly = TimingOnlyCheck.IsChecked == true;
-            var added = false;
-
-            while (_newLines.TryDequeue(out var line))
-            {
-                if (timingOnly && !IsTiming(line))
-                {
-                    continue;
-                }
-
-                _shownLines.Add(line);
-                added = true;
-            }
-
-            if (added)
-            {
-                if (_shownLines.Count > LogLinesShown)
-                {
-                    _shownLines.RemoveRange(0, _shownLines.Count - LogLinesShown);
-                }
-
-                if (ReferenceEquals(Tabs.SelectedItem, LogTab))
-                {
-                    WriteLog();
-                }
-            }
-
-            TraceStatusText.Text = PlaybackTrace.Status;
-
-            if (Tabs.SelectedIndex == 1)
-            {
-                ShowStats();
-            }
+            TuneStatsTotal.Text = tunes.Count == 0 ? "0 changes" : $"{tunes.Count} changes, average {Seconds(tunes.Average)}, fastest {Seconds(tunes.Fastest)}, slowest {Seconds(tunes.Slowest)}";
+            TuneStatsRecent.ItemsSource = TuneStats.Latest().Select(x => $"{x.What}: {Seconds(x.Milliseconds)}, slowest step {x.SlowestStage} {x.SlowestMilliseconds}ms").ToList();
         }
     }
 }

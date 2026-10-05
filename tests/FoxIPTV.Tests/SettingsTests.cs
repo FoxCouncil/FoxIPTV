@@ -12,6 +12,7 @@ namespace FoxIPTV.Tests
     using Avalonia.VisualTree;
     using FoxIPTV.Classes;
     using FoxIPTV.Playback.Hls;
+    using FoxIPTV.Playback.Video;
     using FoxIPTV.Views;
     using Newtonsoft.Json;
 
@@ -40,7 +41,7 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
-        public void AdTitles_LoadWithoutDoubling()
+        public void AdMessages_LoadWithoutDoubling()
         {
             var saved = JsonConvert.SerializeObject(new Settings());
             var settings = new Settings();
@@ -48,7 +49,7 @@ namespace FoxIPTV.Tests
             JsonConvert.PopulateObject(saved, settings);
             JsonConvert.PopulateObject(saved, settings);
 
-            Assert.Equal(new Settings().AdTitles, settings.AdTitles);
+            Assert.Equal(new Settings().AdMessages, settings.AdMessages);
         }
 
         [AvaloniaFact]
@@ -82,6 +83,14 @@ namespace FoxIPTV.Tests
             Assert.Equal(0, Grid.GetColumn(icon));
             Assert.Equal(0, Grid.GetColumn(tick));
             Assert.Equal(icon.Bounds.X, tick.Bounds.X, 1);
+        }
+
+        [Fact]
+        public void FillSource_CropsTheSidesOrTopToCoverTheFrame()
+        {
+            Assert.Equal(new Avalonia.Rect(240, 0, 1440, 1080), VideoSurface.FillSource(1920, 1080, 16 / 9.0, 400, 300, true));
+            Assert.Equal(new Avalonia.Rect(0, 60, 640, 360), VideoSurface.FillSource(640, 480, 4 / 3.0, 1600, 900, true));
+            Assert.Equal(new Avalonia.Rect(0, 0, 640, 480), VideoSurface.FillSource(640, 480, 4 / 3.0, 1600, 900, false));
         }
 
         [Fact]

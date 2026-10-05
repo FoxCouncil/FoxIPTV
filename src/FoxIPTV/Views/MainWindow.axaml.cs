@@ -57,6 +57,10 @@ namespace FoxIPTV.Views
 
         private readonly Random _random = new Random();
 
+        private static readonly Avalonia.Layout.HorizontalAlignment[] AdTitleAcross = { Avalonia.Layout.HorizontalAlignment.Left, Avalonia.Layout.HorizontalAlignment.Center, Avalonia.Layout.HorizontalAlignment.Right };
+
+        private static readonly Avalonia.Layout.VerticalAlignment[] AdTitleDown = { Avalonia.Layout.VerticalAlignment.Top, Avalonia.Layout.VerticalAlignment.Center, Avalonia.Layout.VerticalAlignment.Bottom };
+
         public bool IsFullscreen { get; private set; }
 
         public MainWindow()
@@ -491,15 +495,19 @@ namespace FoxIPTV.Views
 
             AdStats.Observe(TvCore.CurrentChannel?.Name, inAd, AdDetector.AdNumber, elapsed);
 
-            _adReel ??= new AdReel(AdImage, AdVideo);
+            if (_adReel == null)
+            {
+                _adReel = new AdReel(AdImage, AdVideo);
+                _adReel.ItemShown += MoveAdTitle;
+            }
 
             if (inAd && !_adBreakShown)
             {
                 _adBreakShown = true;
 
-                var titles = TvCore.Settings.AdTitles;
+                var messages = TvCore.Settings.AdMessages;
 
-                AdTitleLabel.Text = titles != null && titles.Count > 0 ? titles[_random.Next(titles.Count)] : string.Empty;
+                AdTitleLabel.Text = messages != null && messages.Count > 0 ? messages[_random.Next(messages.Count)] : string.Empty;
 
                 _adReel.Start(TvCore.Settings.AdMediaFolder);
             }
@@ -521,6 +529,12 @@ namespace FoxIPTV.Views
             AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
 
             _adReel.Tick();
+        }
+
+        private void MoveAdTitle()
+        {
+            AdTitleBox.HorizontalAlignment = AdTitleAcross[_random.Next(AdTitleAcross.Length)];
+            AdTitleBox.VerticalAlignment = AdTitleDown[_random.Next(AdTitleDown.Length)];
         }
 
         private void TimerAdLabel()
