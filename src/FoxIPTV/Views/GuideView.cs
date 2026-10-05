@@ -40,7 +40,7 @@ namespace FoxIPTV.Views
 
         private int _guideVersion = -1;
 
-        private int _topChannel;
+        private double _top;
 
         private DateTimeOffset? _startUtc;
 
@@ -59,6 +59,10 @@ namespace FoxIPTV.Views
         private ScrollBar _timeBar;
 
         private DateTimeOffset _guideEndUtc;
+
+        private bool _draggingRows;
+
+        private bool _draggingTime;
 
         public GuideView()
         {
@@ -92,9 +96,9 @@ namespace FoxIPTV.Views
             {
                 var position = Shown.IndexOf((int)channel);
 
-                if (position >= 0 && (position < _topChannel || position >= _topChannel + VisibleRows))
+                if (position >= 0 && (position < _top || position + 1 > _top + VisibleRowSpan))
                 {
-                    _topChannel = position;
+                    _top = position;
                 }
 
                 InvalidateVisual();
@@ -115,7 +119,7 @@ namespace FoxIPTV.Views
 
                 _search = search;
                 _shown = null;
-                _topChannel = 0;
+                _top = 0;
 
                 InvalidateVisual();
             }
@@ -127,7 +131,9 @@ namespace FoxIPTV.Views
 
             scrollBar.Scroll += (sender, args) =>
             {
-                _topChannel = (int)Math.Round(scrollBar.Value);
+                _draggingRows = args.ScrollEventType == ScrollEventType.ThumbTrack;
+                _top = scrollBar.Value;
+
                 InvalidateVisual();
             };
         }
@@ -137,7 +143,12 @@ namespace FoxIPTV.Views
             _timeBar = timeBar;
             _timeBar.Margin = new Thickness(NumberWidth + NameWidth, 0, 0, 0);
 
-            timeBar.Scroll += (sender, args) => SetStart(EarliestUtc.AddMinutes(Math.Round(timeBar.Value) * StepMinutes));
+            timeBar.Scroll += (sender, args) =>
+            {
+                _draggingTime = args.ScrollEventType == ScrollEventType.ThumbTrack;
+
+                SetStart(EarliestUtc.AddMinutes(timeBar.Value * StepMinutes));
+            };
 
             QueueTimeBar();
         }
@@ -145,12 +156,16 @@ namespace FoxIPTV.Views
         public void ResetView()
         {
             _startUtc = null;
-            _topChannel = Math.Max(0, Shown.IndexOf((int)TvCore.CurrentChannelIndex));
+            _top = Math.Max(0, Shown.IndexOf((int)TvCore.CurrentChannelIndex));
 
             InvalidateVisual();
         }
 
-        private int VisibleRows => Math.Max(1, (int)((Bounds.Height - HeaderHeight) / RowHeight));
+        private int VisibleRows => Math.Max(1, (int)VisibleRowSpan);
+
+        private double VisibleRowSpan => Math.Max(1, (Bounds.Height - HeaderHeight) / RowHeight);
+
+        private double MaxTop => Math.Max(0, ChannelCount - VisibleRowSpan);
 
         private static int TotalChannels => Math.Min(TvCore.ChannelIndexList?.Count ?? 0, TvCore.Channels?.Count ?? 0);
 
@@ -269,9 +284,7 @@ namespace FoxIPTV.Views
 
         private void ClampScroll()
         {
-            var max = Math.Max(0, ChannelCount - VisibleRows);
-
-            _topChannel = Math.Max(0, Math.Min(_topChannel, max));
+            _top = Math.Max(0, Math.Min(_top, MaxTop));
 
             if (ScrollBar != null)
             {
@@ -283,18 +296,17 @@ namespace FoxIPTV.Views
 
         private void UpdateScrollBar()
         {
-            var max = Math.Max(0, ChannelCount - VisibleRows);
-
             ScrollBar.Minimum = 0;
-            ScrollBar.Maximum = max;
-            ScrollBar.ViewportSize = VisibleRows;
+            ScrollBar.Maximum = MaxTop;
+            ScrollBar.ViewportSize = VisibleRowSpan;
             ScrollBar.LargeChange = VisibleRows;
             ScrollBar.SmallChange = 1;
-            if (Math.Abs(ScrollBar.Value - _topChannel) >= 1)
+            ScrollBar.IsEnabled = MaxTop > 0;
+
+            if (!_draggingRows)
             {
-                ScrollBar.Value = _topChannel;
+                ScrollBar.Value = _top;
             }
-            ScrollBar.IsEnabled = ChannelCount > VisibleRows;
         }
 
         private void QueueTimeBar()
@@ -314,7 +326,11 @@ namespace FoxIPTV.Views
             _timeBar.ViewportSize = visibleSteps;
             _timeBar.LargeChange = visibleSteps;
             _timeBar.SmallChange = 1;
-            _timeBar.Value = Math.Max(0, (StartUtc - EarliestUtc).TotalMinutes / StepMinutes);
+
+            if (!_draggingTime)
+            {
+                _timeBar.Value = Math.Max(0, (StartUtc - EarliestUtc).TotalMinutes / StepMinutes);
+            }
         }
 
         private static void DrawText(DrawingContext g, string text, double size, FontWeight weight, Color colour, Rect box, TextAlignment alignment = TextAlignment.Left, bool centreVertically = true, bool wrap = false)
@@ -373,23 +389,28 @@ namespace FoxIPTV.Views
 
             DrawText(g, dayText, 15, FontWeight.Bold, Text, new Rect(0, 0, gridLeft, HeaderHeight), TextAlignment.Center);
 
-            for (var t = startUtc; t < endUtc; t = t.AddMinutes(StepMinutes))
+            using (g.PushClip(new Rect(gridLeft, 0, gridWidth, HeaderHeight)))
             {
-                var x = gridLeft + (t - startUtc).TotalMinutes * pixelsPerMinute;
+                for (var t = Floor(startUtc, StepMinutes); t < endUtc; t = t.AddMinutes(StepMinutes))
+                {
+                    var x = gridLeft + (t - startUtc).TotalMinutes * pixelsPerMinute;
 
-                g.DrawLine(line, new Point(x, 4), new Point(x, HeaderHeight - 4));
-                DrawText(g, t.ToLocalTime().ToString("h:mm tt"), 15, FontWeight.Bold, Text, new Rect(x + 6, 0, StepMinutes * pixelsPerMinute - 6, HeaderHeight));
+                    g.DrawLine(line, new Point(x, 4), new Point(x, HeaderHeight - 4));
+                    DrawText(g, t.ToLocalTime().ToString("h:mm tt"), 15, FontWeight.Bold, Text, new Rect(x + 6, 0, StepMinutes * pixelsPerMinute - 6, HeaderHeight));
+                }
             }
 
             g.DrawLine(line, new Point(0, HeaderHeight - 0.5), new Point(width, HeaderHeight - 0.5));
 
             // Rows
-            var rows = VisibleRows;
             var shown = Shown;
+            var first = (int)Math.Floor(_top);
+            var offset = (_top - first) * RowHeight;
+            var rowsClip = g.PushClip(new Rect(0, HeaderHeight, width, Math.Max(0, height - HeaderHeight)));
 
-            for (var row = 0; row <= rows; row++)
+            for (var row = 0; HeaderHeight + row * RowHeight - offset < height; row++)
             {
-                var position = _topChannel + row;
+                var position = first + row;
 
                 if (position >= shown.Count)
                 {
@@ -398,7 +419,7 @@ namespace FoxIPTV.Views
 
                 var channelIndex = shown[position];
                 var channel = TvCore.Channels[channelIndex];
-                var y = HeaderHeight + row * RowHeight;
+                var y = HeaderHeight + row * RowHeight - offset;
                 var isCurrent = channelIndex == (int)TvCore.CurrentChannelIndex;
 
                 if (isCurrent)
@@ -459,6 +480,8 @@ namespace FoxIPTV.Views
                 g.DrawLine(line, new Point(0, y + RowHeight - 0.5), new Point(width, y + RowHeight - 0.5));
             }
 
+            rowsClip.Dispose();
+
             g.DrawLine(line, new Point(NumberWidth, HeaderHeight), new Point(NumberWidth, height));
             g.DrawLine(line, new Point(gridLeft, HeaderHeight), new Point(gridLeft, height));
 
@@ -487,7 +510,7 @@ namespace FoxIPTV.Views
             }
             else
             {
-                _topChannel -= notches * 3;
+                _top -= notches * 3;
                 InvalidateVisual();
             }
 
@@ -500,25 +523,25 @@ namespace FoxIPTV.Views
             {
                 case Key.Up:
                 {
-                    _topChannel--;
+                    _top = Math.Round(_top) - 1;
                 }
                 break;
 
                 case Key.Down:
                 {
-                    _topChannel++;
+                    _top = Math.Round(_top) + 1;
                 }
                 break;
 
                 case Key.PageUp:
                 {
-                    _topChannel -= VisibleRows;
+                    _top = Math.Round(_top) - VisibleRows;
                 }
                 break;
 
                 case Key.PageDown:
                 {
-                    _topChannel += VisibleRows;
+                    _top = Math.Round(_top) + VisibleRows;
                 }
                 break;
 
@@ -659,6 +682,11 @@ namespace FoxIPTV.Views
 
         private object HitTest(Point point)
         {
+            if (point.Y < HeaderHeight)
+            {
+                return null;
+            }
+
             foreach (var hit in _hits)
             {
                 if (hit.Item1.Contains(point))
