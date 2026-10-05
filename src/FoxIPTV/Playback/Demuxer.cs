@@ -38,6 +38,8 @@ namespace FoxIPTV.Playback
 
         public int AudioIndex { get; private set; } = -1;
 
+        public HashSet<int> SignalIndices { get; } = new HashSet<int>();
+
         public string FormatName => _format == null || _format->iformat == null ? "unknown" : Marshal.PtrToStringAnsi((IntPtr)_format->iformat->name);
 
         public AVStream* Stream(int index) => index < 0 || index >= _format->nb_streams ? null : _format->streams[index];
@@ -176,9 +178,18 @@ namespace FoxIPTV.Playback
             VideoIndex = video >= 0 ? video : -1;
             AudioIndex = audio >= 0 ? audio : -1;
 
+            SignalIndices.Clear();
+
             for (var i = 0; i < _format->nb_streams; i++)
             {
-                _format->streams[i]->discard = i == VideoIndex || i == AudioIndex ? AVDiscard.AVDISCARD_DEFAULT : AVDiscard.AVDISCARD_ALL;
+                var codec = _format->streams[i]->codecpar->codec_id;
+
+                if (codec == AVCodecID.AV_CODEC_ID_SCTE_35 || codec == AVCodecID.AV_CODEC_ID_TIMED_ID3)
+                {
+                    SignalIndices.Add(i);
+                }
+
+                _format->streams[i]->discard = i == VideoIndex || i == AudioIndex || SignalIndices.Contains(i) ? AVDiscard.AVDISCARD_DEFAULT : AVDiscard.AVDISCARD_ALL;
             }
         }
 

@@ -52,6 +52,8 @@ namespace FoxIPTV.Playback
 
         private readonly List<CaptionTrack> _captionTracks = new List<CaptionTrack>();
 
+        private readonly List<SpliceSignal> _signalMarks = new List<SpliceSignal>();
+
         private readonly SubtitleTrack _subtitles = new SubtitleTrack();
 
         private readonly Stopwatch _age = Stopwatch.StartNew();
@@ -590,6 +592,8 @@ namespace FoxIPTV.Playback
 
             public int Errors;
 
+            public string LastId3;
+
             public void Free()
             {
                 var video = VideoParameters;
@@ -715,6 +719,11 @@ namespace FoxIPTV.Playback
 
                 if (!isVideo && !isAudio)
                 {
+                    if (demuxer.SignalIndices.Contains(index))
+                    {
+                        OnSignal(packet, demuxer.Stream(index), state);
+                    }
+
                     ffmpeg.av_packet_unref(packet);
 
                     continue;
@@ -818,6 +827,63 @@ namespace FoxIPTV.Playback
                 ffmpeg.av_packet_move_ref(copy, packet);
 
                 (isVideo ? _videoPackets : _audioPackets).Add(new PacketItem { Kind = PacketKind.Packet, Packet = copy, Duration = duration }, _token);
+            }
+        }
+
+        private unsafe void OnSignal(AVPacket* packet, AVStream* stream, DemuxState state)
+        {
+            if (packet->data == null || packet->size <= 0)
+            {
+                return;
+            }
+
+            var data = new ReadOnlySpan<byte>(packet->data, packet->size);
+
+            if (stream->codecpar->codec_id == AVCodecID.AV_CODEC_ID_SCTE_35)
+            {
+                var signal = Scte35.Parse(data);
+
+                if (signal == null)
+                {
+                    TvCore.LogInfo($"[Ads] SCTE-35 section of {packet->size} bytes could not be read: {Convert.ToHexString(data)}");
+
+                    return;
+                }
+
+                if (signal.Time.HasValue)
+                {
+                    var seconds = signal.Time.Value / Scte35.Hz;
+
+                    signal.PlayAt = seconds + _timeline.Offset(state.Key, seconds);
+                }
+                else
+                {
+                    signal.PlayAt = double.IsNaN(state.LastVideo) ? state.LastAudio : state.LastVideo;
+                }
+
+                TvCore.LogInfo($"[Ads] SCTE-35 {signal}, plays at {signal.PlayAt:0.000}s");
+
+                lock (_signalMarks)
+                {
+                    var at = _signalMarks.FindIndex(x => x.PlayAt > signal.PlayAt);
+
+                    _signalMarks.Insert(at < 0 ? _signalMarks.Count : at, signal);
+                }
+
+                return;
+            }
+
+            var text = Scte35.DescribeId3(data);
+
+            if (text != null && text != state.LastId3)
+            {
+                state.LastId3 = text;
+
+                var stamp = packet->pts != ffmpeg.AV_NOPTS_VALUE ? packet->pts : packet->dts;
+                var seconds = stamp == ffmpeg.AV_NOPTS_VALUE ? double.NaN : stamp * ffmpeg.av_q2d(stream->time_base);
+                var mapped = double.IsNaN(seconds) ? double.NaN : seconds + _timeline.Offset(state.Key, seconds);
+
+                TvCore.LogInfo($"[Ads] ID3 at {mapped:0.000}s: {text}");
             }
         }
 
@@ -1669,6 +1735,26 @@ namespace FoxIPTV.Playback
                     {
                         AdDetector.ObserveDiscontinuity();
                     }
+                }
+            }
+
+            List<SpliceSignal> signals = null;
+
+            lock (_signalMarks)
+            {
+                while (_signalMarks.Count > 0 && (_signalMarks[0].PlayAt <= clock || double.IsNaN(_signalMarks[0].PlayAt)))
+                {
+                    (signals ??= new List<SpliceSignal>()).Add(_signalMarks[0]);
+
+                    _signalMarks.RemoveAt(0);
+                }
+            }
+
+            if (signals != null)
+            {
+                foreach (var signal in signals)
+                {
+                    AdDetector.ObserveSignal(signal);
                 }
             }
 

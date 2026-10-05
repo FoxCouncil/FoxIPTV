@@ -6,6 +6,7 @@ namespace FoxIPTV.Classes
     using System.Collections.Generic;
     using System.Globalization;
     using System.Text.RegularExpressions;
+    using Playback;
     using Playback.Hls;
 
     public static class AdDetector
@@ -56,11 +57,28 @@ namespace FoxIPTV.Classes
 
         private static readonly HashSet<string> FinishedCueIds = new HashSet<string>(StringComparer.Ordinal);
 
+        private static DateTime? _adEndsAt;
+
+        private static bool _signalled;
+
         public static bool InAd { get; private set; }
 
         public static int AdNumber { get; private set; }
 
         public static double? SecondsLeft { get; private set; }
+
+        public static int AdTotal { get; private set; }
+
+        public static double? AdSecondsLeft
+        {
+            get
+            {
+                lock (Lock)
+                {
+                    return _adEndsAt.HasValue ? Math.Max(0, (_adEndsAt.Value - DateTime.UtcNow).TotalSeconds) : (double?)null;
+                }
+            }
+        }
 
         public static void Reset()
         {
@@ -76,7 +94,10 @@ namespace FoxIPTV.Classes
         {
             InAd = false;
             AdNumber = 0;
+            AdTotal = 0;
             SecondsLeft = null;
+            _adEndsAt = null;
+            _signalled = false;
             _lastCreative = null;
             _entryDiscontinuitySeen = false;
             _breakSeconds = 0;
@@ -111,6 +132,13 @@ namespace FoxIPTV.Classes
 
             lock (Lock)
             {
+                if (_signalled && !isAd && _adEndsAt.HasValue && DateTime.UtcNow > _adEndsAt.Value.AddSeconds(3))
+                {
+                    TvCore.LogInfo($"[Ads] Signalled ad ran out and a programme piece followed, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s: {Short(url)}");
+
+                    Finish();
+                }
+
                 if (_cued && breakEnds)
                 {
                     TvCore.LogInfo($"[Ads] Cue-in, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s: {Short(url)}");
@@ -252,6 +280,90 @@ namespace FoxIPTV.Classes
                         _fetchedSeconds += double.Parse(length.Groups[1].Value, CultureInfo.InvariantCulture);
                     }
                 }
+            }
+        }
+
+        public static void ObserveSignal(SpliceSignal signal)
+        {
+            if (signal == null)
+            {
+                return;
+            }
+
+            lock (Lock)
+            {
+                if (signal.OutOfNetwork)
+                {
+                    StartSignalledBreak(signal.BreakSeconds, signal.ToString());
+                }
+
+                foreach (var segment in signal.Segments)
+                {
+                    if (segment.IsBreakStart)
+                    {
+                        StartSignalledBreak(segment.Seconds, segment.ToString());
+                    }
+                    else if (segment.IsAdStart)
+                    {
+                        var first = !InAd;
+
+                        StartSignalledBreak(0, segment.ToString());
+
+                        AdNumber = segment.Number > 0 ? segment.Number : first ? 1 : AdNumber + 1;
+                        AdTotal = segment.Expected > 0 ? segment.Expected : AdTotal;
+                        _adEndsAt = segment.Seconds > 0 ? DateTime.UtcNow.AddSeconds(segment.Seconds) : (DateTime?)null;
+
+                        TvCore.LogInfo($"[Ads] Signalled ad #{AdNumber}{(AdTotal > 0 ? $" of {AdTotal}" : string.Empty)}{(segment.Seconds > 0 ? $", {segment.Seconds:0.#}s" : string.Empty)}");
+                    }
+                    else if (segment.IsAdEnd)
+                    {
+                        _adEndsAt = null;
+
+                        if (segment.Expected > 0 && segment.Number >= segment.Expected)
+                        {
+                            TvCore.LogInfo($"[Ads] Signalled last ad ended, break over after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s");
+
+                            Finish();
+                        }
+                    }
+                    else if (segment.IsBreakEnd && InAd)
+                    {
+                        TvCore.LogInfo($"[Ads] Signalled break end after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s");
+
+                        Finish();
+                    }
+                }
+
+                if (signal.InToNetwork && InAd)
+                {
+                    TvCore.LogInfo($"[Ads] Splice back to the programme after {(DateTime.UtcNow - _breakStarted).TotalSeconds:0}s");
+
+                    Finish();
+                }
+            }
+        }
+
+        private static void StartSignalledBreak(double seconds, string why)
+        {
+            if (!InAd || !_cued)
+            {
+                Clear();
+
+                InAd = true;
+                AdNumber = 1;
+                _cued = true;
+                _signalled = true;
+                _breakStarted = DateTime.UtcNow;
+
+                TvCore.LogInfo($"[Ads] Signalled break started: {why}");
+            }
+
+            _signalled = true;
+
+            if (seconds > 0)
+            {
+                _cueLength = seconds;
+                SecondsLeft = Math.Max(0, _cueLength - _cuePlayed);
             }
         }
 

@@ -475,8 +475,8 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var text = AdDetector.AdNumber > 1 ? $"(Ad) #{AdDetector.AdNumber}" : "(Ad)";
-            var left = AdDetector.SecondsLeft;
+            var text = AdDetector.AdTotal > 0 ? $"(Ad) #{AdDetector.AdNumber} of {AdDetector.AdTotal}" : AdDetector.AdNumber > 1 ? $"(Ad) #{AdDetector.AdNumber}" : "(Ad)";
+            var left = AdDetector.AdSecondsLeft ?? AdDetector.SecondsLeft;
 
             if (left != null)
             {

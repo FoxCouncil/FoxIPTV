@@ -3,10 +3,65 @@
 namespace FoxIPTV.Tests
 {
     using FoxIPTV.Classes;
+    using FoxIPTV.Playback;
 
     [Collection("AdDetector")]
     public class AdDetectorTests
     {
+        private static SpliceSignal Ad(int type, double seconds, int number, int expected)
+        {
+            var signal = new SpliceSignal { Command = 6 };
+
+            signal.Segments.Add(new Segmentation { Type = type, Seconds = seconds, Number = number, Expected = expected });
+
+            return signal;
+        }
+
+        [Fact]
+        public void Signals_CountTheAdsAndEndOnTheLast()
+        {
+            AdDetector.Reset();
+
+            AdDetector.ObserveSignal(Ad(0x30, 15, 1, 3));
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(1, AdDetector.AdNumber);
+            Assert.Equal(3, AdDetector.AdTotal);
+            Assert.InRange(AdDetector.AdSecondsLeft.Value, 14, 15);
+
+            AdDetector.ObserveSignal(Ad(0x31, 0, 1, 3));
+            AdDetector.ObserveSignal(Ad(0x30, 30, 2, 3));
+
+            Assert.Equal(2, AdDetector.AdNumber);
+            Assert.InRange(AdDetector.AdSecondsLeft.Value, 29, 30);
+
+            AdDetector.ObserveSegment("https://cdn.example/show/episode/seg40.ts");
+
+            Assert.True(AdDetector.InAd);
+
+            AdDetector.ObserveSignal(Ad(0x30, 15, 3, 3));
+            AdDetector.ObserveSignal(Ad(0x31, 0, 3, 3));
+
+            Assert.False(AdDetector.InAd);
+            Assert.Equal(0, AdDetector.AdTotal);
+            Assert.Null(AdDetector.AdSecondsLeft);
+        }
+
+        [Fact]
+        public void Signals_SpliceOutCountsDownTheBreakAndSpliceInEndsIt()
+        {
+            AdDetector.Reset();
+
+            AdDetector.ObserveSignal(new SpliceSignal { Command = 5, OutOfNetwork = true, BreakSeconds = 60 });
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(60, AdDetector.SecondsLeft);
+
+            AdDetector.ObserveSignal(new SpliceSignal { Command = 5, InToNetwork = true });
+
+            Assert.False(AdDetector.InAd);
+        }
+
         [Fact]
         public void Pluto_CountsAdsByCreativeAndEndsOnProgramme()
         {
