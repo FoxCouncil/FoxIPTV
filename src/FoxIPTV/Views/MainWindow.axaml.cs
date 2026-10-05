@@ -483,7 +483,7 @@ namespace FoxIPTV.Views
 
             TimerKeyboardEntry();
 
-            MuteLabel.IsVisible = _player.Muted;
+            MuteLabelBox.IsVisible = _player.Muted;
         }
 
         private void TimerAdBreak()

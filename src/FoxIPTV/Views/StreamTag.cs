@@ -22,7 +22,7 @@ namespace FoxIPTV.Views
 
         private const double FontPixels = 20;
 
-        private static readonly Typeface Face = new Typeface(new FontFamily("Bahnschrift, Arial Black, Arial"), FontStyle.Normal, FontWeight.Bold, FontStretch.Condensed);
+        private static readonly Typeface Face = new Typeface(new FontFamily("avares://FoxIPTV/Assets/Fonts#VCR OSD Mono"));
 
         private static readonly IBrush Box = new SolidColorBrush(Color.FromRgb(51, 51, 51));
 
