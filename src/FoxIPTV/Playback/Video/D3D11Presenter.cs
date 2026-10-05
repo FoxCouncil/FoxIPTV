@@ -83,7 +83,7 @@ namespace FoxIPTV.Playback.Video
 
         public unsafe bool Present(VideoFrame frame, PixelSize size, double forcedAspect, bool fill)
         {
-            if (_lost || size.Width <= 0 || size.Height <= 0 || frame?.Frame == null)
+            if (_lost || size.Width <= 0 || size.Height <= 0 || frame == null || frame.Frame == null)
             {
                 return false;
             }
