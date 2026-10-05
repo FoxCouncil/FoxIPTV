@@ -387,7 +387,7 @@ namespace FoxIPTV.Views
             var rows = VisibleRows;
             var shown = Shown;
 
-            for (var row = 0; row < rows; row++)
+            for (var row = 0; row <= rows; row++)
             {
                 var position = _topChannel + row;
 
