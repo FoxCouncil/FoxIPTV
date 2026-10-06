@@ -48,6 +48,8 @@ namespace FoxIPTV.Classes
 
         public bool CheckForUpdates { get; set; } = true;
 
+        public bool QuitOnClose { get; set; }
+
         public string Provider { get; set; }
 
         public double LiveDelay { get; set; }

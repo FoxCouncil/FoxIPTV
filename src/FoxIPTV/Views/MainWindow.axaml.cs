@@ -290,6 +290,13 @@ namespace FoxIPTV.Views
 
             e.Cancel = true;
 
+            if (TvCore.Settings.QuitOnClose)
+            {
+                Quit();
+
+                return;
+            }
+
             ToggleVisibility();
         }
 

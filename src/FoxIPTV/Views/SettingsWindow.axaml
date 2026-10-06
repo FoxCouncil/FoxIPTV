@@ -80,6 +80,7 @@
                             <CheckBox x:Name="StatusBarCheck" Content="Status Bar" />
                             <CheckBox x:Name="BordersCheck" Content="Borders" />
                             <CheckBox x:Name="AlwaysOnTopCheck" Content="Always On Top" />
+                            <CheckBox x:Name="QuitOnCloseCheck" Content="Quit When the Window Closes" />
                             <Grid ColumnDefinitions="140,*">
                                 <TextBlock Grid.Column="0" Text="Transparency" VerticalAlignment="Center" />
                                 <ComboBox x:Name="TransparencyCombo" Grid.Column="1" MinWidth="200" />

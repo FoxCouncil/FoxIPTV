@@ -87,6 +87,7 @@ namespace FoxIPTV.Views
             });
 
             UpdatesCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.CheckForUpdates = UpdatesCheck.IsChecked == true);
+            QuitOnCloseCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.QuitOnClose = QuitOnCloseCheck.IsChecked == true);
 
             AdMuteCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.AdMute = AdMuteCheck.IsChecked == true);
             AdLabelCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.AdLabel = AdLabelCheck.IsChecked == true);
@@ -211,6 +212,7 @@ namespace FoxIPTV.Views
                 BordersCheck.IsChecked = TvCore.Settings.Borders;
                 BordersCheck.IsEnabled = Host == null || !Host.IsFullscreen;
                 AlwaysOnTopCheck.IsChecked = Host?.Topmost ?? TvCore.Settings.AlwaysOnTop;
+                QuitOnCloseCheck.IsChecked = TvCore.Settings.QuitOnClose;
 
                 TransparencyCombo.IsEnabled = WindowOpacity.IsSupported;
                 TransparencyCombo.SelectedIndex = Array.FindIndex(Opacities, x => Math.Abs(x - TvCore.Settings.Opacity) < 0.001);
