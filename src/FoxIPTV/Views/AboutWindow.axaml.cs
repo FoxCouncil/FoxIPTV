@@ -21,6 +21,7 @@ namespace FoxIPTV.Views
             TitleLabel.Text += $" V{TvCore.Version}";
 
             PatreonButton.Click += (sender, args) => OpenLink("https://www.patreon.com/FoxCouncil");
+            GithubButton.Click += (sender, args) => OpenLink("https://github.com/FoxCouncil/FoxIPTV");
 
             IconAttributionButton.Click += (sender, args) => OpenLink("http://p.yusukekamiyamane.com/");
 

@@ -11,7 +11,12 @@
         <TextBlock x:Name="TitleLabel" Text="Fox IPTV" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" />
 
         <HeaderedContentControl Header="Support Us">
-            <Button x:Name="PatreonButton" Classes="link" Content="Patreon" HorizontalAlignment="Center" />
+            <StackPanel HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button x:Name="PatreonButton" Classes="link" Content="Patreon," HorizontalAlignment="Center" />
+                    <Button x:Name="GithubButton" Classes="link" Content="GitHub" HorizontalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
         </HeaderedContentControl>
 
         <HeaderedContentControl Header="Licenses">
