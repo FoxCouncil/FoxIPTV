@@ -360,6 +360,13 @@ namespace FoxIPTV.Views
             return runs;
         }
 
+        private void ShowBuffer(int percent)
+        {
+            BufferStatusMeter.Value = percent;
+            BufferStatusLabel.Text = $"{percent}%";
+            BufferStatusLabel.Foreground = new SolidColorBrush(BufferMeter.LevelColor(percent));
+        }
+
         private void ShowPlayerState(string state)
         {
             PlayerStatusLabel.Text = state;

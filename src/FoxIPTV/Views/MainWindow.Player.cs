@@ -54,7 +54,7 @@ namespace FoxIPTV.Views
             _player.CaptionChanged += caption => Ui(() => OnCaption(caption));
             _player.CaptionTracksChanged += () => Ui(ShowCaptionTracks);
             _player.PreferredCaption = TvCore.Settings.CaptionLanguage;
-            _player.BufferChanged += percent => Ui(() => BufferStatusLabel.Text = $"Buffer {percent}%");
+            _player.BufferChanged += percent => Ui(() => ShowBuffer(percent));
 
         }
 

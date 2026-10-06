@@ -110,6 +110,20 @@ namespace FoxIPTV.Tests
             Assert.Equal("Playing", label.Text);
         }
 
+        [Theory]
+        [InlineData(0, 0, 0xFF3B3B)]
+        [InlineData(25, 3, 0xFF3B3B)]
+        [InlineData(55, 7, 0xFFC857)]
+        [InlineData(100, 12, 0x3DDC84)]
+        [InlineData(150, 12, 0x3DDC84)]
+        public void BufferMeter_LightsAndColoursByLevel(double percent, int lit, int rgb)
+        {
+            var color = BufferMeter.LevelColor(percent);
+
+            Assert.Equal(lit, BufferMeter.LitSegments(percent));
+            Assert.Equal(rgb, (color.R << 16) | (color.G << 8) | color.B);
+        }
+
         [Fact]
         public void AdStats_CountBreaksAdsAndTime()
         {
