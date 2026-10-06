@@ -184,7 +184,7 @@ namespace FoxIPTV.Classes
 
             void LogException(Exception ex)
             {
-                LogError($"[Exception] Unhandled: {ex.Message}\n{ex.StackTrace}");
+                LogError($"[Exception] Unhandled: {ex}");
             }
 
             TaskScheduler.UnobservedTaskException += (s, a) => LogException(a.Exception);

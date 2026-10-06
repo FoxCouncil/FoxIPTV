@@ -590,12 +590,12 @@ namespace FoxIPTV.Views
             {
                 _adBreakShown = false;
 
-                _adReel.Stop();
+                Reel.Stop();
             }
 
-            var showingMedia = _adReel.IsRunning;
+            var showingMedia = Reel.IsRunning;
 
-            _adReel.Muted = _player.Muted || !TvCore.Settings.AdMediaSound;
+            Reel.Muted = _player.Muted || !TvCore.Settings.AdMediaSound;
             _player.Ducked = inAd && (TvCore.Settings.AdMute || showingMedia && TvCore.Settings.AdMediaSound);
 
             AdMediaPanel.IsVisible = showingMedia;
@@ -616,7 +616,7 @@ namespace FoxIPTV.Views
             AdDimLayer.IsVisible = dimmed;
             AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
 
-            _adReel.Tick();
+            Reel.Tick();
         }
 
         private AdReel Reel
