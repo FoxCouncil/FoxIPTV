@@ -4,6 +4,7 @@ namespace FoxIPTV.Views
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using Avalonia;
     using Avalonia.Controls;
@@ -76,7 +77,11 @@ namespace FoxIPTV.Views
             InitializeComponent();
 
             TvCore.ChannelChanged += TvCoreOnChannelChanged;
-            TvCore.ProgrammeChanged += programme => Ui(GuiShow);
+            TvCore.ProgrammeChanged += programme => Ui(() =>
+            {
+                GuiShow();
+                UpdateFormTitle();
+            });
 
             InitializeContextMenu();
 
@@ -281,6 +286,8 @@ namespace FoxIPTV.Views
         {
             var channelObj = TvCore.CurrentChannel;
 
+            UpdateStatusInfo();
+
             if (channelObj == null)
             {
                 Title = TitleOf(TvCore.CurrentService?.Title, "Fox IPTV");
@@ -298,6 +305,21 @@ namespace FoxIPTV.Views
             }
 
             Title = TitleOf(channel, TvCore.CurrentService?.Title, "Fox IPTV");
+        }
+
+        private void UpdateStatusInfo()
+        {
+            var channel = TvCore.CurrentChannel;
+            var show = TvCore.CurrentProgramme?.Title?.Trim();
+
+            if (string.IsNullOrEmpty(show))
+            {
+                show = channel?.Name;
+            }
+
+            var parts = new[] { channel?.Index.ToString(CultureInfo.InvariantCulture), show, TvCore.CurrentService?.Title }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+
+            StatusInfoLabel.Text = parts.Count == 0 ? string.Empty : string.Join(" | ", parts) + " |";
         }
 
         private static string TitleOf(params string[] parts)

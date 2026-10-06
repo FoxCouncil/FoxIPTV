@@ -56,7 +56,6 @@ namespace FoxIPTV.Views
             _player.PreferredCaption = TvCore.Settings.CaptionLanguage;
             _player.BufferChanged += percent => Ui(() => BufferStatusLabel.Text = $"Buffer {percent}%");
 
-            PlaybackTrace.StatusChanged += status => Ui(() => TraceStatusLabel.Text = status);
         }
 
         /// <summary>Handler for TVCore's channel changed event</summary>
