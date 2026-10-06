@@ -18,7 +18,11 @@ namespace FoxIPTV.Views
 
     public sealed class GuideView : Control
     {
+        public const string FavoritesFilter = "\u2605";
+
         private const double HeaderHeight = 36;
+
+        private const double StarWidth = 28;
 
         private const double RowHeight = 56;
 
@@ -49,6 +53,10 @@ namespace FoxIPTV.Views
         private Programme _hoverProgramme;
 
         private string _search = string.Empty;
+
+        private string _filter;
+
+        private Programme _selectedProgramme;
 
         private List<int> _shown;
 
@@ -125,6 +133,30 @@ namespace FoxIPTV.Views
             }
         }
 
+        public event Action<Channel, Programme> Selected;
+
+        public event Action FavouritesChanged;
+
+        public int ShownCount => _dataLoaded ? Shown.Count : 0;
+
+        public string Filter
+        {
+            get => _filter;
+            set
+            {
+                if (value == _filter)
+                {
+                    return;
+                }
+
+                _filter = value;
+                _shown = null;
+                _top = 0;
+
+                InvalidateVisual();
+            }
+        }
+
         public void AttachScrollBar(ScrollBar scrollBar)
         {
             ScrollBar = scrollBar;
@@ -141,7 +173,7 @@ namespace FoxIPTV.Views
         public void AttachTimeBar(ScrollBar timeBar)
         {
             _timeBar = timeBar;
-            _timeBar.Margin = new Thickness(NumberWidth + NameWidth, 0, 0, 0);
+            _timeBar.Margin = new Thickness(StarWidth + NumberWidth + NameWidth, 0, 0, 0);
 
             timeBar.Scroll += (sender, args) =>
             {
@@ -190,7 +222,7 @@ namespace FoxIPTV.Views
 
                 for (var i = 0; i < total; i++)
                 {
-                    if (_search.Length == 0 || Matches(channels[i], nowUtc))
+                    if (InFilter(channels[i]) && (_search.Length == 0 || Matches(channels[i], nowUtc)))
                     {
                         _shown.Add(i);
                     }
@@ -198,6 +230,30 @@ namespace FoxIPTV.Views
 
                 return _shown;
             }
+        }
+
+        private bool InFilter(Channel channel)
+        {
+            if (string.IsNullOrEmpty(_filter))
+            {
+                return true;
+            }
+
+            if (_filter == FavoritesFilter)
+            {
+                return TvCore.ChannelFavorites.Contains(channel.Id);
+            }
+
+            return string.Equals(channel.Group?.Trim() ?? string.Empty, _filter, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public Programme OnNow(Channel channel)
+        {
+            EnsureIndex();
+
+            var now = DateTimeOffset.UtcNow;
+
+            return channel?.Id != null && _byChannel.TryGetValue(channel.Id, out var programmes) ? programmes.Find(x => x.Start <= now && x.Stop > now) : null;
         }
 
         private bool Matches(Channel channel, DateTimeOffset nowUtc)
@@ -367,7 +423,7 @@ namespace FoxIPTV.Views
             EnsureIndex();
             ClampScroll();
 
-            var gridLeft = NumberWidth + NameWidth;
+            var gridLeft = StarWidth + NumberWidth + NameWidth;
             var gridWidth = Math.Max(1, width - gridLeft);
             var pixelsPerMinute = gridWidth / VisibleMinutes;
             var startUtc = StartUtc;
@@ -376,6 +432,7 @@ namespace FoxIPTV.Views
 
             var line = new Pen(new SolidColorBrush(Border), 1);
             var nowPen = new Pen(new SolidColorBrush(Color.FromRgb(220, 60, 60)), 2);
+            var selectedPen = new Pen(new SolidColorBrush(IsDark ? Colors.Gold : Color.FromRgb(184, 134, 11)), 2);
             var headerBrush = new SolidColorBrush(Surface);
             var currentRowBrush = new SolidColorBrush(IsDark ? Color.FromRgb(24, 48, 32) : Color.FromRgb(210, 235, 215));
             var programmeBrush = new SolidColorBrush(Raised);
@@ -427,22 +484,26 @@ namespace FoxIPTV.Views
                     g.FillRectangle(currentRowBrush, new Rect(0, y, width, RowHeight));
                 }
 
-                DrawText(g, TvCore.ChannelIndexList[channelIndex].ToString(), 19, FontWeight.Bold, isCurrent ? Colors.Lime : Text, new Rect(0, y, NumberWidth, RowHeight), TextAlignment.Center);
+                var favourite = TvCore.ChannelFavorites.Contains(channel.Id);
 
-                DrawText(g, channel.ShortName, 13, FontWeight.Bold, Text, new Rect(NumberWidth + 4, y, NameWidth - LogoWidth - 10, RowHeight), wrap: true);
+                DrawText(g, favourite ? "\u2605" : "\u2606", 17, FontWeight.Normal, favourite ? Colors.Gold : MutedText, new Rect(0, y, StarWidth, RowHeight), TextAlignment.Center);
+                DrawText(g, TvCore.ChannelIndexList[channelIndex].ToString(), 19, FontWeight.Bold, isCurrent ? Colors.Lime : Text, new Rect(StarWidth, y, NumberWidth, RowHeight), TextAlignment.Center);
+
+                DrawText(g, channel.ShortName, 13, FontWeight.Bold, Text, new Rect(StarWidth + NumberWidth + 4, y, NameWidth - LogoWidth - 10, RowHeight), wrap: true);
 
                 var logo = channel.LogoImage;
 
                 if (logo != null && logo.Size.Width > 0 && logo.Size.Height > 0)
                 {
-                    var box = new Rect(NumberWidth + NameWidth - LogoWidth - 4, y + 6, LogoWidth, RowHeight - 12);
+                    var box = new Rect(StarWidth + NumberWidth + NameWidth - LogoWidth - 4, y + 6, LogoWidth, RowHeight - 12);
                     var scale = Math.Min(box.Width / logo.Size.Width, box.Height / logo.Size.Height);
                     var size = new Size(logo.Size.Width * scale, logo.Size.Height * scale);
 
                     g.DrawImage(logo, new Rect(box.X + (box.Width - size.Width) / 2, box.Y + (box.Height - size.Height) / 2, size.Width, size.Height));
                 }
 
-                _hits.Add(Tuple.Create(new Rect(0, y, gridLeft, RowHeight), (object)channel));
+                _hits.Add(Tuple.Create(new Rect(0, y, StarWidth, RowHeight), (object)new StarHit(channel)));
+                _hits.Add(Tuple.Create(new Rect(StarWidth, y, gridLeft - StarWidth, RowHeight), (object)channel));
 
                 g.FillRectangle(gapBrush, new Rect(gridLeft, y, gridWidth, RowHeight));
 
@@ -465,6 +526,11 @@ namespace FoxIPTV.Views
 
                         g.FillRectangle(brush, block);
 
+                        if (ReferenceEquals(programme, _selectedProgramme))
+                        {
+                            g.DrawRectangle(selectedPen, block.Deflate(1));
+                        }
+
                         if (block.Width > 24)
                         {
                             var label = block.Deflate(new Thickness(6, 2));
@@ -482,7 +548,7 @@ namespace FoxIPTV.Views
 
             rowsClip.Dispose();
 
-            g.DrawLine(line, new Point(NumberWidth, HeaderHeight), new Point(NumberWidth, height));
+            g.DrawLine(line, new Point(StarWidth + NumberWidth, HeaderHeight), new Point(StarWidth + NumberWidth, height));
             g.DrawLine(line, new Point(gridLeft, HeaderHeight), new Point(gridLeft, height));
 
             if (nowUtc >= startUtc && nowUtc < endUtc)
@@ -611,19 +677,33 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            if (hit is Channel channel)
+            if (hit is StarHit star)
             {
+                ToggleFavourite(star.Channel);
+            }
+            else if (hit is Channel channel)
+            {
+                _selectedProgramme = null;
+
                 TvCore.SetChannel((uint)TvCore.ChannelIndexList.IndexOf(channel.Index));
+
+                Selected?.Invoke(channel, OnNow(channel));
             }
             else if (hit is Programme programme)
             {
                 var owner = TvCore.Channels.Find(x => x.Id == programme.Channel);
 
-                if (owner != null)
+                _selectedProgramme = programme;
+
+                Selected?.Invoke(owner, programme);
+
+                if (owner != null && e.ClickCount >= 2)
                 {
                     TvCore.SetChannel((uint)TvCore.ChannelIndexList.IndexOf(owner.Index));
                 }
             }
+
+            InvalidateVisual();
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
@@ -680,6 +760,32 @@ namespace FoxIPTV.Views
             InvalidateVisual();
         }
 
+        private void ToggleFavourite(Channel channel)
+        {
+            if (channel?.Id == null)
+            {
+                return;
+            }
+
+            if (TvCore.ChannelFavorites.Contains(channel.Id))
+            {
+                TvCore.RemoveFavoriteChannel(channel.Id);
+            }
+            else
+            {
+                TvCore.AddFavoriteChannel(channel.Id);
+            }
+
+            if (_filter == FavoritesFilter)
+            {
+                _shown = null;
+            }
+
+            FavouritesChanged?.Invoke();
+
+            InvalidateVisual();
+        }
+
         private object HitTest(Point point)
         {
             if (point.Y < HeaderHeight)
@@ -697,5 +803,7 @@ namespace FoxIPTV.Views
 
             return null;
         }
+
+        private sealed record StarHit(Channel Channel);
     }
 }

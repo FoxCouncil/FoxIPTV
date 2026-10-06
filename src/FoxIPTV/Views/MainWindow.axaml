@@ -100,7 +100,6 @@
                         </MenuItem>
                         <Separator />
                         <MenuItem x:Name="MenuItemGuide" Header="Guide" ToggleType="CheckBox" InputGesture="G" />
-                        <MenuItem x:Name="MenuItemChannelEditor" Header="Channel Editor" ToggleType="CheckBox" InputGesture="T" />
                         <MenuItem x:Name="MenuItemSettings" Header="Settings" ToggleType="CheckBox" InputGesture="Ctrl+OemComma" />
                         <Separator />
                         <MenuItem x:Name="MenuItemSwitchProvider" Header="Switch Provider...">

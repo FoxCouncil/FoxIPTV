@@ -35,8 +35,6 @@ namespace FoxIPTV.Classes
 
         public bool AlwaysOnTop { get; set; } = false;
 
-        public bool ChannelEditorOpen { get; set; } = false;
-
         public bool GuideOpen { get; set; } = false;
 
         public double Opacity { get; set; } = 1;

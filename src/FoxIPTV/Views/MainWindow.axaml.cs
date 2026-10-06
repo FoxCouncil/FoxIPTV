@@ -48,7 +48,6 @@ namespace FoxIPTV.Views
 
         private GuideWindow _guideWindow;
 
-        private ChannelsWindow _channelsWindow;
 
         private SettingsWindow _settingsWindow;
 
@@ -207,12 +206,7 @@ namespace FoxIPTV.Views
 
             var hasChannels = TvCore.Channels.Count > 0;
 
-            if (hasChannels && TvCore.Settings.ChannelEditorOpen)
-            {
-                ChannelsWindowInstance.Show(this);
-            }
-
-            if (hasChannels && HasGuide && TvCore.Settings.GuideOpen)
+            if (hasChannels && TvCore.Settings.GuideOpen)
             {
                 GuideWindowInstance.Show(this);
             }
@@ -236,7 +230,6 @@ namespace FoxIPTV.Views
 
         private GuideWindow GuideWindowInstance => _guideWindow ??= new GuideWindow();
 
-        private ChannelsWindow ChannelsWindowInstance => _channelsWindow ??= new ChannelsWindow();
 
         private SettingsWindow SettingsWindowInstance => _settingsWindow ??= new SettingsWindow { Host = this };
 

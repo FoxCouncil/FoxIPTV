@@ -4,19 +4,42 @@
         x:Class="FoxIPTV.Views.GuideWindow"
         Title="Guide - Fox IPTV"
         Icon="/Assets/FoxIPTV.ico"
-        Width="1100" Height="640"
-        MinWidth="600" MinHeight="300">
+        Width="1100" Height="760"
+        MinWidth="600" MinHeight="400">
 
     <DockPanel>
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,*" ColumnSpacing="12" Margin="8,6">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,*" ColumnSpacing="12" Margin="8,6">
             <TextBlock x:Name="DateTimeLabel" Grid.Column="0" Text="Date/Time" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
             <TextBox x:Name="SearchBox" Grid.Column="1" Width="320" Watermark="Search..." VerticalAlignment="Center">
                 <TextBox.InnerRightContent>
                     <Button x:Name="ClearSearchButton" Content="✕" IsVisible="False" Focusable="False" Padding="8,0" Background="Transparent" BorderThickness="0" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
                 </TextBox.InnerRightContent>
             </TextBox>
-            <Button x:Name="ResetViewButton" Grid.Column="2" Content="Reset View" HorizontalAlignment="Right" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <ComboBox x:Name="FilterCombo" MinWidth="180" />
+                <TextBlock x:Name="StationCountLabel" VerticalAlignment="Center" Classes="muted" />
+            </StackPanel>
+            <Button x:Name="ResetViewButton" Grid.Column="3" Content="Reset View" HorizontalAlignment="Right" />
         </Grid>
+
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,1,0,0" Padding="8">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Height="150">
+                <Image x:Name="ChannelLogo" Grid.Column="0" Width="180" Stretch="Uniform" VerticalAlignment="Stretch" />
+                <DockPanel Grid.Column="1">
+                    <TextBlock x:Name="ChannelNameLabel" DockPanel.Dock="Top" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                    <DockPanel x:Name="ProgrammePanel" Margin="0,3,0,0" IsVisible="False">
+                        <TextBlock x:Name="ProgrammeTitleLabel" DockPanel.Dock="Top" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,3">
+                            <TextBlock x:Name="ProgrammeTimeLabel" Grid.Column="0" Classes="muted" VerticalAlignment="Center" />
+                            <ProgressBar x:Name="ProgrammeProgressBar" Grid.Column="1" Minimum="0" Maximum="100" MinWidth="60" VerticalAlignment="Center" />
+                        </Grid>
+                        <ScrollViewer x:Name="ProgrammeDescriptionScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="ProgrammeDescriptionLabel" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </DockPanel>
+                </DockPanel>
+            </Grid>
+        </Border>
 
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
             <views:GuideView x:Name="Guide" Grid.Row="0" Grid.Column="0" />
