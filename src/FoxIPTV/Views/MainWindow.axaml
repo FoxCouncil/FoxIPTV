@@ -23,7 +23,7 @@
                             <MenuFlyout Placement="TopEdgeAlignedRight" />
                         </Button.Flyout>
                     </Button>
-                    <views:InkTextBlock Text="Buffer" Margin="0,0,6,0" AllCaps="True" />
+                    <Image Source="/Assets/Icons/transmitter.png" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <views:BufferMeter x:Name="BufferStatusMeter" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <views:InkTextBlock x:Name="BufferStatusLabel" Text="0%" Width="40" Margin="0,0,12,0" />
                     <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" TextAlignment="Right" Foreground="White" AllCaps="True" />

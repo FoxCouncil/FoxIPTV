@@ -645,7 +645,7 @@ namespace FoxIPTV.Views
             {
                 var span = TimeSpan.FromSeconds(Math.Ceiling(left.Value));
 
-                text += $" · {(int)span.TotalMinutes}:{span.Seconds:00}";
+                text += $" | {(int)span.TotalMinutes}:{span.Seconds:00}";
             }
 
             AdLabel.Text = text;
