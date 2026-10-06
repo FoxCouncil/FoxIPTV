@@ -10,17 +10,16 @@
     <StackPanel Margin="20" Spacing="12" MinWidth="320">
         <TextBlock x:Name="TitleLabel" Text="Fox IPTV" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" />
 
-        <HeaderedContentControl Header="Why?">
-            <TextBlock Text="BECAUSE" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8" />
+        <HeaderedContentControl Header="Support Us">
+            <Button x:Name="PatreonButton" Classes="link" Content="Patreon" HorizontalAlignment="Center" />
         </HeaderedContentControl>
 
         <HeaderedContentControl Header="Licenses">
-            <StackPanel x:Name="LicenseLinks" Spacing="4" Margin="0,8" HorizontalAlignment="Center" />
+            <StackPanel>
+                <StackPanel x:Name="LicenseLinks" Spacing="4" Margin="0,8" HorizontalAlignment="Center" />
+                <Button x:Name="IconAttributionButton" Classes="link" Content="Icons by Yusuke Kamiyamane" HorizontalAlignment="Center" />
+            </StackPanel>
         </HeaderedContentControl>
-
-        <Button x:Name="PatreonButton" Classes="link" Content="Patreon" HorizontalAlignment="Center" />
-
-        <Button x:Name="IconAttributionButton" Classes="link" Content="Some icons by Yusuke Kamiyamane" HorizontalAlignment="Center" />
 
         <Button x:Name="CloseButton" Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" />
     </StackPanel>

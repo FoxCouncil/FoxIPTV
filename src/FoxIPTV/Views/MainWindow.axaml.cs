@@ -313,29 +313,21 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            var chanName = channelObj.ShortName;
-            var programme = TvCore.CurrentProgramme?.Title?.Trim();
-            var channel = $"CH: {channelObj.Index} [ {chanName} ]";
-
-            if (!string.IsNullOrEmpty(programme) && !string.Equals(programme, chanName?.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                channel += $" - [ {programme} ]";
-            }
-
-            Title = TitleOf(channel, TvCore.CurrentService?.Title, "Fox IPTV");
+            Title = TitleOf(channelObj.Index.ToString(CultureInfo.InvariantCulture), ShowName(channelObj), TvCore.CurrentService?.Title, "Fox IPTV");
         }
 
         private void UpdateStatusInfo()
         {
             var channel = TvCore.CurrentChannel;
+
+            StatusInfoLabel.Inlines = StatusRuns(channel?.Index.ToString(CultureInfo.InvariantCulture), ShowName(channel), TvCore.CurrentService?.Title);
+        }
+
+        private static string ShowName(Channel channel)
+        {
             var show = TvCore.CurrentProgramme?.Title?.Trim();
 
-            if (string.IsNullOrEmpty(show))
-            {
-                show = channel?.Name;
-            }
-
-            StatusInfoLabel.Inlines = StatusRuns(channel?.Index.ToString(CultureInfo.InvariantCulture), show, TvCore.CurrentService?.Title);
+            return string.IsNullOrEmpty(show) ? channel?.Name : show;
         }
 
         private static InlineCollection StatusRuns(string channel, string show, string provider)
