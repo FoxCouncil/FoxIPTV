@@ -124,6 +124,34 @@ namespace FoxIPTV.Tests
             Assert.Equal(rgb, (color.R << 16) | (color.G << 8) | color.B);
         }
 
+        [Theory]
+        [InlineData(new[] { 1.5 })]
+        [InlineData(new[] { 0.5, 1.78, 1.33 })]
+        [InlineData(new[] { 0.4, 0.4, 1.78, 1.5, 0.75, 1.0 })]
+        [InlineData(new[] { 3.0, 3.0, 3.0, 0.3 })]
+        public void Mosaic_FillsTheScreenEdgeToEdge(double[] aspects)
+        {
+            var cells = MosaicLayout.Arrange(aspects, 1600, 900);
+
+            Assert.Equal(aspects.Length, cells.Count);
+            Assert.Equal(1600 * 900, cells.Sum(x => x.Width * x.Height), 0);
+
+            foreach (var row in cells.GroupBy(x => Math.Round(x.Y, 3)))
+            {
+                Assert.Equal(1600, row.Sum(x => x.Width), 3);
+            }
+
+            Assert.Equal(900, cells.Max(x => x.Bottom), 3);
+
+            for (var i = 0; i < cells.Count; i++)
+            {
+                for (var j = i + 1; j < cells.Count; j++)
+                {
+                    Assert.False(cells[i].Intersects(cells[j]) && cells[i].Intersect(cells[j]).Width > 0.001 && cells[i].Intersect(cells[j]).Height > 0.001, $"cells {i} and {j} overlap");
+                }
+            }
+        }
+
         [Fact]
         public void AdStats_CountBreaksAdsAndTime()
         {

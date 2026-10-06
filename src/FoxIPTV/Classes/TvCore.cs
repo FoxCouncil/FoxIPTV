@@ -27,6 +27,8 @@ namespace FoxIPTV.Classes
         /// <summary>The default filename for the applications favorite channel data</summary>
         private const string ChannelFavoritesFilename = "fcdata";
 
+        public const string MediaChannelId = "foxiptv-my-media";
+
         /// <summary>The default filename for the applications image blacklist data</summary>
         private const string ImageServerBlacklistFilename = "ibldata";
 
@@ -318,6 +320,11 @@ namespace FoxIPTV.Classes
                 LogInfo($"[TVCore] Start(): {protectedCount} copy-protected and {hiddenCount} hidden channel(s) left out");
             }
 
+            if (MediaFolder.HasMedia(Settings.AdMediaFolder))
+            {
+                Channels.Insert(0, MediaChannel());
+            }
+
             ChannelIndexList = Channels.Select(x => x.Index).ToList();
 
             // Put all the logos needed to be loaded into a queue so we can load them in another thread
@@ -570,6 +577,44 @@ namespace FoxIPTV.Classes
         {
             return channel.Stream != null && list.Contains(channel.Stream.ToString()) || !string.IsNullOrEmpty(channel.Id) && uniqueIds.Contains(channel.Id) && list.Contains(ChannelIdKey + channel.Id);
         }
+
+        public static bool IsMediaChannel(Channel channel) => channel?.Id == MediaChannelId;
+
+        public static void UpdateMediaChannel()
+        {
+            if (Channels == null || State != TvCoreState.Running)
+            {
+                return;
+            }
+
+            var wanted = MediaFolder.HasMedia(Settings.AdMediaFolder);
+            var present = Channels.Count > 0 && IsMediaChannel(Channels[0]);
+
+            if (wanted == present)
+            {
+                return;
+            }
+
+            if (wanted)
+            {
+                Channels.Insert(0, MediaChannel());
+            }
+            else
+            {
+                Channels.RemoveAt(0);
+            }
+
+            ChannelIndexList = Channels.Select(x => x.Index).ToList();
+
+            if (CurrentChannel != null && Channels.Contains(CurrentChannel))
+            {
+                CurrentChannelIndex = (uint)Channels.IndexOf(CurrentChannel);
+            }
+
+            ChannelListChanged?.Invoke();
+        }
+
+        private static Channel MediaChannel() => new Channel { Index = 0, Id = MediaChannelId, Name = "My Media" };
 
         public static void MarkProtected(Channel channel)
         {

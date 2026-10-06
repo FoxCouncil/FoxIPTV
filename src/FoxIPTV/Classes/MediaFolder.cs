@@ -1,0 +1,41 @@
+// Copyright (c) Fox Council - MIT License - https://github.com/FoxCouncil/FoxIPTV
+
+namespace FoxIPTV.Classes
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
+    public static class MediaFolder
+    {
+        private static readonly HashSet<string> PictureTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp" };
+
+        private static readonly HashSet<string> VideoTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp4", ".m4v", ".mkv", ".mov", ".webm", ".avi", ".wmv", ".ts" };
+
+        public static bool IsPicture(string path) => PictureTypes.Contains(Path.GetExtension(path));
+
+        public static bool IsVideo(string path) => VideoTypes.Contains(Path.GetExtension(path));
+
+        public static bool HasMedia(string folder) => Files(folder).Any();
+
+        public static List<string> Files(string folder)
+        {
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                return Directory.EnumerateFiles(folder).Where(x => IsPicture(x) || IsVideo(x)).ToList();
+            }
+            catch (Exception ex)
+            {
+                TvCore.LogError($"[Ads] Reading the media folder failed: {ex.Message}");
+
+                return new List<string>();
+            }
+        }
+    }
+}

@@ -7,6 +7,7 @@ namespace FoxIPTV.Views
     using System.IO;
     using System.Linq;
     using Avalonia.Controls;
+    using Avalonia.Media;
     using Avalonia.Media.Imaging;
     using Avalonia.Threading;
     using Classes;
@@ -17,21 +18,23 @@ namespace FoxIPTV.Views
     {
         public const double PictureSeconds = 8;
 
-        private static readonly HashSet<string> PictureTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp" };
+        private const int DecodeWidth = 1280;
 
-        private static readonly HashSet<string> VideoTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp4", ".m4v", ".mkv", ".mov", ".webm", ".avi", ".wmv", ".ts" };
+        private const double Gap = 4;
 
-        private readonly Image _image;
+        private readonly Canvas _mosaic;
 
         private readonly VideoSurface _surface;
 
-        private readonly Queue<string> _queue = new Queue<string>();
+        private readonly Queue<string> _pictures = new Queue<string>();
+
+        private readonly Queue<string> _videos = new Queue<string>();
+
+        private readonly List<Bitmap> _shown = new List<Bitmap>();
 
         private readonly Random _random = new Random();
 
         private Player _player;
-
-        private Bitmap _bitmap;
 
         private string _folder;
 
@@ -41,10 +44,14 @@ namespace FoxIPTV.Views
 
         private bool _muted;
 
-        public AdReel(Image image, VideoSurface surface)
+        private int _pictureTurns;
+
+        public AdReel(Canvas mosaic, VideoSurface surface)
         {
-            _image = image;
+            _mosaic = mosaic;
             _surface = surface;
+
+            _mosaic.SizeChanged += (sender, args) => LayOut();
         }
 
         public event Action ItemShown;
@@ -65,15 +72,12 @@ namespace FoxIPTV.Views
             }
         }
 
-        public static bool HasMedia(string folder)
-        {
-            return Files(folder).Any();
-        }
-
         public bool Start(string folder)
         {
             _folder = folder;
-            _queue.Clear();
+            _pictures.Clear();
+            _videos.Clear();
+            _pictureTurns = 0;
 
             if (!Refill())
             {
@@ -91,16 +95,15 @@ namespace FoxIPTV.Views
         {
             IsRunning = false;
             _playingVideo = false;
-            _queue.Clear();
+            _pictures.Clear();
+            _videos.Clear();
 
             _player?.Stop();
 
             _surface.IsVisible = false;
-            _image.IsVisible = false;
-            _image.Source = null;
+            _mosaic.IsVisible = false;
 
-            _bitmap?.Dispose();
-            _bitmap = null;
+            ClearPictures();
         }
 
         public void Tick()
@@ -131,52 +134,47 @@ namespace FoxIPTV.Views
             _player = null;
         }
 
-        private static IEnumerable<string> Files(string folder)
-        {
-            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            try
-            {
-                return Directory.EnumerateFiles(folder).Where(x => PictureTypes.Contains(Path.GetExtension(x)) || VideoTypes.Contains(Path.GetExtension(x))).ToList();
-            }
-            catch (Exception ex)
-            {
-                TvCore.LogError($"[Ads] Reading the ad media folder failed: {ex.Message}");
-
-                return Enumerable.Empty<string>();
-            }
-        }
-
         private bool Refill()
         {
-            var files = Files(_folder).OrderBy(x => _random.Next()).ToList();
+            var files = MediaFolder.Files(_folder).OrderBy(x => _random.Next()).ToList();
 
-            foreach (var file in files)
+            if (_pictures.Count == 0)
             {
-                _queue.Enqueue(file);
+                foreach (var file in files.Where(MediaFolder.IsPicture))
+                {
+                    _pictures.Enqueue(file);
+                }
             }
 
-            return files.Count > 0;
+            if (_videos.Count == 0)
+            {
+                foreach (var file in files.Where(MediaFolder.IsVideo))
+                {
+                    _videos.Enqueue(file);
+                }
+            }
+
+            return _pictures.Count + _videos.Count > 0;
         }
 
         private void Next()
         {
-            for (var tries = 0; IsRunning && tries < 32; tries++)
+            for (var tries = 0; IsRunning && tries < 8; tries++)
             {
-                if (_queue.Count == 0 && !Refill())
+                if (!Refill())
                 {
                     Stop();
 
                     return;
                 }
 
-                var path = _queue.Dequeue();
+                var videoTurn = _videos.Count > 0 && (_pictures.Count == 0 || _pictureTurns >= 2);
+                var shown = videoTurn ? PlayVideo(_videos.Dequeue()) : ShowPictures();
 
-                if (PictureTypes.Contains(Path.GetExtension(path)) ? ShowPicture(path) : PlayVideo(path))
+                if (shown)
                 {
+                    _pictureTurns = videoTurn ? 0 : _pictureTurns + 1;
+
                     ItemShown?.Invoke();
 
                     return;
@@ -186,18 +184,30 @@ namespace FoxIPTV.Views
             Stop();
         }
 
-        private bool ShowPicture(string path)
+        private bool ShowPictures()
         {
-            Bitmap bitmap;
+            var count = Math.Min(_pictures.Count, _random.Next(3, 7));
+            var bitmaps = new List<Bitmap>();
 
-            try
+            for (var i = 0; i < count && _pictures.Count > 0; i++)
             {
-                bitmap = new Bitmap(path);
+                var path = _pictures.Dequeue();
+
+                try
+                {
+                    using (var stream = File.OpenRead(path))
+                    {
+                        bitmaps.Add(Bitmap.DecodeToWidth(stream, DecodeWidth));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TvCore.LogError($"[Ads] Could not show {Path.GetFileName(path)}: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                TvCore.LogError($"[Ads] Could not show {Path.GetFileName(path)}: {ex.Message}");
 
+            if (bitmaps.Count == 0)
+            {
                 return false;
             }
 
@@ -205,17 +215,58 @@ namespace FoxIPTV.Views
             _playingVideo = false;
             _surface.IsVisible = false;
 
-            var old = _bitmap;
+            ClearPictures();
 
-            _bitmap = bitmap;
-            _image.Source = bitmap;
-            _image.IsVisible = true;
+            foreach (var bitmap in bitmaps)
+            {
+                _shown.Add(bitmap);
+                _mosaic.Children.Add(new Image { Source = bitmap, Stretch = Stretch.UniformToFill, ClipToBounds = true });
+            }
 
-            old?.Dispose();
+            _mosaic.IsVisible = true;
+
+            LayOut();
 
             _pictureUntil = DateTime.UtcNow.AddSeconds(PictureSeconds);
 
             return true;
+        }
+
+        private void LayOut()
+        {
+            var width = _mosaic.Bounds.Width;
+            var height = _mosaic.Bounds.Height;
+
+            if (_shown.Count == 0 || width <= 0 || height <= 0)
+            {
+                return;
+            }
+
+            var cells = MosaicLayout.Arrange(_shown.Select(x => x.Size.Height > 0 ? x.Size.Width / x.Size.Height : 1).ToList(), width, height);
+
+            for (var i = 0; i < cells.Count && i < _mosaic.Children.Count; i++)
+            {
+                var cell = cells[i].Deflate(Gap / 2);
+                var image = _mosaic.Children[i];
+
+                Canvas.SetLeft(image, cell.X);
+                Canvas.SetTop(image, cell.Y);
+
+                image.Width = Math.Max(0, cell.Width);
+                image.Height = Math.Max(0, cell.Height);
+            }
+        }
+
+        private void ClearPictures()
+        {
+            _mosaic.Children.Clear();
+
+            foreach (var bitmap in _shown)
+            {
+                bitmap.Dispose();
+            }
+
+            _shown.Clear();
         }
 
         private bool PlayVideo(string path)
@@ -240,10 +291,9 @@ namespace FoxIPTV.Views
                 _surface.Player = _player;
             }
 
-            _image.IsVisible = false;
-            _image.Source = null;
-            _bitmap?.Dispose();
-            _bitmap = null;
+            _mosaic.IsVisible = false;
+
+            ClearPictures();
 
             _surface.IsVisible = true;
             _playingVideo = true;

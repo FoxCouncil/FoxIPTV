@@ -128,7 +128,7 @@
                 <Border x:Name="AdDimLayer" Background="Black" IsHitTestVisible="False" IsVisible="False" />
 
                 <Panel x:Name="AdMediaPanel" Background="Black" IsHitTestVisible="False" IsVisible="False">
-                    <Image x:Name="AdImage" Stretch="Uniform" IsVisible="False" />
+                    <Canvas x:Name="AdMosaic" IsVisible="False" />
                     <video:VideoSurface x:Name="AdVideo" Fill="True" IsVisible="False" />
                 </Panel>
 

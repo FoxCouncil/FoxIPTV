@@ -108,6 +108,7 @@ namespace FoxIPTV.Views
 
                 TvCore.Settings.AdMediaFolder = path;
                 TvCore.Settings.Save();
+                TvCore.UpdateMediaChannel();
 
                 AdFolderText.Text = path;
             };
@@ -116,6 +117,7 @@ namespace FoxIPTV.Views
             {
                 TvCore.Settings.AdMediaFolder = null;
                 TvCore.Settings.Save();
+                TvCore.UpdateMediaChannel();
 
                 AdFolderText.Text = string.Empty;
             };

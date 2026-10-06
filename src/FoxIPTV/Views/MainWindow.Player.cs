@@ -83,6 +83,15 @@ namespace FoxIPTV.Views
 
                 ReleaseMedia();
 
+                if (_mediaChannelOn)
+                {
+                    _mediaChannelOn = false;
+                    _adBreakShown = false;
+
+                    Reel.Stop();
+                    AdMediaPanel.IsVisible = false;
+                }
+
                 GuiShow();
 
                 PlayCurrent();
@@ -169,6 +178,13 @@ namespace FoxIPTV.Views
                 return;
             }
 
+            if (TvCore.IsMediaChannel(TvCore.CurrentChannel))
+            {
+                PlayMediaChannel();
+
+                return;
+            }
+
             var request = CurrentRequest();
 
             if (request == null)
@@ -209,6 +225,27 @@ namespace FoxIPTV.Views
             _player.Play(request);
 
             VideoView.Wake();
+        }
+
+        private void PlayMediaChannel()
+        {
+            _player.Stop();
+
+            VideoView.Clear();
+
+            _mediaChannelOn = Reel.Start(TvCore.Settings.AdMediaFolder);
+
+            if (_mediaChannelOn)
+            {
+                AdMediaPanel.IsVisible = true;
+
+                ShowPlayerState("Playing");
+                ShowBuffer(100);
+            }
+            else
+            {
+                ShowPlayerState("Error");
+            }
         }
 
         private static MediaRequest CurrentRequest()

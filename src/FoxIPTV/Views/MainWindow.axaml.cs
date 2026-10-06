@@ -57,6 +57,8 @@ namespace FoxIPTV.Views
 
         private bool _adBreakShown;
 
+        private bool _mediaChannelOn;
+
         private static readonly IBrush StatusChannel = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x00));
 
         private static readonly IBrush StatusProvider = new SolidColorBrush(Color.FromRgb(0x8A, 0xB4, 0xF8));
@@ -566,17 +568,23 @@ namespace FoxIPTV.Views
 
             AdStats.Observe(TvCore.CurrentChannel?.Name, inAd, AdDetector.AdNumber, elapsed);
 
-            if (_adReel == null)
+            if (_mediaChannelOn)
             {
-                _adReel = new AdReel(AdImage, AdVideo);
-                _adReel.ItemShown += MoveAdTitle;
+                AdMediaPanel.IsVisible = Reel.IsRunning;
+                AdTitleBox.IsVisible = false;
+                AdDimLayer.IsVisible = false;
+
+                Reel.Muted = _player.Muted;
+                Reel.Tick();
+
+                return;
             }
 
             if (inAd && !_adBreakShown)
             {
                 _adBreakShown = true;
 
-                _adReel.Start(TvCore.Settings.AdMediaFolder);
+                Reel.Start(TvCore.Settings.AdMediaFolder);
             }
             else if (!inAd && _adBreakShown)
             {
@@ -609,6 +617,20 @@ namespace FoxIPTV.Views
             AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
 
             _adReel.Tick();
+        }
+
+        private AdReel Reel
+        {
+            get
+            {
+                if (_adReel == null)
+                {
+                    _adReel = new AdReel(AdMosaic, AdVideo);
+                    _adReel.ItemShown += MoveAdTitle;
+                }
+
+                return _adReel;
+            }
         }
 
         private void MoveAdTitle()
