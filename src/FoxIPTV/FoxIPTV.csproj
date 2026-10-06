@@ -37,6 +37,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(FFmpegDir)**\*" Exclude="$(FFmpegDir)FFMPEG-LICENSE.txt" LogicalName="FoxIPTV.Native/%(RecursiveDir)%(Filename)%(Extension)" WithCulture="false" Visible="false" />
     <EmbeddedResource Include="$(FFmpegDir)FFMPEG-LICENSE.txt" LogicalName="FoxIPTV.Licenses.FFMPEG-LICENSE.txt" Condition="Exists('$(FFmpegDir)FFMPEG-LICENSE.txt')" Visible="false" />
+    <EmbeddedResource Include="..\..\LICENSE" LogicalName="FoxIPTV.Licenses.LICENSE.txt" />
     <EmbeddedResource Include="..\..\THIRD-PARTY-NOTICES.txt" LogicalName="FoxIPTV.Licenses.THIRD-PARTY-NOTICES.txt" />
     <EmbeddedResource Include="Assets\Fonts\OFL.txt" LogicalName="FoxIPTV.Licenses.OFL.txt" />
   </ItemGroup>
