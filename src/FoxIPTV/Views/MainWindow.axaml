@@ -15,7 +15,7 @@
             <Grid ColumnDefinitions="*,Auto">
                 <DockPanel Grid.Column="0" LastChildFill="True">
                     <views:InkTextBlock x:Name="StatusInfoLabel" DockPanel.Dock="Left" TextTrimming="CharacterEllipsis" Margin="0,0,6,0" AllCaps="True" />
-                    <views:InkTextBlock x:Name="PlayerStatusLabel" Text="Waiting" Foreground="SeaGreen" Margin="0,0,8,0" AllCaps="True" />
+                    <views:InkTextBlock x:Name="PlayerStatusLabel" Text="Waiting" Margin="0,0,8,0" AllCaps="True" />
                 </DockPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="CcOptionsButton" IsVisible="False" Focusable="False" Padding="4,0" Margin="8,0,8,0" FontSize="12" FontFamily="{StaticResource OverlayFont}" VerticalAlignment="Center">
@@ -24,7 +24,7 @@
                         </Button.Flyout>
                     </Button>
                     <views:InkTextBlock x:Name="BufferStatusLabel" Text="Buffer 0%" Margin="0,0,12,0" AllCaps="True" />
-                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" TextAlignment="Right" AllCaps="True" />
+                    <views:InkTextBlock x:Name="TimeStatusLabel" Text="00:00" TextAlignment="Right" Foreground="White" AllCaps="True" />
                 </StackPanel>
             </Grid>
         </Border>

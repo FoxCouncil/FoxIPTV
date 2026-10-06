@@ -8,6 +8,8 @@ namespace FoxIPTV.Views
     using System.Linq;
     using Avalonia;
     using Avalonia.Controls;
+    using Avalonia.Controls.Documents;
+    using Avalonia.Media;
     using Avalonia.Threading;
     using Classes;
     using Playback.Video;
@@ -55,6 +57,22 @@ namespace FoxIPTV.Views
         private DateTime _lastAdTick = DateTime.UtcNow;
 
         private bool _adBreakShown;
+
+        private static readonly IBrush StatusChannel = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x00));
+
+        private static readonly IBrush StatusProvider = new SolidColorBrush(Color.FromRgb(0x8A, 0xB4, 0xF8));
+
+        private static readonly IBrush StatusDivider = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55));
+
+        private static readonly IBrush StatusPlaying = new SolidColorBrush(Color.FromRgb(0x3D, 0xDC, 0x84));
+
+        private static readonly IBrush StatusWorking = new SolidColorBrush(Color.FromRgb(0xFF, 0xC8, 0x57));
+
+        private static readonly IBrush StatusError = new SolidColorBrush(Color.FromRgb(0xFF, 0x5C, 0x5C));
+
+        private static readonly IBrush StatusProtected = new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x43));
+
+        private static readonly IBrush StatusIdle = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E));
 
         private double _channelsLoaded;
 
@@ -205,7 +223,7 @@ namespace FoxIPTV.Views
             }
             else
             {
-                PlayerStatusLabel.Text = "No channels";
+                ShowPlayerState("No channels");
 
                 UpdateFormTitle();
             }
@@ -317,9 +335,42 @@ namespace FoxIPTV.Views
                 show = channel?.Name;
             }
 
-            var parts = new[] { channel?.Index.ToString(CultureInfo.InvariantCulture), show, TvCore.CurrentService?.Title }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            StatusInfoLabel.Inlines = StatusRuns(channel?.Index.ToString(CultureInfo.InvariantCulture), show, TvCore.CurrentService?.Title);
+        }
 
-            StatusInfoLabel.Text = parts.Count == 0 ? string.Empty : string.Join(" | ", parts) + " |";
+        private static InlineCollection StatusRuns(string channel, string show, string provider)
+        {
+            var runs = new InlineCollection();
+
+            void Add(string text, IBrush brush)
+            {
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return;
+                }
+
+                runs.Add(new Run(text.Trim().ToUpperInvariant()) { Foreground = brush });
+                runs.Add(new Run(" | ") { Foreground = StatusDivider });
+            }
+
+            Add(channel, StatusChannel);
+            Add(show, Brushes.White);
+            Add(provider, StatusProvider);
+
+            return runs;
+        }
+
+        private void ShowPlayerState(string state)
+        {
+            PlayerStatusLabel.Text = state;
+            PlayerStatusLabel.Foreground = state switch
+            {
+                "Playing" => StatusPlaying,
+                "Opening" or "Buffering" => StatusWorking,
+                "Error" => StatusError,
+                "Protected" => StatusProtected,
+                _ => StatusIdle
+            };
         }
 
         private static string TitleOf(params string[] parts)

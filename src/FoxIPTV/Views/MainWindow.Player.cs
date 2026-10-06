@@ -248,13 +248,13 @@ namespace FoxIPTV.Views
             {
                 case PlayerState.Opening:
                 {
-                    PlayerStatusLabel.Text = "Opening";
+                    ShowPlayerState("Opening");
                 }
                 break;
 
                 case PlayerState.Buffering:
                 {
-                    PlayerStatusLabel.Text = "Buffering";
+                    ShowPlayerState("Buffering");
                     PlaybackTrace.SetStatus("Buffering");
                 }
                 break;
@@ -264,7 +264,7 @@ namespace FoxIPTV.Views
                     _isPlaying = true;
                     _endedWithoutPlaying = 0;
 
-                    PlayerStatusLabel.Text = "Playing";
+                    ShowPlayerState("Playing");
 
                     VideoView.Wake();
                 }
@@ -290,7 +290,7 @@ namespace FoxIPTV.Views
                     PlaybackTrace.SetStatus(detail ?? "Stream error");
 
                     SetErrorState();
-                    PlayerStatusLabel.Text = "Error";
+                    ShowPlayerState("Error");
                 }
                 break;
 
@@ -357,7 +357,7 @@ namespace FoxIPTV.Views
             StatusMessage.Text = "This channel is copy-protected and can't be played. It has been taken out of the channel list.";
             StatusMessageBox.IsVisible = true;
 
-            PlayerStatusLabel.Text = "Protected";
+            ShowPlayerState("Protected");
             PlaybackTrace.SetStatus("Copy-protected, can't be played");
         }
 
@@ -370,7 +370,7 @@ namespace FoxIPTV.Views
                 return;
             }
 
-            PlayerStatusLabel.Text = "Buffering";
+            ShowPlayerState("Buffering");
 
             _endedWithoutPlaying++;
 
@@ -381,7 +381,7 @@ namespace FoxIPTV.Views
                 PlaybackTrace.SetStatus("Stream keeps ending, stopped retrying");
 
                 SetErrorState();
-                PlayerStatusLabel.Text = "Error";
+                ShowPlayerState("Error");
 
                 return;
             }
