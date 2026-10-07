@@ -89,6 +89,7 @@ namespace FoxIPTV.Views
                     _adBreakShown = false;
 
                     Reel.Stop();
+                    StopAdAudio();
                     AdMediaPanel.IsVisible = false;
                 }
 
@@ -239,6 +240,8 @@ namespace FoxIPTV.Views
             {
                 AdMediaPanel.IsVisible = true;
 
+                StartAdAudio();
+
                 ShowPlayerState("Playing");
                 ShowBuffer(100);
             }
@@ -258,6 +261,7 @@ namespace FoxIPTV.Views
             }
 
             Reel.Stop();
+            StopAdAudio();
 
             PlayMediaChannel();
         }

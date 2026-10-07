@@ -581,8 +581,14 @@ namespace FoxIPTV.Views
                 AdTitleBox.IsVisible = false;
                 AdDimLayer.IsVisible = false;
 
-                Reel.Muted = _player.Muted;
+                Reel.Muted = _player.Muted || _adAudioOn;
                 Reel.Tick();
+
+                if (_adAudio != null)
+                {
+                    _adAudio.Volume = TvCore.Settings.AdAudioVolume;
+                    _adAudio.Muted = _player.Muted;
+                }
 
                 return;
             }
