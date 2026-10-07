@@ -1,6 +1,21 @@
 # ═════•°• FoxIPTV •°•═════
 The OSS FFmpeg based IPTV client, for Windows, macOS and Linux.
 
+# ═════•°• Screenshots
+![Main window](docs/screenshots/main.jpg)
+
+| Guide | Menu |
+|---|---|
+| ![Guide](docs/screenshots/guide.png) | ![Menu](docs/screenshots/menu.jpg) |
+
+| Ad Break | My Media |
+|---|---|
+| ![Ad Break](docs/screenshots/ad-break.jpg) | ![My Media](docs/screenshots/my-media.jpg) |
+
+| Settings: General | Settings: Ad Blocker |
+|---|---|
+| ![Settings: General](docs/screenshots/settings-general.png) | ![Settings: Ad Blocker](docs/screenshots/settings-adblocker.png) |
+
 # ═════•°• Providers
 | Provider | Gives you | Needs |
 |---|---|---|
