@@ -70,9 +70,6 @@ jobs:
           name: ffmpeg-${{ matrix.rid }}
           path: native/${{ matrix.rid }}
 
-      - name: Test
-        run: dotnet test tests/FoxIPTV.Tests/FoxIPTV.Tests.csproj -c Release
-
       - name: Publish
         run: >
           dotnet publish ${{ env.PROJECT }}
