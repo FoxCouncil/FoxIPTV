@@ -204,6 +204,8 @@ namespace FoxIPTV.Views
 
             StatusMessageBox.IsVisible = false;
 
+            Reel.Prepare(TvCore.Settings.AdMediaFolder);
+
             _isInitialized = true;
 
             var hasChannels = TvCore.Channels.Count > 0;

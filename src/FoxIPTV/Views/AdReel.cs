@@ -6,6 +6,7 @@ namespace FoxIPTV.Views
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Avalonia.Controls;
     using Avalonia.Media;
     using Avalonia.Media.Imaging;
@@ -37,6 +38,10 @@ namespace FoxIPTV.Views
         private Player _player;
 
         private string _folder;
+
+        private Task<List<string>> _files;
+
+        private Task<List<Bitmap>> _nextSet;
 
         private DateTime _pictureUntil;
 
@@ -72,21 +77,45 @@ namespace FoxIPTV.Views
             }
         }
 
-        public bool Start(string folder)
+        public void Prepare(string folder)
         {
+            if (_files != null && string.Equals(folder, _folder, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             _folder = folder;
             _pictures.Clear();
             _videos.Clear();
-            _pictureTurns = 0;
+            var files = string.IsNullOrEmpty(folder) ? Task.FromResult(new List<string>()) : Task.Run(() => MediaFolder.Files(folder));
 
-            if (!Refill())
+            _files = files;
+
+            DropNextSet();
+
+            files.ContinueWith(task => Dispatcher.UIThread.Post(() =>
+            {
+                if (ReferenceEquals(_files, files))
+                {
+                    PreloadNextSet();
+                }
+            }));
+        }
+
+        public bool Start(string folder)
+        {
+            Prepare(folder);
+
+            if (_files.IsCompleted && _files.Result.Count == 0)
             {
                 return false;
             }
 
             IsRunning = true;
+            _pictureTurns = 0;
+            _pictureUntil = DateTime.MinValue;
 
-            Next();
+            Advance();
 
             return IsRunning;
         }
@@ -95,8 +124,6 @@ namespace FoxIPTV.Views
         {
             IsRunning = false;
             _playingVideo = false;
-            _pictures.Clear();
-            _videos.Clear();
 
             _player?.Stop();
 
@@ -122,13 +149,14 @@ namespace FoxIPTV.Views
 
             if (DateTime.UtcNow >= _pictureUntil)
             {
-                Next();
+                Advance();
             }
         }
 
         public void Dispose()
         {
             Stop();
+            DropNextSet();
 
             _player?.Dispose();
             _player = null;
@@ -136,7 +164,12 @@ namespace FoxIPTV.Views
 
         private bool Refill()
         {
-            var files = MediaFolder.Files(_folder).OrderBy(x => _random.Next()).ToList();
+            if (_files == null || !_files.IsCompleted)
+            {
+                return false;
+            }
+
+            var files = _files.Result.OrderBy(x => _random.Next()).ToList();
 
             if (_pictures.Count == 0)
             {
@@ -157,42 +190,81 @@ namespace FoxIPTV.Views
             return _pictures.Count + _videos.Count > 0;
         }
 
-        private void Next()
+        private void Advance()
         {
-            for (var tries = 0; IsRunning && tries < 8; tries++)
+            if (!Refill())
             {
-                if (!Refill())
+                if (_files != null && _files.IsCompleted)
                 {
                     Stop();
-
-                    return;
                 }
 
-                var videoTurn = _videos.Count > 0 && (_pictures.Count == 0 || _pictureTurns >= 2);
-                var shown = videoTurn ? PlayVideo(_videos.Dequeue()) : ShowPictures();
-
-                if (shown)
-                {
-                    _pictureTurns = videoTurn ? 0 : _pictureTurns + 1;
-
-                    ItemShown?.Invoke();
-
-                    return;
-                }
+                return;
             }
 
-            Stop();
+            var hasPictures = _pictures.Count > 0 || _nextSet != null;
+            var videoTurn = _videos.Count > 0 && (!hasPictures || _pictureTurns >= 2);
+
+            if (videoTurn)
+            {
+                _pictureTurns = 0;
+
+                PlayVideo(_videos.Dequeue());
+
+                ItemShown?.Invoke();
+
+                return;
+            }
+
+            PreloadNextSet();
+
+            if (_nextSet == null || !_nextSet.IsCompleted)
+            {
+                return;
+            }
+
+            var bitmaps = _nextSet.IsCompletedSuccessfully ? _nextSet.Result : new List<Bitmap>();
+
+            _nextSet = null;
+
+            PreloadNextSet();
+
+            if (bitmaps.Count == 0)
+            {
+                return;
+            }
+
+            ShowPictures(bitmaps);
+
+            _pictureTurns++;
+
+            ItemShown?.Invoke();
         }
 
-        private bool ShowPictures()
+        private void PreloadNextSet()
         {
+            if (_nextSet != null || !Refill() || _pictures.Count == 0)
+            {
+                return;
+            }
+
             var count = Math.Min(_pictures.Count, _random.Next(3, 7));
+            var paths = new List<string>();
+
+            for (var i = 0; i < count; i++)
+            {
+                paths.Add(_pictures.Dequeue());
+            }
+
+            _nextSet = Task.Run(() => Decode(paths));
+        }
+
+        private static List<Bitmap> Decode(List<string> paths)
+        {
             var bitmaps = new List<Bitmap>();
 
-            for (var i = 0; i < count && _pictures.Count > 0; i++)
+            foreach (var path in paths)
             {
-                var path = _pictures.Dequeue();
-
                 try
                 {
                     using (var stream = File.OpenRead(path))
@@ -206,11 +278,29 @@ namespace FoxIPTV.Views
                 }
             }
 
-            if (bitmaps.Count == 0)
-            {
-                return false;
-            }
+            return bitmaps;
+        }
 
+        private void DropNextSet()
+        {
+            var pending = _nextSet;
+
+            _nextSet = null;
+
+            pending?.ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    foreach (var bitmap in task.Result)
+                    {
+                        bitmap.Dispose();
+                    }
+                }
+            });
+        }
+
+        private void ShowPictures(List<Bitmap> bitmaps)
+        {
             _player?.Stop();
             _playingVideo = false;
             _surface.IsVisible = false;
@@ -228,8 +318,6 @@ namespace FoxIPTV.Views
             LayOut();
 
             _pictureUntil = DateTime.UtcNow.AddSeconds(PictureSeconds);
-
-            return true;
         }
 
         private void LayOut()
@@ -269,7 +357,7 @@ namespace FoxIPTV.Views
             _shown.Clear();
         }
 
-        private bool PlayVideo(string path)
+        private void PlayVideo(string path)
         {
             if (_player == null)
             {
@@ -282,7 +370,10 @@ namespace FoxIPTV.Views
                         {
                             if (IsRunning && _playingVideo)
                             {
-                                Next();
+                                _playingVideo = false;
+                                _pictureUntil = DateTime.MinValue;
+
+                                Advance();
                             }
                         });
                     }
@@ -299,8 +390,6 @@ namespace FoxIPTV.Views
             _playingVideo = true;
 
             _player.Play(new MediaRequest { Uri = new Uri(path), IsLive = false, Quiet = true, Label = Path.GetFileName(path) });
-
-            return true;
         }
     }
 }

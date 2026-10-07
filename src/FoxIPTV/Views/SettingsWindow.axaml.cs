@@ -108,16 +108,18 @@ namespace FoxIPTV.Views
 
                 TvCore.Settings.AdMediaFolder = path;
                 TvCore.Settings.Save();
-                TvCore.UpdateMediaChannel();
+
+                await TvCore.UpdateMediaChannel();
 
                 AdFolderText.Text = path;
             };
 
-            AdFolderClearButton.Click += (sender, args) =>
+            AdFolderClearButton.Click += async (sender, args) =>
             {
                 TvCore.Settings.AdMediaFolder = null;
                 TvCore.Settings.Save();
-                TvCore.UpdateMediaChannel();
+
+                await TvCore.UpdateMediaChannel();
 
                 AdFolderText.Text = string.Empty;
             };
