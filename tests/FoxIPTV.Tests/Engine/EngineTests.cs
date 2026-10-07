@@ -316,14 +316,15 @@ namespace FoxIPTV.Tests.Engine
             AssertSmooth(run, 7, 160, 90);
 
             var shown = run.Captions.Where(x => !string.IsNullOrEmpty(x.Text)).ToList();
+            var timeline = CaptionTimeline(run);
 
-            Assert.Equal(new[] { "Piece 1", "Piece 2", "Piece 3", "Piece 4", "Piece 5", "Piece 6", "Piece 7" }, shown.Select(x => x.Text));
+            Assert.True(new[] { "Piece 1", "Piece 2", "Piece 3", "Piece 4", "Piece 5", "Piece 6", "Piece 7" }.SequenceEqual(shown.Select(x => x.Text)), timeline);
 
             for (var i = 0; i < shown.Count; i++)
             {
                 var due = run.Frames[0].Time + i + 0.2;
 
-                Assert.InRange(shown[i].Clock, due - 0.05, due + 0.4);
+                Assert.True(shown[i].Clock >= due - 0.05 && shown[i].Clock <= due + 0.4, $"{shown[i].Text} at {shown[i].Clock:0.000}, due {due:0.000}{Environment.NewLine}{timeline}");
             }
 
             AssertPolite();
@@ -470,6 +471,27 @@ namespace FoxIPTV.Tests.Engine
 
                 return new Reply { Data = Encoding.UTF8.GetBytes(text.ToString()) };
             });
+        }
+
+        private string CaptionTimeline(PlayerRun run)
+        {
+            var requests = _server.Requests.Where(x => x.Path.EndsWith(".ts", StringComparison.Ordinal) || x.Path.EndsWith(".vtt", StringComparison.Ordinal)).ToList();
+            var origin = requests.Count > 0 ? requests.Min(x => x.Started) : 0;
+            var text = new StringBuilder();
+
+            text.AppendLine($"first frame {(run.Frames.Count > 0 ? run.Frames[0].Time.ToString("0.000") : "none")}");
+
+            foreach (var request in requests.OrderBy(x => x.Started))
+            {
+                text.AppendLine($"served {request.Path} {request.Started - origin:0.000}-{request.Finished - origin:0.000}");
+            }
+
+            foreach (var caption in run.Captions)
+            {
+                text.AppendLine($"caption at clock {caption.Clock:0.000}: {caption.Text ?? "(none)"}");
+            }
+
+            return text.ToString();
         }
 
         private void ServeLiveSubtitles(IReadOnlyList<LivePiece> pieces)
