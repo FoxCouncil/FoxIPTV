@@ -90,6 +90,7 @@ namespace FoxIPTV.Views
             Opened += (sender, args) =>
             {
                 BuildFilters();
+                Guide.ResetView();
                 ShowCurrent();
 
                 Guide.Focus();
@@ -190,7 +191,7 @@ namespace FoxIPTV.Views
             var left = programme.Stop - now;
             var started = programme.Start <= now;
 
-            ProgrammeTimeLabel.Text = $"{programme.Start.ToLocalTime():ddd t} – {programme.Stop.ToLocalTime():t}{(started && left > TimeSpan.Zero ? $" · {Remaining(left)} left" : string.Empty)}";
+            ProgrammeTimeLabel.Text = $"{programme.Start.ToLocalTime():ddd} {programme.Start.ToLocalTime():t} – {programme.Stop.ToLocalTime():t}{(started && left > TimeSpan.Zero ? $" · {Remaining(left)} left" : string.Empty)}";
             ProgrammeProgressBar.Value = done * 100;
         }
 
