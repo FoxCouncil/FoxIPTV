@@ -63,6 +63,17 @@ namespace FoxIPTV.Playback
 
         public int MaxCount { get; }
 
+        public bool IsFull
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _items.Count > 0 && (_seconds >= MaxSeconds || _items.Count >= MaxCount);
+                }
+            }
+        }
+
         public double Seconds
         {
             get

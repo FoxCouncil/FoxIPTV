@@ -1672,8 +1672,9 @@ namespace FoxIPTV.Playback
             }
 
             var sourceDone = _demuxersRunning == 0;
+            var cannotHoldMore = _videoPackets.IsFull || _audioPackets.IsFull;
 
-            if (!sourceDone && BufferedSeconds() < RefillTarget)
+            if (!sourceDone && !cannotHoldMore && BufferedSeconds() < RefillTarget)
             {
                 return;
             }
