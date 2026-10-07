@@ -44,9 +44,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -65,7 +65,7 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Building version: $VERSION (tag: $TAG)"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: ffmpeg-${{ matrix.rid }}
           path: native/${{ matrix.rid }}
@@ -93,7 +93,7 @@ jobs:
           brew install create-dmg
           bash build/macos/package.sh ${{ steps.version.outputs.version }} publish FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}
           path: FoxIPTV-${{ steps.version.outputs.tag }}-${{ matrix.name }}*
@@ -104,7 +104,7 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-26.08
       options: --privileged
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
@@ -125,7 +125,7 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: artifacts
           merge-multiple: true
@@ -136,7 +136,7 @@ jobs:
       - name: List artifacts
         run: find artifacts -type f | sort
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: FoxIPTV ${{ steps.version.outputs.tag }}
