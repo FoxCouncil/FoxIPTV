@@ -26,7 +26,11 @@ namespace FoxIPTV.Classes
 
             try
             {
-                return Directory.EnumerateFiles(folder).Where(x => IsPicture(x) || IsVideo(x)).ToList();
+                var files = Directory.EnumerateFiles(folder, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true }).Where(x => IsPicture(x) || IsVideo(x)).ToList();
+
+                TvCore.LogInfo($"[Ads] Media folder {folder}: {files.Count(IsPicture)} pictures, {files.Count(IsVideo)} videos");
+
+                return files;
             }
             catch (Exception ex)
             {
