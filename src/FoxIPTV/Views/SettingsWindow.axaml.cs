@@ -95,6 +95,8 @@ namespace FoxIPTV.Views
             AdDimSlider.ValueChanged += (sender, args) => Save(() => TvCore.Settings.AdDimLevel = Math.Round(AdDimSlider.Value, 2));
             AdSoundCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.AdMediaSound = AdSoundCheck.IsChecked == true);
             AdTitleCheck.IsCheckedChanged += (sender, args) => Save(() => TvCore.Settings.AdTitle = AdTitleCheck.IsChecked == true);
+            AdAudioText.TextChanged += (sender, args) => Save(() => TvCore.Settings.AdAudioStream = AdAudioText.Text?.Trim());
+            AdAudioVolumeSlider.ValueChanged += (sender, args) => Save(() => TvCore.Settings.AdAudioVolume = Math.Round(AdAudioVolumeSlider.Value, 2));
 
             AdFolderBrowseButton.Click += async (sender, args) =>
             {
@@ -235,6 +237,8 @@ namespace FoxIPTV.Views
                 AdFolderText.Text = TvCore.Settings.AdMediaFolder ?? string.Empty;
                 AdSoundCheck.IsChecked = TvCore.Settings.AdMediaSound;
                 AdTitleCheck.IsChecked = TvCore.Settings.AdTitle;
+                AdAudioText.Text = TvCore.Settings.AdAudioStream ?? string.Empty;
+                AdAudioVolumeSlider.Value = TvCore.Settings.AdAudioVolume;
 
                 ShowTitles();
                 ShowStats();

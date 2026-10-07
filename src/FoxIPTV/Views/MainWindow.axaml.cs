@@ -12,6 +12,7 @@ namespace FoxIPTV.Views
     using Avalonia.Media;
     using Avalonia.Threading;
     using Classes;
+    using Playback;
     using Playback.Video;
 
     public partial class MainWindow : Window
@@ -58,6 +59,10 @@ namespace FoxIPTV.Views
         private bool _adBreakShown;
 
         private bool _mediaChannelOn;
+
+        private Player _adAudio;
+
+        private bool _adAudioOn;
 
         private static readonly IBrush StatusChannel = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x00));
 
@@ -587,18 +592,26 @@ namespace FoxIPTV.Views
                 _adBreakShown = true;
 
                 Reel.Start(TvCore.Settings.AdMediaFolder);
+                StartAdAudio();
             }
             else if (!inAd && _adBreakShown)
             {
                 _adBreakShown = false;
 
                 Reel.Stop();
+                StopAdAudio();
+            }
+
+            if (_adAudio != null)
+            {
+                _adAudio.Volume = TvCore.Settings.AdAudioVolume;
+                _adAudio.Muted = _player.Muted;
             }
 
             var showingMedia = Reel.IsRunning;
 
-            Reel.Muted = _player.Muted || !TvCore.Settings.AdMediaSound;
-            _player.Ducked = inAd && (TvCore.Settings.AdMute || showingMedia && TvCore.Settings.AdMediaSound);
+            Reel.Muted = _player.Muted || !TvCore.Settings.AdMediaSound || _adAudioOn;
+            _player.Ducked = inAd && (TvCore.Settings.AdMute || showingMedia && TvCore.Settings.AdMediaSound || _adAudioOn);
 
             AdMediaPanel.IsVisible = showingMedia;
             var dimmed = inAd && !showingMedia && TvCore.Settings.AdDim;
@@ -619,6 +632,36 @@ namespace FoxIPTV.Views
             AdDimLayer.Opacity = TvCore.Settings.AdDimLevel;
 
             Reel.Tick();
+        }
+
+        private void StartAdAudio()
+        {
+            var address = TvCore.Settings.AdAudioStream;
+
+            if (string.IsNullOrWhiteSpace(address) || !Uri.TryCreate(address, UriKind.Absolute, out var uri))
+            {
+                return;
+            }
+
+            _adAudio ??= new Player();
+            _adAudio.Volume = TvCore.Settings.AdAudioVolume;
+            _adAudio.Muted = _player.Muted;
+            _adAudio.Play(new MediaRequest { Uri = uri, IsLive = true, Quiet = true, Label = "ad audio" });
+
+            _adAudioOn = true;
+
+            TvCore.LogInfo($"[Ads] Playing ad audio from {uri.Host}");
+        }
+
+        private void StopAdAudio()
+        {
+            if (!_adAudioOn)
+            {
+                return;
+            }
+
+            _adAudioOn = false;
+            _adAudio?.Stop();
         }
 
         private AdReel Reel

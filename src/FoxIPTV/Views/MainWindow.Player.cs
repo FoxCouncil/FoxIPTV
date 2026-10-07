@@ -470,6 +470,7 @@ namespace FoxIPTV.Views
                 try
                 {
                     _player.Dispose();
+                    _adAudio?.Dispose();
                 }
                 catch (Exception ex)
                 {

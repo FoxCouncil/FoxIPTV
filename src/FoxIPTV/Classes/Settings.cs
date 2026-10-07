@@ -64,6 +64,10 @@ namespace FoxIPTV.Classes
 
         public string AdMediaFolder { get; set; }
 
+        public string AdAudioStream { get; set; } = "http://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FMAAC.aac";
+
+        public double AdAudioVolume { get; set; } = 0.5;
+
         public bool AdMediaSound { get; set; }
 
         public bool AdTitle { get; set; } = true;

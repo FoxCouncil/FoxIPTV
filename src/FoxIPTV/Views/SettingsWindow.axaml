@@ -132,6 +132,15 @@
                         </StackPanel>
                     </HeaderedContentControl>
 
+                    <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Ad Audio">
+                        <Grid ColumnDefinitions="80,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Stream" VerticalAlignment="Center" />
+                            <TextBox x:Name="AdAudioText" Grid.Row="0" Grid.Column="1" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Volume" VerticalAlignment="Center" />
+                            <Slider x:Name="AdAudioVolumeSlider" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" VerticalAlignment="Center" />
+                        </Grid>
+                    </HeaderedContentControl>
+
                     <HeaderedContentControl Theme="{StaticResource GroupBox}" Header="Ad Media">
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">

@@ -24,6 +24,8 @@ namespace FoxIPTV.Playback
 
         private bool _ducked;
 
+        private double _volume = 1;
+
         private MediaRequest _lastRequest;
 
         public event Action<PlayerState, string> StateChanged;
@@ -114,7 +116,7 @@ namespace FoxIPTV.Playback
             set
             {
                 _muted = value;
-                _audio.Gain = _muted || _ducked ? 0 : 1;
+                ApplyGain();
             }
         }
 
@@ -124,8 +126,23 @@ namespace FoxIPTV.Playback
             set
             {
                 _ducked = value;
-                _audio.Gain = _muted || _ducked ? 0 : 1;
+                ApplyGain();
             }
+        }
+
+        public double Volume
+        {
+            get => _volume;
+            set
+            {
+                _volume = Math.Clamp(value, 0, 1);
+                ApplyGain();
+            }
+        }
+
+        private void ApplyGain()
+        {
+            _audio.Gain = _muted || _ducked ? 0 : (float)_volume;
         }
 
         public bool IsActive
