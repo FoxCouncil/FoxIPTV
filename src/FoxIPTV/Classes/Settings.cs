@@ -64,7 +64,11 @@ namespace FoxIPTV.Classes
 
         public string AdMediaFolder { get; set; }
 
-        public string AdAudioStream { get; set; } = "http://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FMAAC.aac";
+        public const string DefaultAdAudioStream = "http://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FMAAC";
+
+        private const string ClippedAdAudioStream = DefaultAdAudioStream + ".aac";
+
+        public string AdAudioStream { get; set; } = DefaultAdAudioStream;
 
         public double AdAudioVolume { get; set; } = 0.5;
 
@@ -177,6 +181,11 @@ namespace FoxIPTV.Classes
 
                 // Copy the values from the newly loaded state to this instance
                 JsonConvert.PopulateObject(File.ReadAllText(_filePath), this);
+
+                if (AdAudioStream == ClippedAdAudioStream)
+                {
+                    AdAudioStream = DefaultAdAudioStream;
+                }
 
                 _savedJson = JsonConvert.SerializeObject(this);
             }
