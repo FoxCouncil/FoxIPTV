@@ -17,8 +17,6 @@ namespace FoxIPTV.Classes
 
         public static bool IsVideo(string path) => VideoTypes.Contains(Path.GetExtension(path));
 
-        public static bool HasMedia(string folder) => Files(folder).Any();
-
         public static List<string> Files(string folder)
         {
             if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))

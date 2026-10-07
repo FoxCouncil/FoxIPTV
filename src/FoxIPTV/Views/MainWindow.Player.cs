@@ -244,8 +244,22 @@ namespace FoxIPTV.Views
             }
             else
             {
-                ShowPlayerState("Error");
+                AdMediaPanel.IsVisible = false;
+
+                ShowPlayerState("Waiting");
             }
+        }
+
+        internal void MediaFolderChanged()
+        {
+            if (!TvCore.IsMediaChannel(TvCore.CurrentChannel))
+            {
+                return;
+            }
+
+            Reel.Stop();
+
+            PlayMediaChannel();
         }
 
         private static MediaRequest CurrentRequest()

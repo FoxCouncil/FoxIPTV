@@ -320,12 +320,7 @@ namespace FoxIPTV.Classes
                 LogInfo($"[TVCore] Start(): {protectedCount} copy-protected and {hiddenCount} hidden channel(s) left out");
             }
 
-            var folder = Settings.AdMediaFolder;
-
-            if (await Task.Run(() => MediaFolder.HasMedia(folder)))
-            {
-                Channels.Insert(0, MediaChannel());
-            }
+            Channels.Insert(0, MediaChannel());
 
             ChannelIndexList = Channels.Select(x => x.Index).ToList();
 
@@ -581,41 +576,6 @@ namespace FoxIPTV.Classes
         }
 
         public static bool IsMediaChannel(Channel channel) => channel?.Id == MediaChannelId;
-
-        public static async Task UpdateMediaChannel()
-        {
-            if (Channels == null || State != TvCoreState.Running)
-            {
-                return;
-            }
-
-            var folder = Settings.AdMediaFolder;
-            var wanted = await Task.Run(() => MediaFolder.HasMedia(folder));
-            var present = Channels.Count > 0 && IsMediaChannel(Channels[0]);
-
-            if (wanted == present)
-            {
-                return;
-            }
-
-            if (wanted)
-            {
-                Channels.Insert(0, MediaChannel());
-            }
-            else
-            {
-                Channels.RemoveAt(0);
-            }
-
-            ChannelIndexList = Channels.Select(x => x.Index).ToList();
-
-            if (CurrentChannel != null && Channels.Contains(CurrentChannel))
-            {
-                CurrentChannelIndex = (uint)Channels.IndexOf(CurrentChannel);
-            }
-
-            ChannelListChanged?.Invoke();
-        }
 
         private static Channel MediaChannel() => new Channel { Index = 0, Id = MediaChannelId, Name = "My Media" };
 
