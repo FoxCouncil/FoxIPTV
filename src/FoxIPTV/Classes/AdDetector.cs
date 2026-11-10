@@ -63,6 +63,8 @@ namespace FoxIPTV.Classes
 
         private static bool _signalled;
 
+        private static string _strayCreative;
+
         public static bool InAd { get; private set; }
 
         public static int AdNumber { get; private set; }
@@ -98,7 +100,14 @@ namespace FoxIPTV.Classes
                 Clear();
 
                 FinishedCueIds.Clear();
+
+                _strayCreative = null;
             }
+        }
+
+        public static bool LooksLikeAd(string address)
+        {
+            return !string.IsNullOrEmpty(address) && AdPiece.IsMatch(Uri.UnescapeDataString(address));
         }
 
         private static void Clear()
@@ -388,6 +397,13 @@ namespace FoxIPTV.Classes
             {
                 if (!InAd)
                 {
+                    if (progress.Creative != _strayCreative)
+                    {
+                        _strayCreative = progress.Creative;
+
+                        TvCore.LogInfo($"[Ads] Ad tag while not in a break: {progress}");
+                    }
+
                     return;
                 }
 

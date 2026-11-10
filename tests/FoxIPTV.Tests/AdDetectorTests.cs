@@ -137,6 +137,15 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Pluto_ReadsTheEscapedCreativeAddressAsAnAd()
+        {
+            Assert.True(AdDetector.LooksLikeAd("https://cdn.example/v1/mp4/c(ts)/h(default)/p(735_ad%2Fcreative%2F6abec2e1ac612a761b08e646_ad%2F720p%2Fvideo_1.mp4)/id3(p=clik,id=6abec2e1ac612a761b08e646)/frag(0-5)/3.ts"));
+            Assert.True(AdDetector.LooksLikeAd("https://cdn.example/781_Pluto_TV_OandO/clip/6abec2e1ac612a761b08e646_ptv_ad_bumper/720pDRM/hls/hls_1.ts"));
+            Assert.False(AdDetector.LooksLikeAd("https://cdn.example/735_pluto/clip/6abec2e1ac612a761b08e646_show_s01e01/720pDRM/hls/hls_1.ts"));
+            Assert.False(AdDetector.LooksLikeAd(null));
+        }
+
+        [Fact]
         public void Playlists_AndSubtitles_AreIgnored()
         {
             AdDetector.Reset();

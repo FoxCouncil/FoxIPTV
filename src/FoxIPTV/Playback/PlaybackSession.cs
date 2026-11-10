@@ -1867,7 +1867,7 @@ namespace FoxIPTV.Playback
                 {
                     if (piece.StartsDiscontinuity || piece.Marks != null && piece.Marks.Count > 0)
                     {
-                        TvCore.LogInfo($"[Ads] Piece {(piece.StartsDiscontinuity ? "after a discontinuity" : "with tags")}: {piece.Url}{(piece.Title != null ? $" title {piece.Title}" : string.Empty)}{(piece.Marks != null && piece.Marks.Count > 0 ? $" tags {string.Join(" | ", piece.Marks)}" : string.Empty)}");
+                        TvCore.LogInfo($"[Ads] Piece {(piece.StartsDiscontinuity ? "after a discontinuity" : "with tags")} at {clock:0.000}s, address reads as {(AdDetector.LooksLikeAd(piece.Url) ? "an ad" : "the programme")}: {piece.Url}{(piece.Title != null ? $" title {piece.Title}" : string.Empty)}{(piece.Marks != null && piece.Marks.Count > 0 ? $" tags {string.Join(" | ", piece.Marks)}" : string.Empty)}");
                     }
 
                     AdDetector.ObserveSegment(piece.Url, piece.Title, piece.Marks, piece.Duration);
