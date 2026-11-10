@@ -154,6 +154,46 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Live_KeepsPlayingThroughAStretchWithNoSound()
+        {
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts"), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts"),
+                new LivePiece("low/0.ts", true, NoSound: true), new LivePiece("low/1.ts", NoSound: true), new LivePiece("low/2.ts", NoSound: true), new LivePiece("low/3.ts", NoSound: true),
+                new LivePiece("low/0.ts", true), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts")
+            };
+
+            ServeLive(pieces, null);
+
+            using var run = Play("/live.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 40), run.Describe());
+
+            AssertNoFramesLost(run, 11);
+            AssertPolite();
+        }
+
+        [Fact]
+        public void Live_PicksUpSoundThatStartsLate()
+        {
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts", NoSound: true), new LivePiece("low/1.ts", NoSound: true), new LivePiece("low/2.ts", NoSound: true), new LivePiece("low/3.ts", NoSound: true),
+                new LivePiece("low/0.ts", true), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts"),
+                new LivePiece("low/0.ts", true), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts")
+            };
+
+            ServeLive(pieces, null);
+
+            using var run = Play("/live.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 40), run.Describe());
+
+            AssertNoFramesLost(run, 11);
+            AssertPolite();
+        }
+
+        [Fact]
         public void Aes128_DecryptsEveryPiece()
         {
             var key = Enumerable.Range(0, 16).Select(x => (byte)x).ToArray();
@@ -429,7 +469,7 @@ namespace FoxIPTV.Tests.Engine
 
             for (var i = 0; i < pieces.Count; i++)
             {
-                var data = Clip(pieces[i].Clip);
+                var data = pieces[i].NoSound ? WithoutSound(Clip(pieces[i].Clip)) : Clip(pieces[i].Clip);
                 Func<Reply> reply = i == missing ? Reply.NotFound : () => new Reply { Data = data };
 
                 _server.Serve("/" + paths[i], reply);
@@ -565,12 +605,59 @@ namespace FoxIPTV.Tests.Engine
             throw new InvalidDataException("no video timestamp in the clip");
         }
 
+        private static byte[] WithoutSound(byte[] ts)
+        {
+            var sound = new HashSet<int>();
+
+            for (var at = 0; at + 188 <= ts.Length; at += 188)
+            {
+                var starts = (ts[at + 1] & 0x40) != 0;
+                var control = (ts[at + 3] >> 4) & 3;
+                var payload = at + 4 + (control >= 2 ? 1 + ts[at + 4] : 0);
+
+                if (starts && (control & 1) != 0 && payload + 4 <= at + 188 && ts[payload] == 0 && ts[payload + 1] == 0 && ts[payload + 2] == 1 && (ts[payload + 3] & 0xE0) == 0xC0)
+                {
+                    sound.Add((ts[at + 1] & 0x1F) << 8 | ts[at + 2]);
+                }
+            }
+
+            if (sound.Count == 0)
+            {
+                throw new InvalidDataException("no sound stream in the clip");
+            }
+
+            var kept = new MemoryStream();
+
+            for (var at = 0; at + 188 <= ts.Length; at += 188)
+            {
+                if (!sound.Contains((ts[at + 1] & 0x1F) << 8 | ts[at + 2]))
+                {
+                    kept.Write(ts, at, 188);
+                }
+            }
+
+            return kept.ToArray();
+        }
+
         private static void AssertIncreasing(IReadOnlyList<ShownFrame> frames)
         {
             for (var i = 1; i < frames.Count; i++)
             {
                 Assert.True(frames[i].Time > frames[i - 1].Time, $"frame {i} at {frames[i].Time:0.000}s came after {frames[i - 1].Time:0.000}s");
             }
+        }
+
+        private static void AssertNoFramesLost(PlayerRun run, double seconds)
+        {
+            var frames = run.Frames;
+            var span = frames.Count == 0 ? 0 : frames[^1].Time - frames[0].Time;
+            var widestStep = frames.Zip(frames.Skip(1), (a, b) => b.Time - a.Time).DefaultIfEmpty(0).Max();
+
+            Assert.True(frames.Count >= seconds * FrameRate * 0.9, $"{frames.Count} frames for {seconds}s. {run.Describe()}");
+            AssertIncreasing(frames);
+            Assert.True(widestStep < 3 / FrameRate, $"a {widestStep:0.000}s hole between frames. {run.Describe()}");
+            Assert.True(Math.Abs(span - seconds) < 0.5, $"frames cover {span:0.00}s, expected {seconds}s. {run.Describe()}");
+            Assert.Equal("aac", run.Player.Info.AudioCodec);
         }
 
         private static void AssertSmooth(PlayerRun run, double seconds, int width, int height)
@@ -617,6 +704,6 @@ namespace FoxIPTV.Tests.Engine
             }
         }
 
-        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null, string Tags = null);
+        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null, string Tags = null, bool NoSound = false);
     }
 }

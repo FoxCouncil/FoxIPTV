@@ -20,6 +20,10 @@ namespace FoxIPTV.Playback
 
         private const double RebufferSeconds = 3.0;
 
+        private const double SoundDrySeconds = 0.05;
+
+        private const double SoundRejoinLeadSeconds = 0.05;
+
         private static int _ids;
 
         private readonly Player _owner;
@@ -85,6 +89,8 @@ namespace FoxIPTV.Playback
         private volatile bool _started;
 
         private volatile bool _audioClock;
+
+        private volatile bool _muxed;
 
         private volatile bool _buffering;
 
@@ -287,6 +293,8 @@ namespace FoxIPTV.Playback
 
                     var separateAudio = _hls.Audio != null;
 
+                    _muxed = !separateAudio;
+
                     StartThread("demux", () => DemuxChunks(_hls.Main, true, !separateAudio, true));
 
                     if (separateAudio)
@@ -302,10 +310,14 @@ namespace FoxIPTV.Playback
 
                     _opened.Reader.OnBytes = count => Interlocked.Add(ref _bytes, count);
 
+                    _muxed = true;
+
                     StartThread("demux", DemuxProgressive);
                 }
                 else
                 {
+                    _muxed = true;
+
                     StartThread("demux", DemuxUrl);
                 }
 
@@ -1421,6 +1433,15 @@ namespace FoxIPTV.Playback
                 x.AudioRate = frame->sample_rate;
             });
 
+            var seconds = count / (double)AudioOutput.Rate;
+
+            if (_started && !_audioClock && time + seconds < _wall.Now)
+            {
+                state.Next = time + seconds;
+
+                return;
+            }
+
             while (!_token.IsCancellationRequested && _audio.QueuedSeconds > AudioAheadSeconds)
             {
                 Thread.Sleep(5);
@@ -1431,7 +1452,7 @@ namespace FoxIPTV.Playback
                 return;
             }
 
-            state.Next = time + count / (double)AudioOutput.Rate;
+            state.Next = time + seconds;
 
             if (!_audioReady && _audio.QueuedSeconds >= StartAudioSeconds)
             {
@@ -1567,6 +1588,7 @@ namespace FoxIPTV.Playback
                 }
                 else
                 {
+                    RejoinSound();
                     CheckBuffering();
                     SteerDrift();
                     FireMarks();
@@ -1636,10 +1658,70 @@ namespace FoxIPTV.Playback
         {
             if (_audioClock)
             {
-                return !_audioDone && _audioPackets.Count == 0 && _audio.QueuedSeconds < 0.05;
+                return !_audioDone && _audioPackets.Count == 0 && _audio.QueuedSeconds < SoundDrySeconds;
             }
 
+            return PicturesDry();
+        }
+
+        private bool PicturesDry()
+        {
             return !_videoDone && Frames.Count == 0 && _videoPackets.Count == 0;
+        }
+
+        private bool PicturesWaitOnSound()
+        {
+            return _muxed && _audioClock && _videoPackets.IsFull && _audioPackets.Count == 0 && _audio.QueuedSeconds < SoundDrySeconds;
+        }
+
+        private bool PlayWithoutSound()
+        {
+            var from = _audio.Clock;
+
+            if (double.IsNaN(from))
+            {
+                return false;
+            }
+
+            _wall.Restart(from);
+
+            _audioClock = false;
+
+            _audio.Pause();
+
+            TvCore.LogInfo($"[Player] Session {Id}: the sound stopped at {from:0.000}s and the pictures go on, timed by the wall clock");
+
+            return true;
+        }
+
+        private void RejoinSound()
+        {
+            if (_audioClock || _audio.QueuedSeconds < StartAudioSeconds)
+            {
+                return;
+            }
+
+            var sound = _audio.Clock;
+
+            if (double.IsNaN(sound) || !PicturesDry() && _wall.Now < sound - SoundRejoinLeadSeconds)
+            {
+                return;
+            }
+
+            _wall.Pause();
+
+            _audioClock = true;
+
+            _audio.Resume();
+
+            TvCore.LogInfo($"[Player] Session {Id}: the sound is back at {sound:0.000}s, timed by the sound again");
+
+            if (_buffering)
+            {
+                _buffering = false;
+
+                _owner.Report(this, PlayerState.Playing, null);
+            }
         }
 
         private void CheckBuffering()
@@ -1647,6 +1729,11 @@ namespace FoxIPTV.Playback
             if (!_buffering)
             {
                 if (!Starving())
+                {
+                    return;
+                }
+
+                if (PicturesWaitOnSound() && PlayWithoutSound())
                 {
                     return;
                 }
@@ -1681,6 +1768,13 @@ namespace FoxIPTV.Playback
 
             if (_audioClock && _audio.QueuedSeconds < StartAudioSeconds && !_audioDone)
             {
+                if (PicturesWaitOnSound() && PlayWithoutSound())
+                {
+                    _buffering = false;
+
+                    _owner.Report(this, PlayerState.Playing, null);
+                }
+
                 return;
             }
 

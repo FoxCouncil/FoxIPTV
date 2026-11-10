@@ -399,6 +399,16 @@ namespace FoxIPTV.Playback
             }
         }
 
+        public void Restart(double from)
+        {
+            lock (_lock)
+            {
+                _base = from;
+
+                _watch.Restart();
+            }
+        }
+
         public void Pause()
         {
             lock (_lock)
