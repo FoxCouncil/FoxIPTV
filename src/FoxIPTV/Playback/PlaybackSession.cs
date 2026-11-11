@@ -445,6 +445,8 @@ namespace FoxIPTV.Playback
             TraceQuality(description);
         }
 
+        public bool IsLiveHls => _request.IsLive && _hls != null && _hls.IsLive;
+
         private double RefillTarget => _hls != null ? RebufferSeconds : 1.5;
 
         private double BufferedSeconds()

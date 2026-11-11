@@ -167,6 +167,17 @@ namespace FoxIPTV.Playback
             }
         }
 
+        public bool IsLiveHls
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _session?.IsLiveHls == true;
+                }
+            }
+        }
+
         public PlayerStats Stats
         {
             get

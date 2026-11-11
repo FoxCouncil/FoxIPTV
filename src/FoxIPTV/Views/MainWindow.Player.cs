@@ -221,6 +221,8 @@ namespace FoxIPTV.Views
 
             _pictureTraced = false;
 
+            ResetDiagnostics();
+
             VideoView.Clear();
 
             _player.Play(request);

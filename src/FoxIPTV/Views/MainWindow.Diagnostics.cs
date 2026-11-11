@@ -26,6 +26,8 @@ namespace FoxIPTV.Views
 
         private double _heartbeatClock = double.NaN;
 
+        private readonly StaleWatch _stale = new StaleWatch();
+
         private static long Now => Stopwatch.GetTimestamp();
 
         private static string Time(double seconds)
@@ -39,6 +41,8 @@ namespace FoxIPTV.Views
             _clockMovedAt = 0;
             _stallReportedAt = 0;
             _heartbeatClock = double.NaN;
+
+            _stale.Reset();
         }
 
         private void Watchdog()
@@ -72,6 +76,17 @@ namespace FoxIPTV.Views
                     TvCore.LogError($"[Watchdog] Clock moving again at {Time(clock)} after {Stopwatch.GetElapsedTime(_clockMovedAt, now).TotalSeconds:0.0}s stuck at {Time(_lastClock)}; {_player.Stats}");
 
                     _stallReportedAt = 0;
+                }
+
+                if (_stale.ClockMoved(DateTime.UtcNow, clock) && _player.IsLiveHls)
+                {
+                    TvCore.LogError($"[Watchdog] Play stood still for {_stale.StoodStill.TotalSeconds:0}s, tuning {TvCore.CurrentChannel?.Name} again at the live point");
+
+                    AdDetector.Reset();
+
+                    PlayCurrent();
+
+                    return;
                 }
 
                 _lastClock = clock;
