@@ -3,6 +3,8 @@
 namespace FoxIPTV.Classes
 {
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
@@ -188,6 +190,8 @@ namespace FoxIPTV.Classes
                 throw new InvalidDataException($"{offer.Name} checksum {actual} does not match {offer.Checksum}");
             }
 
+            LoadAllAssemblies();
+
             if (OperatingSystem.IsMacOS())
             {
                 SwapBundle();
@@ -202,6 +206,45 @@ namespace FoxIPTV.Classes
             AvailableChanged?.Invoke();
 
             TvCore.LogInfo($"[Updater] {offer.Version} installed, it runs from the next start");
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026")]
+        public static void LoadAllAssemblies()
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var pending = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
+
+            foreach (var assembly in pending)
+            {
+                seen.Add(assembly.GetName().Name);
+            }
+
+            while (pending.Count > 0)
+            {
+                var assembly = pending.Dequeue();
+
+                if (assembly.IsDynamic)
+                {
+                    continue;
+                }
+
+                foreach (var reference in assembly.GetReferencedAssemblies())
+                {
+                    if (!seen.Add(reference.Name))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        pending.Enqueue(Assembly.Load(reference));
+                    }
+                    catch (Exception ex)
+                    {
+                        TvCore.LogDebug($"[Updater] Could not load {reference.Name}: {ex.GetType().Name}");
+                    }
+                }
+            }
         }
 
         private static void SwapExe()

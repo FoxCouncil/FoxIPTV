@@ -175,6 +175,23 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Updater_LoadsEveryReferencedAssemblyBeforeTheSwap()
+        {
+            Updater.LoadAllAssemblies();
+
+            var loaded = AppDomain.CurrentDomain.GetAssemblies().Where(x => !x.IsDynamic).ToList();
+            var names = loaded.Select(x => x.GetName().Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            Assert.Contains("System.IO.Pipes", names);
+            Assert.Contains("System.Diagnostics.Process", names);
+
+            foreach (var reference in loaded.SelectMany(x => x.GetReferencedAssemblies()).Where(x => !names.Contains(x.Name)))
+            {
+                Assert.ThrowsAny<Exception>(() => System.Reflection.Assembly.Load(reference));
+            }
+        }
+
+        [Fact]
         public void CaptionText_StripsAssMarkup()
         {
             Assert.Equal("HELLO THERE\nFRIEND", CaptionDecoder.StripAss("0,0,Default,,0,0,0,,{\\an7}HELLO THERE\\NFRIEND"));
