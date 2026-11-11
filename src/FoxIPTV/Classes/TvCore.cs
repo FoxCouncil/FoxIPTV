@@ -206,6 +206,11 @@ namespace FoxIPTV.Classes
             // Load the settings from the disk, if they exist
             Settings.Load();
 
+            if (Settings.DebugLog)
+            {
+                CurrentLogLevel = TvCoreLogLevel.All;
+            }
+
             // Load the image blacklist, if they exist
             BlacklistLoad();
 

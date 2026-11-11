@@ -52,6 +52,18 @@ namespace FoxIPTV.Tests
             Assert.Equal(new Settings().AdMessages, settings.AdMessages);
         }
 
+        [Fact]
+        public void DebugLog_IsOffUntilTheSettingsFileTurnsItOn()
+        {
+            var settings = new Settings();
+
+            Assert.False(settings.DebugLog);
+
+            JsonConvert.PopulateObject("{\"DebugLog\":true}", settings);
+
+            Assert.True(settings.DebugLog);
+        }
+
         [AvaloniaFact]
         public void SettingsWindow_HasItsThreeTabs()
         {
