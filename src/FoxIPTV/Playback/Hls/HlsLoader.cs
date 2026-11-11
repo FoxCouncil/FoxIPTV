@@ -371,7 +371,9 @@ namespace FoxIPTV.Playback.Hls
                     StartsDiscontinuity = discontinuity
                 };
 
-                _events.OnPiece(name, chunk, clock.Elapsed);
+                var took = clock.Elapsed;
+
+                _events.OnPiece(name, chunk, took);
 
                 queue.Add(chunk, token);
 
@@ -379,7 +381,7 @@ namespace FoxIPTV.Playback.Hls
 
                 if (isMain && _variants.Count > 1)
                 {
-                    var target = Adapt(segment.Duration, data.Length, clock.Elapsed, queue.BufferedSeconds);
+                    var target = Adapt(segment.Duration, data.Length, took, queue.BufferedSeconds);
 
                     if (target != _variantIndex)
                     {

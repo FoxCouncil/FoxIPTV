@@ -277,6 +277,27 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Master_KeepsQualityWhenTheBufferIsFull()
+        {
+            ServeClips("low", 4);
+            ServeClips("high", 4);
+
+            _server.Serve("/low.m3u8", Looped("low", 130));
+            _server.Serve("/high.m3u8", Looped("high", 130));
+            _server.Serve("/master.m3u8", "#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=160x90,CODECS=\"avc1.42c00c,mp4a.40.2\"\nlow.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=600000,RESOLUTION=320x180,CODECS=\"avc1.42c00d,mp4a.40.2\"\nhigh.m3u8\n");
+
+            using var run = Play("/master.m3u8", false);
+
+            Assert.True(SpinWait.SpinUntil(() => run.Player.Stats?.BufferedSeconds >= 119, TimeSpan.FromSeconds(20)), run.Describe());
+
+            Thread.Sleep(6000);
+
+            Assert.StartsWith("600kbps", run.Player.Stats.Variant);
+            Assert.DoesNotContain(PlayerState.Failed, run.States);
+            AssertPolite();
+        }
+
+        [Fact]
         public void Fmp4_PlaysWithAnInitSection()
         {
             _server.Serve("/fmp4/init.mp4", Clip("fmp4/init.mp4"));
@@ -483,6 +504,23 @@ namespace FoxIPTV.Tests.Engine
             foreach (var piece in pieces)
             {
                 text.Append("#EXTINF:1.000,\n").Append(piece).Append('\n');
+            }
+
+            return text.Append("#EXT-X-ENDLIST\n").ToString();
+        }
+
+        private static string Looped(string folder, int count)
+        {
+            var text = new StringBuilder("#EXTM3U\n#EXT-X-VERSION:7\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n");
+
+            for (var i = 0; i < count; i++)
+            {
+                if (i > 0 && i % 4 == 0)
+                {
+                    text.Append("#EXT-X-DISCONTINUITY\n");
+                }
+
+                text.Append("#EXTINF:1.000,\n").Append($"{folder}/{i % 4}.ts\n");
             }
 
             return text.Append("#EXT-X-ENDLIST\n").ToString();
