@@ -23,6 +23,8 @@ namespace FoxIPTV.Views
 
         private const double Gap = 4;
 
+        private const int KeptPictures = 8;
+
         private readonly Canvas _mosaic;
 
         private readonly VideoSurface _surface;
@@ -32,6 +34,8 @@ namespace FoxIPTV.Views
         private readonly Queue<string> _videos = new Queue<string>();
 
         private readonly List<Bitmap> _shown = new List<Bitmap>();
+
+        private readonly List<Bitmap> _kept = new List<Bitmap>();
 
         private readonly Random _random = new Random();
 
@@ -87,6 +91,9 @@ namespace FoxIPTV.Views
             _folder = folder;
             _pictures.Clear();
             _videos.Clear();
+
+            DropKept();
+
             var files = string.IsNullOrEmpty(folder) ? Task.FromResult(new List<string>()) : Task.Run(() => MediaFolder.Files(folder));
 
             _files = files;
@@ -157,6 +164,7 @@ namespace FoxIPTV.Views
         {
             Stop();
             DropNextSet();
+            DropKept();
 
             _player?.Dispose();
             _player = null;
@@ -231,6 +239,13 @@ namespace FoxIPTV.Views
 
             if (bitmaps.Count == 0)
             {
+                bitmaps = TakeKept();
+            }
+
+            if (bitmaps.Count == 0)
+            {
+                _pictureUntil = DateTime.UtcNow.AddSeconds(PictureSeconds);
+
                 return;
             }
 
@@ -349,12 +364,41 @@ namespace FoxIPTV.Views
         {
             _mosaic.Children.Clear();
 
-            foreach (var bitmap in _shown)
+            _kept.AddRange(_shown);
+            _shown.Clear();
+
+            while (_kept.Count > KeptPictures)
+            {
+                _kept[0].Dispose();
+                _kept.RemoveAt(0);
+            }
+        }
+
+        private List<Bitmap> TakeKept()
+        {
+            var taken = new List<Bitmap>();
+            var count = Math.Min(_kept.Count, _random.Next(3, 7));
+
+            for (var i = 0; i < count; i++)
+            {
+                var index = _random.Next(_kept.Count);
+
+                taken.Add(_kept[index]);
+
+                _kept.RemoveAt(index);
+            }
+
+            return taken;
+        }
+
+        private void DropKept()
+        {
+            foreach (var bitmap in _kept)
             {
                 bitmap.Dispose();
             }
 
-            _shown.Clear();
+            _kept.Clear();
         }
 
         private void PlayVideo(string path)

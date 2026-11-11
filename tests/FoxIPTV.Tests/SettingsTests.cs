@@ -220,6 +220,76 @@ namespace FoxIPTV.Tests
             }
         }
 
+        [AvaloniaFact]
+        public void AdReel_ShowsKeptPicturesWhenTheFolderIsGone()
+        {
+            var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "foxiptv-reel-" + Guid.NewGuid().ToString("N"));
+
+            System.IO.Directory.CreateDirectory(folder);
+
+            try
+            {
+                var pictures = new[] { "iVBORw0KGgoAAAANSUhEUgAAACAAAAASCAIAAAC1qksFAAAAK0lEQVR4nGM8YWPDQEvARFPTGUYtIAKMxgFBMBpEBMFoEBEEo0FEENA8iAAGqQFk0/YocwAAAABJRU5ErkJggg==", "iVBORw0KGgoAAAANSUhEUgAAABIAAAAgCAIAAACQHr+mAAAALUlEQVR4nGM8YWPDQDpgIkMPw6g2LGA0JDHAaJBggNEgwQCjQYIBRoOEAR0AAHlzAYDe6SrJAAAAAElFTkSuQmCC", "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAALElEQVR4nGM8YWPDQA3ARBVTGEYNIgaMBjZhMBpGhMFoGBEGo2FEGAy+MAIAN6sBcEg+gikAAAAASUVORK5CYII=", "iVBORw0KGgoAAAANSUhEUgAAACgAAAAQCAIAAADrtar6AAAAMklEQVR4nGM8YWPDMBCAaUBsZRi1mI6AiZ6WIYNRi+kGmOhnFSoYtZhugIl+VjGMcIsB8yMBYCLbTj4AAAAASUVORK5CYII=" };
+
+                for (var i = 0; i < 40; i++)
+                {
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, $"p{i}.png"), Convert.FromBase64String(pictures[i % pictures.Length]));
+                }
+
+                var mosaic = new Canvas();
+                var surface = new VideoSurface();
+                var panel = new Panel();
+
+                panel.Children.Add(mosaic);
+                panel.Children.Add(surface);
+
+                var window = new Window { Content = panel, Width = 800, Height = 450 };
+
+                window.Show();
+
+                var reel = new AdReel(mosaic, surface);
+                var nextSet = typeof(AdReel).GetField("_nextSet", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var pictureUntil = typeof(AdReel).GetField("_pictureUntil", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                reel.Prepare(folder);
+
+                WaitFor(() => nextSet.GetValue(reel) is System.Threading.Tasks.Task { IsCompleted: true });
+
+                Assert.True(reel.Start(folder));
+                Assert.InRange(mosaic.Children.Count, 3, 6);
+
+                WaitFor(() => nextSet.GetValue(reel) is System.Threading.Tasks.Task { IsCompleted: true });
+
+                foreach (var file in System.IO.Directory.GetFiles(folder))
+                {
+                    System.IO.File.Delete(file);
+                }
+
+                for (var turn = 0; turn < 4; turn++)
+                {
+                    pictureUntil.SetValue(reel, DateTime.MinValue);
+                    reel.Tick();
+
+                    Assert.InRange(mosaic.Children.Count, 3, 6);
+
+                    WaitFor(() => nextSet.GetValue(reel) is System.Threading.Tasks.Task { IsCompleted: true });
+                }
+
+                reel.Stop();
+
+                Assert.Empty(mosaic.Children);
+                Assert.True(reel.Start(folder));
+                Assert.InRange(mosaic.Children.Count, 3, 6);
+                Assert.True((DateTime)pictureUntil.GetValue(reel) > DateTime.UtcNow.AddSeconds(AdReel.PictureSeconds - 2));
+
+                reel.Dispose();
+            }
+            finally
+            {
+                System.IO.Directory.Delete(folder, true);
+            }
+        }
+
         [Fact]
         public void AdStats_CountBreaksAdsAndTime()
         {
