@@ -52,6 +52,32 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Vod_KeepsPlayingWhenTheSoundOutputIsOpenedAgain()
+        {
+            ServeClips("low", 4);
+            _server.Serve("/vod.m3u8", Vod(Pieces("low", 4)));
+
+            using var run = Play("/vod.m3u8", false);
+
+            Assert.True(SpinWait.SpinUntil(() => run.Frames.Count > 0 && run.Frames[^1].Time - run.Frames[0].Time >= 1.5, TimeSpan.FromSeconds(10)), run.Describe());
+
+            AudioOutput.Reopen();
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 20), run.Describe());
+
+            var frames = run.Frames;
+            var span = frames[^1].Time - frames[0].Time;
+            var widestStep = frames.Zip(frames.Skip(1), (a, b) => b.Time - a.Time).Max();
+
+            Assert.True(frames.Count >= 3.4 * FrameRate * 0.9, $"{frames.Count} frames. {run.Describe()}");
+            AssertIncreasing(frames);
+            Assert.True(widestStep < 0.6, $"a {widestStep:0.000}s hole between frames. {run.Describe()}");
+            Assert.True(Math.Abs(span - 4) < 0.5, $"frames cover {span:0.00}s, expected 4s. {run.Describe()}");
+            Assert.Equal("aac", run.Player.Info.AudioCodec);
+            AssertPolite();
+        }
+
+        [Fact]
         public void Live_JoinsAnAdBreakWithoutStopping()
         {
             var pieces = new[]

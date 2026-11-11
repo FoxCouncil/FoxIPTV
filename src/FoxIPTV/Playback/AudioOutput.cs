@@ -3,6 +3,7 @@
 namespace FoxIPTV.Playback
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using Classes;
     using SDL;
@@ -12,11 +13,19 @@ namespace FoxIPTV.Playback
     {
         public const int Rate = 48000;
 
+        private const double ReopenGapSeconds = 10;
+
+        private static readonly object _lock = new object();
+
+        private static readonly Stopwatch _watch = Stopwatch.StartNew();
+
+        private static readonly List<AudioOutput> _outputs = new List<AudioOutput>();
+
         private static bool _sdlReady;
 
-        private readonly object _lock = new object();
+        private static double _reopenedAt = double.NegativeInfinity;
 
-        private readonly Stopwatch _watch = Stopwatch.StartNew();
+        private readonly DrainWatch _drain = new DrainWatch();
 
         private SDL_AudioStream* _stream;
 
@@ -37,6 +46,16 @@ namespace FoxIPTV.Playback
         private double _speed = 1;
 
         private int _owner;
+
+        private double _written;
+
+        public AudioOutput()
+        {
+            lock (_lock)
+            {
+                _outputs.Add(this);
+            }
+        }
 
         public static bool Initialize()
         {
@@ -77,6 +96,9 @@ namespace FoxIPTV.Playback
                     if (SDL_SetAudioStreamFormat(_stream, &spec, null))
                     {
                         _channels = channels;
+                        _written = QueuedSecondsLocked();
+
+                        _drain.Reset();
 
                         return true;
                     }
@@ -91,38 +113,116 @@ namespace FoxIPTV.Playback
                     return false;
                 }
 
-                var wanted = new SDL_AudioSpec { format = SDL_AudioFormat.SDL_AUDIO_F32LE, channels = channels, freq = Rate };
+                return OpenStreamLocked(channels);
+            }
+        }
 
-                _stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &wanted, null, IntPtr.Zero);
+        private bool OpenStreamLocked(int channels)
+        {
+            var wanted = new SDL_AudioSpec { format = SDL_AudioFormat.SDL_AUDIO_F32LE, channels = channels, freq = Rate };
 
-                if (_stream == null)
+            _stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &wanted, null, IntPtr.Zero);
+
+            if (_stream == null)
+            {
+                TvCore.LogError($"[Player] No sound output: {SDL_GetError()}");
+
+                return false;
+            }
+
+            _channels = channels;
+            _paused = true;
+            _written = 0;
+
+            _drain.Reset();
+
+            SDL_SetAudioStreamGain(_stream, _gain);
+            SDL_SetAudioStreamFrequencyRatio(_stream, (float)_speed);
+
+            SDL_AudioSpec device;
+            var frames = 0;
+
+            if (SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(_stream), &device, &frames) && device.freq > 0)
+            {
+                _deviceLatency = frames / (double)device.freq + 0.01;
+
+                TvCore.LogInfo($"[Player] Sound output open: device {device.freq}Hz {device.channels}ch, buffer {frames} frames, latency about {_deviceLatency * 1000:0}ms");
+            }
+            else
+            {
+                _deviceLatency = 0.03;
+            }
+
+            return true;
+        }
+
+        public void CheckDrain(int session)
+        {
+            lock (_lock)
+            {
+                if (_stream == null || _paused || session != _owner)
                 {
-                    TvCore.LogError($"[Player] No sound output: {SDL_GetError()}");
+                    _drain.Reset();
 
-                    return false;
+                    return;
                 }
 
-                _channels = channels;
-                _paused = true;
+                var now = _watch.Elapsed.TotalSeconds;
 
-                SDL_SetAudioStreamGain(_stream, _gain);
-                SDL_SetAudioStreamFrequencyRatio(_stream, (float)_speed);
-
-                SDL_AudioSpec device;
-                var frames = 0;
-
-                if (SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(_stream), &device, &frames) && device.freq > 0)
+                if (!_drain.Observe(now, _written - QueuedSecondsLocked(), _speed) || now - _reopenedAt < ReopenGapSeconds)
                 {
-                    _deviceLatency = frames / (double)device.freq + 0.01;
-
-                    TvCore.LogInfo($"[Player] Sound output open: device {device.freq}Hz {device.channels}ch, buffer {frames} frames, latency about {_deviceLatency * 1000:0}ms");
-                }
-                else
-                {
-                    _deviceLatency = 0.03;
+                    return;
                 }
 
-                return true;
+                TvCore.LogError($"[Player] The sound output took {_drain.Drained:0.00}s of sound in {_drain.Elapsed:0.00}s, opening it again");
+
+                ReopenLocked();
+            }
+        }
+
+        public static void Reopen()
+        {
+            lock (_lock)
+            {
+                ReopenLocked();
+            }
+        }
+
+        private static void ReopenLocked()
+        {
+            _reopenedAt = _watch.Elapsed.TotalSeconds;
+
+            var open = new List<AudioOutput>();
+
+            foreach (var output in _outputs)
+            {
+                if (output._stream != null)
+                {
+                    SDL_DestroyAudioStream(output._stream);
+
+                    output._stream = null;
+
+                    open.Add(output);
+                }
+            }
+
+            foreach (var output in open)
+            {
+                var paused = output._paused;
+
+                if (!output.OpenStreamLocked(output._channels))
+                {
+                    continue;
+                }
+
+                output._smoothBase = double.NaN;
+
+                if (!paused)
+                {
+                    SDL_ResumeAudioStreamDevice(output._stream);
+
+                    output._paused = false;
+                }
             }
         }
 
@@ -214,6 +314,7 @@ namespace FoxIPTV.Playback
                     SDL_PutAudioStreamData(_stream, (IntPtr)data, frames * _channels * sizeof(float));
                 }
 
+                _written += frames / (double)Rate;
                 _endTime = startTime + frames / (double)Rate;
 
                 return true;
@@ -312,6 +413,9 @@ namespace FoxIPTV.Playback
             _paused = true;
             _endTime = double.NaN;
             _smoothBase = double.NaN;
+            _written = 0;
+
+            _drain.Reset();
         }
 
         public void Dispose()
@@ -324,7 +428,55 @@ namespace FoxIPTV.Playback
 
                     _stream = null;
                 }
+
+                _outputs.Remove(this);
             }
+        }
+    }
+
+    public sealed class DrainWatch
+    {
+        private const double WindowSeconds = 0.5;
+
+        private const double Limit = 2;
+
+        private double _at = double.NaN;
+
+        private double _from;
+
+        public double Drained { get; private set; }
+
+        public double Elapsed { get; private set; }
+
+        public void Reset()
+        {
+            _at = double.NaN;
+        }
+
+        public bool Observe(double now, double drained, double speed)
+        {
+            if (double.IsNaN(_at))
+            {
+                _at = now;
+                _from = drained;
+
+                return false;
+            }
+
+            var elapsed = now - _at;
+
+            if (elapsed < WindowSeconds)
+            {
+                return false;
+            }
+
+            Elapsed = elapsed;
+            Drained = drained - _from;
+
+            _at = now;
+            _from = drained;
+
+            return Drained > Elapsed * speed * Limit;
         }
     }
 

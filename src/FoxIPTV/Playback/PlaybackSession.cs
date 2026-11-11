@@ -1588,6 +1588,8 @@ namespace FoxIPTV.Playback
                 }
                 else
                 {
+                    _audio.CheckDrain(_audioSession);
+
                     RejoinSound();
                     CheckBuffering();
                     SteerDrift();
