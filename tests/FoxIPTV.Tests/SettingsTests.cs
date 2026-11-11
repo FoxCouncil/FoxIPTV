@@ -233,6 +233,68 @@ namespace FoxIPTV.Tests
         }
 
         [AvaloniaFact]
+        public void AdReel_ReadsTheFolderAgainWhenItWasGoneAtTheStart()
+        {
+            var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "foxiptv-reel-" + Guid.NewGuid().ToString("N"));
+
+            try
+            {
+                var mosaic = new Canvas();
+                var surface = new VideoSurface();
+                var panel = new Panel();
+
+                panel.Children.Add(mosaic);
+                panel.Children.Add(surface);
+
+                var window = new Window { Content = panel, Width = 800, Height = 450 };
+
+                window.Show();
+
+                var reel = new AdReel(mosaic, surface);
+                var files = typeof(AdReel).GetField("_files", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var nextSet = typeof(AdReel).GetField("_nextSet", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var scannedAt = typeof(AdReel).GetField("_scannedAt", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                reel.Prepare(folder);
+
+                WaitFor(() => files.GetValue(reel) is System.Threading.Tasks.Task { IsCompleted: true });
+
+                Assert.False(reel.HasFiles);
+                Assert.False(reel.Start(folder));
+
+                System.IO.Directory.CreateDirectory(folder);
+
+                for (var i = 0; i < 12; i++)
+                {
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, $"p{i}.png"), Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAACAAAAASCAIAAAC1qksFAAAAK0lEQVR4nGM8YWPDQEvARFPTGUYtIAKMxgFBMBpEBMFoEBEEo0FEENA8iAAGqQFk0/YocwAAAABJRU5ErkJggg=="));
+                }
+
+                reel.Prepare(folder);
+
+                Assert.False(reel.HasFiles);
+
+                scannedAt.SetValue(reel, DateTime.UtcNow.AddSeconds(-11));
+
+                reel.Prepare(folder);
+
+                WaitFor(() => reel.HasFiles);
+                WaitFor(() => nextSet.GetValue(reel) is System.Threading.Tasks.Task { IsCompleted: true });
+
+                Assert.True(reel.Start(folder));
+                Assert.InRange(mosaic.Children.Count, 3, 6);
+
+                reel.Dispose();
+            }
+            finally
+            {
+                if (System.IO.Directory.Exists(folder))
+                {
+                    System.IO.Directory.Delete(folder, true);
+                }
+            }
+        }
+
+        [AvaloniaFact]
         public void AdReel_ShowsKeptPicturesWhenTheFolderIsGone()
         {
             var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "foxiptv-reel-" + Guid.NewGuid().ToString("N"));

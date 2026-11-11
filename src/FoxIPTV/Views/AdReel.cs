@@ -25,6 +25,8 @@ namespace FoxIPTV.Views
 
         private const int KeptPictures = 8;
 
+        private const double RescanSeconds = 10;
+
         private readonly Canvas _mosaic;
 
         private readonly VideoSurface _surface;
@@ -48,6 +50,10 @@ namespace FoxIPTV.Views
         private Task<List<Bitmap>> _nextSet;
 
         private DateTime _pictureUntil;
+
+        private DateTime _scannedAt;
+
+        private bool _rescan;
 
         private bool _playingVideo;
 
@@ -81,13 +87,20 @@ namespace FoxIPTV.Views
             }
         }
 
+        public bool HasFiles => _files != null && _files.IsCompletedSuccessfully && _files.Result.Count > 0;
+
         public void Prepare(string folder)
         {
-            if (_files != null && string.Equals(folder, _folder, StringComparison.OrdinalIgnoreCase))
+            var sameFolder = _files != null && string.Equals(folder, _folder, StringComparison.OrdinalIgnoreCase);
+            var foundNothing = sameFolder && _files.IsCompleted && !HasFiles && (DateTime.UtcNow - _scannedAt).TotalSeconds >= RescanSeconds;
+
+            if (sameFolder && !foundNothing)
             {
                 return;
             }
 
+            _rescan = foundNothing;
+            _scannedAt = DateTime.UtcNow;
             _folder = folder;
             _pictures.Clear();
             _videos.Clear();
@@ -113,7 +126,7 @@ namespace FoxIPTV.Views
         {
             Prepare(folder);
 
-            if (_files.IsCompleted && _files.Result.Count == 0)
+            if (_files.IsCompleted ? _files.Result.Count == 0 : _rescan)
             {
                 return false;
             }

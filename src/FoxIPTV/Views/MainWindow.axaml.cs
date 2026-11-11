@@ -575,6 +575,13 @@ namespace FoxIPTV.Views
 
             AdStats.Observe(TvCore.CurrentChannel?.Name, inAd, AdDetector.AdNumber, elapsed);
 
+            Reel.Prepare(TvCore.Settings.AdMediaFolder);
+
+            if (!_mediaChannelOn && Reel.HasFiles && TvCore.IsMediaChannel(TvCore.CurrentChannel))
+            {
+                PlayMediaChannel();
+            }
+
             if (_mediaChannelOn)
             {
                 AdMediaPanel.IsVisible = Reel.IsRunning;
