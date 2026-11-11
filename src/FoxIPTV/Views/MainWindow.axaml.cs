@@ -546,6 +546,8 @@ namespace FoxIPTV.Views
                 }
             }
 
+            ApplyMute();
+
             TimerTvIcons();
 
             TimerAdBreak();

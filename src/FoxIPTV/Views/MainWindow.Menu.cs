@@ -566,9 +566,21 @@ namespace FoxIPTV.Views
         /// <summary>Toggle the mute state</summary>
         private void ToggleMute()
         {
-            _player.Muted = !_player.Muted;
+            _mute.Toggle();
 
-            TvCore.LogInfo($"[Audio] {(_player.Muted ? "Muted" : "Unmuted")}");
+            ApplyMute();
+
+            TvCore.LogInfo($"[Audio] {(_mute.AppMuted ? "Muted" : "Unmuted")}");
+        }
+
+        private void ApplyMute()
+        {
+            _mute.SystemMuted = SystemMute.IsMuted;
+
+            if (_player.Muted != _mute.Muted)
+            {
+                _player.Muted = _mute.Muted;
+            }
         }
 
         /// <summary>Toggle Closed Captioning on or off</summary>

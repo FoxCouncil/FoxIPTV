@@ -15,6 +15,8 @@ namespace FoxIPTV.Views
     {
         private readonly Player _player = new Player();
 
+        private readonly MuteSwitch _mute = new MuteSwitch();
+
         private int _endedWithoutPlaying;
 
         private volatile bool _isPlaying;
@@ -39,6 +41,8 @@ namespace FoxIPTV.Views
             }
 
             AudioOutput.Initialize();
+
+            SystemMute.Start();
 
             _player.StereoMode = Enum.IsDefined(typeof(StereoMode), TvCore.Settings.StereoMode) ? (StereoMode)TvCore.Settings.StereoMode : StereoMode.Stereo;
             _audioChannel = (int)_player.StereoMode;
