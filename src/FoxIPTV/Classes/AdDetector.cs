@@ -11,9 +11,9 @@ namespace FoxIPTV.Classes
 
     public static class AdDetector
     {
-        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|unified-ad-segment-cdn|osm-ads\.delivery\.roku\.com/|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex AdPiece = new Regex(@"_ad(?:/|_bumper)|/creative/|/id3\(p=clik,|Pluto_TV_OandO|plutotv_filler|dai\.google\.com|/v1/segment/|unified-ad-segment-cdn|osm-ads\.delivery\.roku\.com/|[?&]media_type=A(?:&|$)|[?&]break_type=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static readonly Regex Creative = new Regex(@"creative/([0-9a-f]{16,})|osm-ads\.delivery\.roku\.com/([^/?]+)/", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex Creative = new Regex(@"creative/([0-9a-f]{16,})|osm-ads\.delivery\.roku\.com/([^/?]+)/|/id3\(p=clik,id=([0-9a-f]{16,})\)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex CueOut = new Regex(@"cue-out-(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -450,7 +450,7 @@ namespace FoxIPTV.Classes
                 return null;
             }
 
-            return (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value).ToLowerInvariant();
+            return (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Success ? match.Groups[2].Value : match.Groups[3].Value).ToLowerInvariant();
         }
 
         private static void SetBreakLeft(double? seconds)

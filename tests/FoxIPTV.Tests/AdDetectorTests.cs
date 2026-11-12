@@ -146,6 +146,34 @@ namespace FoxIPTV.Tests
         }
 
         [Fact]
+        public void Pluto_ReadsAnAddressWithATrackingTagAndNoAdFolderAsAnAd()
+        {
+            const string first = "https://cdn.example/mp4/v1/c(ts)/h(default)/max(3)/rev(1)/p(43a%2F6af15a5aa87ca2ebab4eddc3%2F720p%2F20261109_053003_209461191_x_2ae4e5ac%2Fvideo_2400.mp4)/id3(p=clik,id=6af15a5aa87ca2ebab4eddc3)/head(0-1265)/frag(1265-1348620)/sign/v1/abc=/0.ts";
+            const string second = "https://cdn.example/mp4/v1/c(ts)/h(default)/max(6)/rev(1)/p(cfd%2F6ae64c95fd25c552e78741ef%2F720p%2F20261031_201621_235158341_x_2a86529a%2Fvideo_2400.mp4)/id3(p=clik,id=6ae64c95fd25c552e78741ef)/head(0-1323)/frag(1323-1383433)/sign/v1/def=/0.ts";
+
+            AdDetector.Reset();
+
+            Assert.True(AdDetector.LooksLikeAd(first));
+
+            AdDetector.ObserveSegment(first);
+
+            Assert.True(AdDetector.InAd);
+            Assert.Equal(1, AdDetector.AdNumber);
+
+            AdDetector.ObserveSegment(first.Replace("/0.ts", "/1.ts"));
+
+            Assert.Equal(1, AdDetector.AdNumber);
+
+            AdDetector.ObserveSegment(second);
+
+            Assert.Equal(2, AdDetector.AdNumber);
+
+            AdDetector.ObserveSegment("https://cdn.example/821_pluto/clip/5b5279d034f220ce7e84430e_show_s12e12/720pDRM/20250625_224136/hls/548550-757525/hls_2400-00000.ts");
+
+            Assert.False(AdDetector.InAd);
+        }
+
+        [Fact]
         public void Playlists_AndSubtitles_AreIgnored()
         {
             AdDetector.Reset();
