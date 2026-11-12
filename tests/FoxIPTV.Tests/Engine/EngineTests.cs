@@ -220,6 +220,35 @@ namespace FoxIPTV.Tests.Engine
         }
 
         [Fact]
+        public void Live_PicksUpSoundAfterSeveralRunsWithNoSound()
+        {
+            var pieces = new[]
+            {
+                new LivePiece("low/0.ts"), new LivePiece("low/1.ts"), new LivePiece("low/2.ts"), new LivePiece("low/3.ts"),
+                new LivePiece("low/0.ts", true, NoSound: true), new LivePiece("low/1.ts", NoSound: true), new LivePiece("low/2.ts", NoSound: true), new LivePiece("low/3.ts", NoSound: true),
+                new LivePiece("low/0.ts", true, NoSound: true), new LivePiece("low/1.ts", NoSound: true), new LivePiece("low/2.ts", NoSound: true), new LivePiece("low/3.ts", NoSound: true),
+                new LivePiece("low/0.ts", true, NoSound: true), new LivePiece("low/1.ts", NoSound: true), new LivePiece("low/2.ts", NoSound: true), new LivePiece("low/3.ts", NoSound: true),
+                new LivePiece("low/0.ts", true, Shift: -7.5), new LivePiece("low/1.ts", Shift: -7.5), new LivePiece("low/2.ts", Shift: -7.5), new LivePiece("low/3.ts", Shift: -7.5)
+            };
+
+            ServeLive(pieces, null);
+
+            using var run = Play("/live.m3u8", true);
+
+            Assert.True(run.WaitFor(PlayerState.Ended, 60), run.Describe());
+
+            AssertNoFramesLost(run, 19);
+
+            var frames = run.Frames;
+            var end = frames[^1].Time;
+            var lastStretch = frames.Where(x => x.Time >= end - 2.5 && x.Time <= end - 0.5).ToList();
+            var onSound = lastStretch.Count(x => x.TimedBySound);
+
+            Assert.True(onSound >= lastStretch.Count * 0.9, $"{onSound} of {lastStretch.Count} frames in the last stretch were timed by the sound. {run.Describe()}");
+            AssertPolite();
+        }
+
+        [Fact]
         public void Aes128_DecryptsEveryPiece()
         {
             var key = Enumerable.Range(0, 16).Select(x => (byte)x).ToArray();
@@ -533,7 +562,7 @@ namespace FoxIPTV.Tests.Engine
 
             for (var i = 0; i < pieces.Count; i++)
             {
-                var data = pieces[i].NoSound ? WithoutSound(Clip(pieces[i].Clip)) : Clip(pieces[i].Clip);
+                var data = Shifted(pieces[i].NoSound ? WithoutSound(Clip(pieces[i].Clip)) : Clip(pieces[i].Clip), pieces[i].Shift);
                 Func<Reply> reply = i == missing ? Reply.NotFound : () => new Reply { Data = data };
 
                 _server.Serve("/" + paths[i], reply);
@@ -703,6 +732,61 @@ namespace FoxIPTV.Tests.Engine
             return kept.ToArray();
         }
 
+        private static byte[] Shifted(byte[] ts, double seconds)
+        {
+            if (seconds == 0)
+            {
+                return ts;
+            }
+
+            var ticks = (long)Math.Round(seconds * 90000);
+            var shifted = (byte[])ts.Clone();
+
+            for (var at = 0; at + 188 <= shifted.Length; at += 188)
+            {
+                var starts = (shifted[at + 1] & 0x40) != 0;
+                var control = (shifted[at + 3] >> 4) & 3;
+                var payload = at + 4 + (control >= 2 ? 1 + shifted[at + 4] : 0);
+
+                if (!starts || (control & 1) == 0 || payload + 19 > at + 188 || shifted[payload] != 0 || shifted[payload + 1] != 0 || shifted[payload + 2] != 1)
+                {
+                    continue;
+                }
+
+                var id = shifted[payload + 3];
+
+                if ((id & 0xE0) != 0xC0 && (id & 0xF0) != 0xE0)
+                {
+                    continue;
+                }
+
+                if ((shifted[payload + 7] & 0x80) != 0)
+                {
+                    ShiftStamp(shifted, payload + 9, ticks);
+                }
+
+                if ((shifted[payload + 7] & 0x40) != 0)
+                {
+                    ShiftStamp(shifted, payload + 14, ticks);
+                }
+            }
+
+            return shifted;
+        }
+
+        private static void ShiftStamp(byte[] ts, int p, long ticks)
+        {
+            var stamp = (((long)ts[p] >> 1) & 7) << 30 | (long)ts[p + 1] << 22 | ((long)ts[p + 2] >> 1) << 15 | (long)ts[p + 3] << 7 | (long)ts[p + 4] >> 1;
+
+            stamp = (stamp + ticks) & 0x1FFFFFFFF;
+
+            ts[p] = (byte)((ts[p] & 0xF0) | (int)((stamp >> 30) & 7) << 1 | 1);
+            ts[p + 1] = (byte)(stamp >> 22);
+            ts[p + 2] = (byte)((int)((stamp >> 15) & 0x7F) << 1 | 1);
+            ts[p + 3] = (byte)(stamp >> 7);
+            ts[p + 4] = (byte)((int)(stamp & 0x7F) << 1 | 1);
+        }
+
         private static void AssertIncreasing(IReadOnlyList<ShownFrame> frames)
         {
             for (var i = 1; i < frames.Count; i++)
@@ -768,6 +852,6 @@ namespace FoxIPTV.Tests.Engine
             }
         }
 
-        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null, string Tags = null, bool NoSound = false);
+        private readonly record struct LivePiece(string Clip, bool StartsDiscontinuity = false, string Path = null, string Title = null, string Tags = null, bool NoSound = false, double Shift = 0);
     }
 }

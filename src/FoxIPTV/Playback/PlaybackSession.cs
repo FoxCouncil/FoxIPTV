@@ -209,6 +209,7 @@ namespace FoxIPTV.Playback
                     FramesDropped = Frames.Dropped,
                     AudioUnderruns = Interlocked.Read(ref _underruns),
                     Clock = Clock,
+                    TimedBySound = _audioClock,
                     Variant = _variant
                 };
             }
@@ -695,6 +696,8 @@ namespace FoxIPTV.Playback
             Interlocked.Increment(ref _demuxersOpened);
 
             var firstPacket = true;
+            var videoSeen = false;
+            var audioSeen = false;
 
             while (!_token.IsCancellationRequested)
             {
@@ -751,6 +754,9 @@ namespace FoxIPTV.Playback
 
                     return;
                 }
+
+                videoSeen |= isVideo;
+                audioSeen |= isAudio;
 
                 var stream = demuxer.Stream(index);
                 var timeBase = ffmpeg.av_q2d(stream->time_base);
@@ -841,6 +847,16 @@ namespace FoxIPTV.Playback
                 ffmpeg.av_packet_move_ref(copy, packet);
 
                 (isVideo ? _videoPackets : _audioPackets).Add(new PacketItem { Kind = PacketKind.Packet, Packet = copy, Duration = duration }, _token);
+            }
+
+            if (!videoSeen)
+            {
+                state.LastVideo = double.NaN;
+            }
+
+            if (!audioSeen)
+            {
+                state.LastAudio = double.NaN;
             }
         }
 

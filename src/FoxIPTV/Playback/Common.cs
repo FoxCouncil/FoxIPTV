@@ -137,6 +137,8 @@ namespace FoxIPTV.Playback
 
         public double Clock { get; set; }
 
+        public bool TimedBySound { get; set; }
+
         public string Variant { get; set; }
 
         public override string ToString() => $"buffer {BufferedSeconds:0.0}s of {BufferTargetSeconds:0.#}s, {PiecesLoaded} pieces {BytesLoaded / 1048576.0:0.0}MB, last piece {(LastPieceAgo < 0 ? "never" : $"{LastPieceAgo:0.0}s ago")}, last playlist {(LastPlaylistAgo < 0 ? "never" : $"{LastPlaylistAgo:0.0}s ago")}, video {FramesDecoded} decoded {FramesShown} shown {FramesDropped} dropped, audio {AudioUnderruns} underruns, clock {Clock:0.000}{(Variant == null ? string.Empty : $", variant {Variant}")}";

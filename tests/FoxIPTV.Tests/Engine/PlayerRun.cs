@@ -161,10 +161,11 @@ namespace FoxIPTV.Tests.Engine
                 if (frame != null)
                 {
                     var clock = Player.Clock;
+                    var timedBySound = Player.Stats?.TimedBySound ?? false;
 
                     lock (_lock)
                     {
-                        _frames.Add(new ShownFrame(frame.Time, clock, frame.Width, frame.Height));
+                        _frames.Add(new ShownFrame(frame.Time, clock, frame.Width, frame.Height, timedBySound));
                     }
 
                     frame.Free();
@@ -192,7 +193,7 @@ namespace FoxIPTV.Tests.Engine
         }
     }
 
-    public readonly record struct ShownFrame(double Time, double Clock, int Width, int Height);
+    public readonly record struct ShownFrame(double Time, double Clock, int Width, int Height, bool TimedBySound);
 
     public readonly record struct ShownCaption(double Clock, string Text);
 }
